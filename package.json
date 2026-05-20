@@ -1,0 +1,30 @@
+{
+  "name": "arrow-again",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "verify:levels": "node scripts/verify-levels.mjs",
+    "meta:zip": "npm run build && node scripts/package-meta.mjs",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npm run build && npx cap sync",
+    "android:debug": "npm run build && npx cap sync android && cd android && JAVA_HOME=${JAVA_HOME:-/opt/homebrew/opt/openjdk} GRADLE_USER_HOME=${GRADLE_USER_HOME:-/private/tmp/arrow-gradle-cache} ./gradlew assembleDebug",
+    "android:open": "npm run build && npx cap sync android && npx cap open android",
+    "ios:open": "npm run build && npx cap sync ios && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^6.0.0"
+  }
+}

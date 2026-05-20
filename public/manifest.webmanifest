@@ -1,0 +1,17 @@
+{
+  "name": "Arrow Again",
+  "short_name": "ArrowAgain",
+  "description": "A bite-size arrow puzzle game.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8F5F0",
+  "theme_color": "#E8F5F0",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

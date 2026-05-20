@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Arrow Again icon">
+  <rect width="512" height="512" rx="112" fill="#e8f5f0"/>
+  <path d="M112 298h190l-58 58 42 42 130-130-130-130-42 42 58 58H112z" fill="#123f46"/>
+  <path d="M112 184h150l-44 44 34 34 104-104L252 54l-34 34 44 44H112z" fill="#f06f5d"/>
+</svg>
