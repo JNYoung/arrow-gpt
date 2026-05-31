@@ -15,6 +15,14 @@ npm install
 npm run dev
 ```
 
+Debug level picker:
+
+```text
+http://127.0.0.1:5173/?debug=levels
+```
+
+This shows all 100 levels in the level picker without writing unlock progress to local save data.
+
 ## Verification
 
 ```bash

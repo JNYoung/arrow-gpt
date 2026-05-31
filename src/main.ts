@@ -44,13 +44,19 @@ type Point = {
 };
 
 const appRoot = document.querySelector<HTMLDivElement>('#app');
+const debugAllLevels = new URLSearchParams(window.location.search).get('debug');
 
 if (!appRoot) {
   throw new Error('Missing #app root');
 }
 
+function isAllLevelsDebugEnabled(): boolean {
+  return debugAllLevels === 'levels' || debugAllLevels === 'all' || debugAllLevels === '1' || debugAllLevels === 'true';
+}
+
 class ArrowAgainApp {
   private save: SaveData = loadSave();
+  private readonly debugAllLevels = isAllLevelsDebugEnabled();
   private screen: Screen = 'home';
   private currentLevel = LEVELS[0];
   private pieces: ArrowPiece[] = [];
@@ -150,7 +156,7 @@ class ArrowAgainApp {
           <button class="icon-button" type="button" data-action="home" aria-label="返回首页">‹</button>
           <div class="level-title">
             <h1>关卡选择</h1>
-            <p>Hard 后面有缓冲关，节奏按产品方案排布。</p>
+            <p>${this.debugAllLevels ? 'Debug：已显示全部 100 关，不写入存档。' : 'Hard 后面有缓冲关，节奏按产品方案排布。'}</p>
           </div>
           <button class="icon-button" type="button" data-action="toggle-sound" aria-label="切换音效" aria-pressed="${this.save.soundEnabled}">
             ${this.save.soundEnabled ? '♪' : '×'}
@@ -164,7 +170,7 @@ class ArrowAgainApp {
   }
 
   private renderLevelButton(level: LevelData): string {
-    const locked = level.id > this.save.unlockedLevel;
+    const locked = this.isLevelLocked(level);
     const stars = this.save.starsByLevel[String(level.id)] ?? 0;
     const difficultyLabel = this.getDifficultyLabel(level);
     return `
@@ -177,6 +183,10 @@ class ArrowAgainApp {
         </span>
       </button>
     `;
+  }
+
+  private isLevelLocked(level: LevelData): boolean {
+    return !this.debugAllLevels && level.id > this.save.unlockedLevel;
   }
 
   private getHintActionLabel(): string {

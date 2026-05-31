@@ -128,16 +128,13 @@ async function run() {
     await assertVisible(page.getByTestId('result-screen'), 'Winning level 1 should show the result screen');
     await assertVisible(page.getByTestId('next-level-button'), 'Winning level 1 should expose the next level action');
 
-    await page.evaluate(() => {
-      localStorage.setItem(
-        'arrow-again-save-v1',
-        JSON.stringify({ unlockedLevel: 100, starsByLevel: {}, soundEnabled: false })
-      );
-    });
-    await page.reload();
+    await page.goto(`${baseUrl}?debug=levels`);
     await page.getByTestId('levels-button').click();
     await page.getByTestId('level-100').scrollIntoViewIfNeeded();
-    await assertVisible(page.getByTestId('level-100'), 'Level selection should expose the full 100-level pack');
+    await assertVisible(page.getByTestId('level-100'), 'Debug level selection should expose the full 100-level pack');
+    if (await page.getByTestId('level-100').isDisabled()) {
+      throw new Error('Debug level selection should make level 100 playable without mutating saved progress');
+    }
     await page.getByTestId('level-15').scrollIntoViewIfNeeded();
     await page.getByTestId('level-15').click();
     await assertVisible(page.getByTestId('hard-modal'), 'Hard levels should show a warning modal before play');
