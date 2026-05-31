@@ -1,4 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <linearGradient id="splashBg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#F9FBF4"/>
+      <stop offset=".58" stop-color="#E6F5EE"/>
+      <stop offset="1" stop-color="#CAE9DC"/>
+    </linearGradient>
+    <filter id="splashShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="95.62" stdDeviation="92.888" flood-color="#264057" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#splashBg)"/>
+  <circle cx="491.76" cy="546.4" r="1038.16" fill="#ffffff" opacity=".34"/>
+  <circle cx="2404.16" cy="2130.96" r="764.96" fill="#BFE5D5" opacity=".32"/>
+  <g opacity="0.32">
+    <path d="M327.84 2158.28 H2404.16" stroke="#FFFFFF" stroke-width="218.56" stroke-linecap="round"/>
+    <path d="M327.84 2158.28 H2404.16" stroke="#6BC5A0" stroke-width="106.548" stroke-linecap="round"/>
+    <path d="M491.76 2404.16 H1529.92 V2021.68 H2130.96" stroke="#FFFFFF" stroke-width="204.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M491.76 2404.16 H1529.92 V2021.68 H2130.96" stroke="#5AA4E8" stroke-width="101.08399999999999" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(983.52 546.4000000000001) scale(0.74703125)" filter="url(#splashShadow)">
+    
   <defs>
     <linearGradient id="iconBg" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#F7FBF3"/>
@@ -48,4 +69,8 @@
     <path d="M631.296 607.8464 H708.5056" stroke="#ffffff" stroke-width="6.6815999999999995" opacity=".36" stroke-linecap="round"/>
   </g>
   </g>
+
+  </g>
+  <text x="1366" y="1502.6000000000001" text-anchor="middle" fill="#1F2B3A" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="174.848" font-weight="850" letter-spacing="5.464">Arrow Again</text>
+  <text x="1366" y="1669.2520000000002" text-anchor="middle" fill="#5C7182" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="81.96" font-weight="700">Unblock the arrows. Clear the maze.</text>
 </svg>

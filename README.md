@@ -26,6 +26,7 @@ This shows all 100 levels in the level picker without writing unlock progress to
 ## Verification
 
 ```bash
+npm run assets:release
 npm run typecheck
 npm run generate:levels
 npm run verify:levels
@@ -35,6 +36,9 @@ npm run e2e
 npm run build
 ```
 
+`assets:release` regenerates the app icon, adaptive Android icon layers, native
+splash screens, PWA icons, and the Facebook/Open Graph share card from the
+checked-in SVG generator.
 `verify:levels` validates the single source of truth in `src/game/levels.json`.
 `verify:balance` checks the 100-level pack for completion, difficulty labels,
 score progression, target move balance, and chapter-level difficulty regression.
@@ -84,6 +88,13 @@ npm run cap:add:ios
 npm run cap:sync
 ```
 
+Prepare native projects with current web output and release assets:
+
+```bash
+npm run native:prepare
+npm run ios:prepare
+```
+
 Android debug build on this machine:
 
 ```bash
@@ -94,12 +105,30 @@ Android release builds should be produced as an Android App Bundle in Android St
 iOS release builds require an Apple Developer account, signing team, bundle ID, icons,
 screenshots, and App Store privacy metadata.
 
+## Release Data
+
+Release pages and platform data live in `docs/release-data/platform-data.md`.
+Native packaging status and local machine blockers live in
+`docs/release-data/native-build-report.md`.
+The deployable static review pages are copied from:
+
+- `public/app-home.html`
+- `public/privacy.html`
+- `public/data-deletion.html`
+- `public/support.html`
+- `public/app-ads.txt`
+
+Before submission, replace every `TODO_*`, `REPLACE_WITH_*`, and placeholder
+`ca-app-pub-000...` / `pub-000...` value in `platform-manifest.json`,
+Android/iOS native config, and the public policy pages.
+
 ## Native Environment Notes
 
 - Android Gradle builds require JDK 21 for the current Capacitor/Android toolchain.
   `scripts/run-android-gradle.mjs` selects a JDK 21 install and fails early if only
   JDK 17 or an unsupported newer unversioned Homebrew `openjdk` is available.
 - iOS requires a full Xcode installation selected by `xcode-select`. Command Line Tools alone
-  are not enough for `pod install` or simulator/device builds.
+  are not enough for `pod install` or simulator/device builds. The repo scripts use
+  `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for iOS sync on this machine.
 - Store submission still needs production icons, screenshots, signing certificates, privacy
   policy URL, package identifiers, and developer account access.

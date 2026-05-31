@@ -55,7 +55,12 @@ function requireOneOf(pathExpression, allowedValues) {
 }
 
 function looksLikePlaceholder(value) {
-  return /^(TODO|TBD|REPLACE|PLACEHOLDER|META_|ADMOB_)/i.test(value) || value.includes('_TODO_');
+  return (
+    /^(TODO|TBD|REPLACE|PLACEHOLDER|META_|ADMOB_)/i.test(value) ||
+    value.includes('_TODO_') ||
+    value.includes('REPLACE_WITH_') ||
+    value.includes('0000000000000000')
+  );
 }
 
 function requireReleaseValue(pathExpression) {
@@ -89,16 +94,52 @@ function requireAndroidApplicationId(pathExpression) {
   }
 }
 
+function requireEmail(pathExpression) {
+  const value = requireReleaseValue(pathExpression);
+  if (value && !looksLikePlaceholder(value) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    blockRelease(`${pathExpression} must be a valid support email`);
+  }
+}
+
+function requireAdMobAppId(pathExpression) {
+  const value = requireReleaseValue(pathExpression);
+  if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}~\d{10}$/.test(value)) {
+    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000~0000000000`);
+  }
+}
+
+function requireStringArray(pathExpression) {
+  const value = get(pathExpression);
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || entry.trim().length === 0)) {
+    fail(`${pathExpression} must be an array of non-empty strings`);
+  }
+}
+
 async function requireFile(pathExpression) {
   const value = requireString(pathExpression);
   if (!value) {
-    return;
+    return undefined;
   }
 
   try {
     await access(path.join(process.cwd(), value));
   } catch {
     fail(`${pathExpression} points to missing file ${value}`);
+    return undefined;
+  }
+
+  return value;
+}
+
+async function requireAppAdsTxt(pathExpression) {
+  const value = await requireFile(pathExpression);
+  if (!value) {
+    return;
+  }
+
+  const contents = await readFile(path.join(process.cwd(), value), 'utf8');
+  if (/pub-0{8,}/.test(contents) || contents.includes('REPLACE')) {
+    blockRelease(`${pathExpression} still contains placeholder app-ads.txt publisher data`);
   }
 }
 
@@ -119,11 +160,27 @@ requireReleaseValue('displayName');
 requireOneOf('orientation', ['portrait', 'landscape']);
 requireOneOf('releaseStatus', ['draft', 'ready']);
 requireUrl('privacyPolicyUrl');
-requireReleaseValue('supportEmail');
+requireUrl('dataDeletionUrl');
+requireEmail('supportEmail');
 
 if (get('releaseStatus') !== 'ready') {
   blockRelease('releaseStatus must be "ready" before store submission');
 }
+
+if (!isObject(get('releaseAssets'))) {
+  fail('releaseAssets must be an object');
+}
+
+requireUrl('releaseAssets.appHomeUrl');
+requireUrl('releaseAssets.supportUrl');
+await requireFile('releaseAssets.landingPagePath');
+await requireFile('releaseAssets.privacyPagePath');
+await requireFile('releaseAssets.dataDeletionPagePath');
+await requireAppAdsTxt('releaseAssets.appAdsTxtPath');
+await requireFile('releaseAssets.iconSvgPath');
+await requireFile('releaseAssets.iconPng1024Path');
+await requireFile('releaseAssets.splashPngPath');
+await requireFile('releaseAssets.shareImagePath');
 
 if (!isObject(get('platforms'))) {
   fail('platforms must be an object');
@@ -136,6 +193,8 @@ requireBoolean('platforms.metaInstant.enabled');
 requireReleaseValue('platforms.metaInstant.appId');
 requireReleaseValue('platforms.metaInstant.packageCommand');
 await requireFile('platforms.metaInstant.fbappConfigPath');
+await requireFile('platforms.metaInstant.shareImagePath');
+requireStringArray('platforms.metaInstant.loginPermissions');
 requirePlacements('platforms.metaInstant');
 
 requireBoolean('platforms.googlePlayAndroid.enabled');
@@ -144,7 +203,18 @@ requirePositiveInteger('platforms.googlePlayAndroid.versionCode');
 requireReleaseValue('platforms.googlePlayAndroid.versionName');
 requireReleaseValue('platforms.googlePlayAndroid.bundleCommand');
 requireReleaseValue('platforms.googlePlayAndroid.nativeBridge');
+requireAdMobAppId('platforms.googlePlayAndroid.adMobAppId');
 requirePlacements('platforms.googlePlayAndroid');
+
+requireBoolean('platforms.iosAppStore.enabled');
+requireAndroidApplicationId('platforms.iosAppStore.bundleId');
+requirePositiveInteger('platforms.iosAppStore.versionCode');
+requireReleaseValue('platforms.iosAppStore.versionName');
+requireReleaseValue('platforms.iosAppStore.prepareCommand');
+await requireFile('platforms.iosAppStore.workspacePath');
+requireReleaseValue('platforms.iosAppStore.scheme');
+requireAdMobAppId('platforms.iosAppStore.adMobAppId');
+requirePlacements('platforms.iosAppStore');
 
 if (releaseMode && releaseBlockers.length > 0) {
   failures.push(...releaseBlockers);

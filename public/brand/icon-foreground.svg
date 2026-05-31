@@ -13,10 +13,6 @@
     </filter>
   </defs>
   
-      <rect width="1024" height="1024" rx="225.28" fill="url(#iconBg)"/>
-      <path d="M0 788.48 C286.72 645.12 655.36 972.8 1024 716.8 L1024 1024 L0 1024Z" fill="#D9EEE7" opacity=".75"/>
-      <path d="M-81.92 204.8 C184.32 -61.44 430.08 122.88 624.64 -40.96" stroke="#ffffff" stroke-width="22.528" opacity=".32" fill="none"/>
-    
   
     <g filter="url(#softShadow)">
       <rect x="163.84" y="184.32" width="696.32" height="655.36" rx="112.64" fill="#EFF9F5"/>

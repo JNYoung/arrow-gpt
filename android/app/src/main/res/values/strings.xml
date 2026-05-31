@@ -4,4 +4,5 @@
     <string name="title_activity_main">Arrow Again</string>
     <string name="package_name">com.arrowagain.game</string>
     <string name="custom_url_scheme">com.arrowagain.game</string>
+    <string name="admob_app_id">ca-app-pub-0000000000000000~0000000000</string>
 </resources>

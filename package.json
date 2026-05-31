@@ -1,6 +1,6 @@
 {
   "name": "arrow-again",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,11 +14,14 @@
     "verify:platform": "node scripts/verify-platform-manifest.mjs",
     "verify:platform:release": "node scripts/verify-platform-manifest.mjs --release",
     "verify:all": "npm run typecheck && npm run verify:levels && npm run verify:balance && npm run verify:platform && npm run e2e",
+    "assets:release": "node scripts/generate-release-assets.mjs",
     "e2e": "npm run build && node scripts/run-e2e.mjs",
     "meta:zip": "npm run build && node scripts/package-meta.mjs",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
-    "cap:sync": "npm run build && npx cap sync",
+    "cap:sync": "npm run build && npx cap sync android && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer npx cap sync ios",
+    "ios:prepare": "npm run build && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer npx cap sync ios",
+    "native:prepare": "npm run assets:release && npm run cap:sync",
     "google:aab": "npm run build && npx cap sync android && node scripts/run-android-gradle.mjs bundleRelease",
     "android:debug": "npm run build && npx cap sync android && node scripts/run-android-gradle.mjs assembleDebug",
     "android:open": "npm run build && npx cap sync android && npx cap open android",

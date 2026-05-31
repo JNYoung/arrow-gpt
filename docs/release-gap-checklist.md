@@ -11,6 +11,9 @@
 - Web 构建。
 - rewarded hint / revive 的 E2E 验证路径。
 - Web / Meta / Google 的统一 `src/platform` 接口雏形。
+- Android / iOS Capacitor 壳。
+- 可重复生成的图标、开屏图、PWA 图标和分享图。
+- AdMob / Meta / App Store / Google Play 的发布资料模板。
 
 距离真正上线，仍差 4 类工作：
 
@@ -85,17 +88,23 @@ manifest 至少要包含：
 - 隐私政策 URL
 - Android 签名
 - 最终包名 / 版本号
-- 应用图标
+- 真实 AdMob app ID / ad unit IDs
+- Meta App ID / placement IDs
 - 商店截图
-- 商店文案
+- 商店最终文案审核
 - Google Play Data safety
 - Apple 侧签名与隐私元数据
 
-这部分建议单独落一个发布资料目录，例如：
+已落库：
 
-- `docs/release-assets/android-checklist.md`
-- `docs/release-assets/ios-checklist.md`
-- `docs/release-assets/store-copy.md`
+- `docs/release-data/platform-data.md`
+- `public/app-home.html`
+- `public/privacy.html`
+- `public/data-deletion.html`
+- `public/support.html`
+- `public/app-ads.txt`
+- `scripts/generate-release-assets.mjs`
+- `npm run assets:release`
 
 验收标准：
 
@@ -154,6 +163,7 @@ manifest 至少要包含：
 - 分享素材优化
 - 更完整的新手引导
 - 低端机性能优化
+- 真实 AdMob / Meta 原生 SDK 接入
 
 这些不阻塞首发，但会影响留存和变现。
 
@@ -172,6 +182,7 @@ manifest 至少要包含：
 - Meta app id 和广告位 id
 - AdMob 广告位 id
 - 隐私政策 URL
+- 可部署 `app-home.html` / `privacy.html` / `data-deletion.html` / `app-ads.txt` 的公开域名
 - Google Play / Apple / Meta 开发者后台权限
 - 商店截图和主视觉取舍
 
