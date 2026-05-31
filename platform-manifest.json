@@ -1,0 +1,38 @@
+{
+  "gameId": "arrow-again",
+  "displayName": "Arrow Again",
+  "orientation": "portrait",
+  "releaseStatus": "draft",
+  "privacyPolicyUrl": "TODO_PRIVACY_POLICY_URL",
+  "supportEmail": "TODO_SUPPORT_EMAIL",
+  "platforms": {
+    "webH5": {
+      "enabled": true,
+      "buildCommand": "npm run build"
+    },
+    "metaInstant": {
+      "enabled": true,
+      "appId": "TODO_META_APP_ID",
+      "packageCommand": "npm run meta:zip",
+      "fbappConfigPath": "public/fbapp-config.json",
+      "rewardedPlacements": {
+        "hint": "TODO_META_HINT_PLACEMENT",
+        "revive": "TODO_META_REVIVE_PLACEMENT",
+        "double-reward": "TODO_META_DOUBLE_REWARD_PLACEMENT"
+      }
+    },
+    "googlePlayAndroid": {
+      "enabled": true,
+      "applicationId": "com.arrowagain.game",
+      "versionCode": 1,
+      "versionName": "0.1.0",
+      "bundleCommand": "npm run google:aab",
+      "nativeBridge": "window.NativeGameHost",
+      "rewardedPlacements": {
+        "hint": "TODO_ADMOB_HINT_UNIT",
+        "revive": "TODO_ADMOB_REVIVE_UNIT",
+        "double-reward": "TODO_ADMOB_DOUBLE_REWARD_UNIT"
+      }
+    }
+  }
+}

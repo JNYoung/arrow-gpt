@@ -22,6 +22,7 @@ npm run typecheck
 npm run generate:levels
 npm run verify:levels
 npm run verify:balance
+npm run verify:platform
 npm run e2e
 npm run build
 ```
@@ -29,6 +30,9 @@ npm run build
 `verify:levels` validates the single source of truth in `src/game/levels.json`.
 `verify:balance` checks the 100-level pack for completion, difficulty labels,
 score progression, target move balance, and chapter-level difficulty regression.
+`verify:platform` checks `platform-manifest.json` for required platform fields,
+local package paths, and known release blockers. Use `npm run verify:platform:release`
+before store submission to fail on placeholder IDs, ad units, and policy URLs.
 `e2e` builds the app, starts a Vite preview server, and checks the home screen,
 first-level gameplay, rewarded hint, rewarded revive, 100-level access,
 hard-level modal, and a desktop smoke pass.

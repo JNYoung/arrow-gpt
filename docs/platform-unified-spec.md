@@ -108,10 +108,9 @@ platform.track('level_complete', { level: 12, stars: 3 });
 
 ## 下一步落地顺序
 
-1. 把 Arrow Again 的广告 UI 改为读取 `platform.capabilities`，避免生产环境广告未接入时给错承诺。
-2. 增加 `platform-manifest.json` 和 `scripts/verify-platform-manifest.mjs`，检查 Meta/Google 上架必填项。
-3. 做 Google Android `NativeGameHost` 原生桥，先接 rewarded ad 和 analytics。
-4. 把这套 `src/platform` 抽成小游戏模板模块，复制到坦克大战、Traffic Jam 后只改 manifest。
+1. 做 Google Android `NativeGameHost` 原生桥，先接 rewarded ad 和 analytics。
+2. 替换 `platform-manifest.json` 中的 Meta app id、广告位、AdMob unit、隐私政策 URL 和支持邮箱，并跑 `npm run verify:platform:release`。
+3. 把这套 `src/platform` 抽成小游戏模板模块，复制到坦克大战、Traffic Jam 后只改 manifest。
 
 ## 参考
 
