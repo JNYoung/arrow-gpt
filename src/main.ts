@@ -3,7 +3,7 @@ import { GameAudio } from './audio';
 import { LEVELS } from './game/levels';
 import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
 import type { ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
-import { createPlatformBridge, type PlatformBridge } from './platform';
+import { createPlatformBridge, normalizeRenderQuality, type PlatformBridge, type RenderQuality } from './platform';
 import { loadSave, saveGame } from './storage';
 
 type Screen = 'home' | 'levels' | 'playing' | 'result';
@@ -46,6 +46,15 @@ type Point = {
 const appRoot = document.querySelector<HTMLDivElement>('#app');
 const debugAllLevels = new URLSearchParams(window.location.search).get('debug');
 
+declare global {
+  interface Window {
+    ArrowAgainRuntime?: {
+      getRenderQuality: () => RenderQuality;
+      setRenderQuality: (quality: RenderQuality) => RenderQuality;
+    };
+  }
+}
+
 if (!appRoot) {
   throw new Error('Missing #app root');
 }
@@ -77,10 +86,14 @@ class ArrowAgainApp {
   private resizeObserver?: ResizeObserver;
   private audio: GameAudio;
   private platform: PlatformBridge;
+  private renderQuality: RenderQuality;
 
   constructor(private root: HTMLDivElement) {
     this.audio = new GameAudio(this.save.soundEnabled);
     this.platform = createPlatformBridge();
+    this.renderQuality = this.platform.renderQuality;
+    this.applyRenderQuality();
+    this.installRuntimeBridge();
     window.addEventListener('resize', () => this.drawBoard());
   }
 
@@ -189,6 +202,43 @@ class ArrowAgainApp {
     return !this.debugAllLevels && level.id > this.save.unlockedLevel;
   }
 
+  private getBoardClassName(): string {
+    const classes = ['board-wrap'];
+
+    if (this.renderQuality === 'low') {
+      classes.push('low-fx-board');
+    }
+
+    if (this.renderQuality !== 'high' && this.currentLevel.pieces.length >= 30) {
+      classes.push('dense-board');
+    }
+
+    return classes.join(' ');
+  }
+
+  private applyRenderQuality(): void {
+    document.documentElement.dataset.renderQuality = this.renderQuality;
+  }
+
+  private installRuntimeBridge(): void {
+    window.ArrowAgainRuntime = {
+      getRenderQuality: () => this.renderQuality,
+      setRenderQuality: (quality) => this.setRenderQuality(quality)
+    };
+  }
+
+  private setRenderQuality(quality: RenderQuality): RenderQuality {
+    const next = normalizeRenderQuality(quality, this.renderQuality);
+    if (next === this.renderQuality) {
+      return this.renderQuality;
+    }
+
+    this.renderQuality = next;
+    this.applyRenderQuality();
+    this.render();
+    return this.renderQuality;
+  }
+
   private getHintActionLabel(): string {
     if (this.rewardBusy) {
       return '广告中';
@@ -235,7 +285,7 @@ class ArrowAgainApp {
             <strong>${available}</strong>
           </div>
         </header>
-        <div class="board-wrap" data-testid="board">
+        <div class="${this.getBoardClassName()}" data-testid="board">
           <canvas class="board-canvas" aria-hidden="true"></canvas>
           <svg class="maze-layer" aria-hidden="true"></svg>
           <svg class="arrow-layer" role="group" aria-label="箭头棋盘"></svg>
@@ -620,6 +670,9 @@ class ArrowAgainApp {
     const coreGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const flowGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const gateGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    ambientGroup.setAttribute('class', 'maze-ambient-group');
+    railGroup.setAttribute('class', 'maze-rail-group');
+    flowGroup.setAttribute('class', 'maze-flow-group');
     this.mazeSvg.append(ambientGroup, railGroup, highlightGroup, coreGroup, flowGroup, gateGroup);
     this.appendAmbientMaze(ambientGroup, metrics);
 
@@ -633,7 +686,7 @@ class ArrowAgainApp {
       this.appendMazePath(coreGroup, path, 'maze-core', color, isAvailable);
 
       if (isAvailable || this.hintIds.has(piece.id)) {
-        this.appendMazePath(flowGroup, path, 'maze-flow', color, true);
+        this.appendMazePath(flowGroup, path, 'maze-flow', color, true, this.getFlowStyle(piece));
       }
 
       if (isAvailable) {
@@ -750,16 +803,23 @@ class ArrowAgainApp {
     }
   }
 
-  private appendMazePath(group: SVGGElement, path: string, className: string, color: string, isAvailable: boolean): void {
+  private appendMazePath(group: SVGGElement, path: string, className: string, color: string, isAvailable: boolean, extraStyle = ''): void {
     const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     route.setAttribute('class', `${className}${isAvailable ? ' available' : ''}`);
     route.setAttribute('d', path);
-    route.setAttribute('style', `--route-color: ${color}`);
+    route.setAttribute('style', `--route-color: ${color}; ${extraStyle}`);
     group.append(route);
   }
 
   private getPieceAsset(direction: ArrowPiece['dir']): string {
     return `/assets/arrow-${direction}.png`;
+  }
+
+  private getFlowStyle(piece: ArrowPiece): string {
+    const seed = (piece.row * 17 + piece.col * 29 + this.currentLevel.id * 11) % 100;
+    const duration = 1620 + (seed % 5) * 90;
+    const delay = -((seed * 37) % duration);
+    return `--flow-duration: ${duration}ms; --flow-delay: ${delay}ms;`;
   }
 
   private appendExitGate(group: SVGGElement, piece: ArrowPiece, metrics: BoardMetrics, color: string): void {

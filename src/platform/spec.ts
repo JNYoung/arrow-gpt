@@ -2,6 +2,8 @@ export type PlatformTarget = 'web' | 'meta-instant' | 'google-play' | 'ios-app-s
 
 export type RewardedPlacement = 'hint' | 'revive' | 'double-reward';
 
+export type RenderQuality = 'high' | 'balanced' | 'low';
+
 export type SharePayload = {
   title?: string;
   text: string;
@@ -24,11 +26,13 @@ export type PlatformCapabilities = {
 export type PlatformRuntimeConfig = {
   mockRewardedAds?: boolean;
   rewardedPlacements?: Partial<Record<RewardedPlacement, string>>;
+  renderQuality?: RenderQuality;
 };
 
 export interface PlatformBridge {
   name: PlatformTarget;
   playerName?: string;
+  renderQuality: RenderQuality;
   capabilities: PlatformCapabilities;
   ready: () => Promise<void>;
   progress: (value: number) => void;
@@ -55,6 +59,14 @@ export const defaultCapabilities: PlatformCapabilities = {
 };
 
 const mockRewardDelay = 180;
+
+export function normalizeRenderQuality(value: unknown, fallback: RenderQuality = 'balanced'): RenderQuality {
+  return value === 'high' || value === 'balanced' || value === 'low' ? value : fallback;
+}
+
+export function resolveConfiguredRenderQuality(fallback: RenderQuality = 'balanced'): RenderQuality {
+  return normalizeRenderQuality(window.__GAME_PLATFORM_CONFIG__?.renderQuality, fallback);
+}
 
 export async function resolveMockReward(): Promise<boolean> {
   await new Promise((resolve) => window.setTimeout(resolve, mockRewardDelay));

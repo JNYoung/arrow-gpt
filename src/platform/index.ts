@@ -4,9 +4,12 @@ export type {
   PlatformEventPayload,
   PlatformRuntimeConfig,
   PlatformTarget,
+  RenderQuality,
   RewardedPlacement,
   SharePayload
 } from './spec';
+
+export { normalizeRenderQuality } from './spec';
 
 import { createGooglePlatformBridge } from './google';
 import { createMetaPlatformBridge } from './meta';

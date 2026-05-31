@@ -1,6 +1,7 @@
 import {
   defaultCapabilities,
   normalizeSharePayload,
+  resolveConfiguredRenderQuality,
   resolveMockReward,
   vibrate,
   type PlatformBridge,
@@ -50,6 +51,7 @@ export function createMetaPlatformBridge(): PlatformBridge | undefined {
   return {
     name: 'meta-instant',
     playerName: fb.player?.getName(),
+    renderQuality: resolveConfiguredRenderQuality('balanced'),
     capabilities: {
       ...defaultCapabilities,
       instantGame: true,

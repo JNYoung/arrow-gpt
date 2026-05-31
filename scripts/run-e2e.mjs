@@ -141,6 +141,32 @@ async function run() {
     await page.getByRole('button', { name: '进入' }).click();
     await assertVisible(page.getByTestId('game-screen'), 'Confirming hard modal should enter the level');
 
+    const lowFxPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await lowFxPage.addInitScript(() => {
+      window.__GAME_PLATFORM_CONFIG__ = { renderQuality: 'low', mockRewardedAds: true };
+    });
+    await lowFxPage.goto(`${baseUrl}?debug=levels`);
+    await lowFxPage.getByTestId('levels-button').click();
+    await lowFxPage.getByTestId('level-80').scrollIntoViewIfNeeded();
+    await lowFxPage.getByTestId('level-80').click();
+    await lowFxPage.getByRole('button', { name: '进入' }).click();
+    await assertVisible(lowFxPage.getByTestId('game-screen'), 'Low-FX runtime config should still enter level 80');
+    const lowFxState = await lowFxPage.getByTestId('board').evaluate((board) => ({
+      lowFx: board.classList.contains('low-fx-board'),
+      dense: board.classList.contains('dense-board'),
+      flowAnimation: getComputedStyle(board.querySelector('.maze-flow')).animationName,
+      gateAnimation: getComputedStyle(board.querySelector('.exit-gate')).animationName,
+      runtimeQuality: window.ArrowAgainRuntime?.getRenderQuality()
+    }));
+    if (!lowFxState.lowFx || !lowFxState.dense || lowFxState.flowAnimation !== 'none' || lowFxState.gateAnimation !== 'none') {
+      throw new Error(`Low-FX level 80 should disable heavy route animations, got: ${JSON.stringify(lowFxState)}`);
+    }
+    const upgradedQuality = await lowFxPage.evaluate(() => window.ArrowAgainRuntime?.setRenderQuality('high'));
+    if (upgradedQuality !== 'high') {
+      throw new Error(`Runtime quality JSB should switch to high, got: ${upgradedQuality}`);
+    }
+    await lowFxPage.close();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(baseUrl);
     await assertVisible(page.getByTestId('home-screen'), 'Desktop viewport should render home screen');

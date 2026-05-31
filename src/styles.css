@@ -497,19 +497,27 @@ button {
   vector-effect: non-scaling-stroke;
   stroke-linecap: round;
   stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.maze-ambient-group,
+.maze-rail-group {
+  filter: url("#route-shadow");
+}
+
+.maze-flow-group {
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.72));
 }
 
 .maze-ambient {
   stroke: rgba(255, 255, 255, 0.78);
   stroke-width: 31;
-  filter: url("#route-shadow");
   opacity: 0.68;
 }
 
 .maze-rail {
   stroke: rgba(253, 254, 255, 0.98);
   stroke-width: 33;
-  filter: url("#route-shadow");
 }
 
 .maze-highlight {
@@ -531,11 +539,67 @@ button {
 
 .maze-flow {
   stroke: var(--route-color);
+  stroke-width: 8;
+  stroke-dasharray: 20 15;
+  opacity: 0.84;
+  animation: routeFlow var(--flow-duration, 1.72s) linear infinite;
+  animation-delay: var(--flow-delay, 0ms);
+}
+
+.dense-board .maze-flow {
+  stroke-width: 10;
+  stroke-dasharray: none;
+  opacity: 0.52;
+  animation: none;
+}
+
+.dense-board .exit-gate {
+  animation: none;
+}
+
+.low-fx-board .maze-ambient-group,
+.low-fx-board .maze-rail-group,
+.low-fx-board .maze-flow-group {
+  filter: none;
+}
+
+.low-fx-board .maze-ambient {
+  opacity: 0.34;
+  stroke-width: 27;
+}
+
+.low-fx-board .maze-rail {
+  stroke-width: 28;
+}
+
+.low-fx-board .maze-highlight {
+  display: none;
+}
+
+.low-fx-board .maze-core {
+  stroke-width: 13;
+  opacity: 0.14;
+}
+
+.low-fx-board .maze-core.available {
+  opacity: 0.38;
+}
+
+.low-fx-board .maze-flow {
   stroke-width: 9;
-  stroke-dasharray: 28 18;
-  opacity: 0.86;
-  filter: url("#route-glow");
-  animation: routeFlow 1.45s linear infinite;
+  stroke-dasharray: none;
+  opacity: 0.44;
+  animation: none;
+}
+
+.low-fx-board .exit-gate,
+.low-fx-board .arrow-piece,
+.low-fx-board .exit-burst {
+  filter: none;
+}
+
+.low-fx-board .exit-gate {
+  animation: none;
 }
 
 .exit-gate {
