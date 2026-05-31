@@ -1,6 +1,7 @@
 import {
   defaultCapabilities,
   resolveMockReward,
+  resolveConfiguredRenderQuality,
   shareOnWeb,
   vibrate,
   type PlatformBridge
@@ -9,6 +10,7 @@ import {
 export function createWebPlatformBridge(): PlatformBridge {
   return {
     name: 'web',
+    renderQuality: resolveConfiguredRenderQuality('balanced'),
     capabilities: {
       ...defaultCapabilities,
       rewardedAd: true,

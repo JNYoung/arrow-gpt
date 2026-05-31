@@ -38,6 +38,7 @@ platform.track('level_complete', { level: 12, stars: 3 });
 | 分享 | Web Share API | `FBInstant.shareAsync` | Web Share API 或原生 Share 插件 |
 | 震动 | `navigator.vibrate` | `navigator.vibrate` | `navigator.vibrate` 或原生 haptics |
 | 埋点 | no-op | `FBInstant.logEvent` | `window.NativeGameHost.track` |
+| 渲染质量 | `window.__GAME_PLATFORM_CONFIG__.renderQuality` | 同 Web | `window.NativeGameHost.renderQuality` 或 `getRenderQuality()` |
 | 玩家信息 | 无 | `FBInstant.player.getName` | 后续接 Play Games Services 或自有账号 |
 
 ## 游戏侧调用约束
@@ -47,6 +48,8 @@ platform.track('level_complete', { level: 12, stars: 3 });
 - `platform.capabilities.rewardedAd === false` 时，UI 仍可显示按钮，但要给出“广告暂不可用”的失败路径。
 - 只有 Web adapter 默认 mock rewarded ad；Meta/Google 生产环境必须配置真实广告位或原生 host bridge。
 - 分享、埋点、震动都允许失败，不得阻断主玩法。
+- 低端机可通过 JSB 降级渲染质量：启动前注入 `window.__GAME_PLATFORM_CONFIG__.renderQuality = "low"`，或原生壳提供 `window.NativeGameHost.renderQuality/getRenderQuality()`。
+- 页面启动后，端侧也可以调用 `window.ArrowAgainRuntime.setRenderQuality("low" | "balanced" | "high")` 动态切换。`low` 会关闭密集关卡的重型轨迹动画、部分滤镜和粒子效果。
 
 ## 发布 Profile
 
@@ -108,10 +111,9 @@ platform.track('level_complete', { level: 12, stars: 3 });
 
 ## 下一步落地顺序
 
-1. 把 Arrow Again 的广告 UI 改为读取 `platform.capabilities`，避免生产环境广告未接入时给错承诺。
-2. 增加 `platform-manifest.json` 和 `scripts/verify-platform-manifest.mjs`，检查 Meta/Google 上架必填项。
-3. 做 Google Android `NativeGameHost` 原生桥，先接 rewarded ad 和 analytics。
-4. 把这套 `src/platform` 抽成小游戏模板模块，复制到坦克大战、Traffic Jam 后只改 manifest。
+1. 做 Google Android `NativeGameHost` 原生桥，先接 rewarded ad 和 analytics。
+2. 替换 `platform-manifest.json` 中的 Meta app id、广告位、AdMob unit、隐私政策 URL 和支持邮箱，并跑 `npm run verify:platform:release`。
+3. 把这套 `src/platform` 抽成小游戏模板模块，复制到坦克大战、Traffic Jam 后只改 manifest。
 
 ## 参考
 

@@ -1,14 +1,19 @@
 import {
   defaultCapabilities,
+  normalizeRenderQuality,
   resolveMockReward,
+  resolveConfiguredRenderQuality,
   shareOnWeb,
   vibrate,
   type PlatformBridge,
   type PlatformEventPayload,
+  type RenderQuality,
   type RewardedPlacement
 } from './spec';
 
 type NativeGameHost = {
+  renderQuality?: RenderQuality;
+  getRenderQuality?: () => RenderQuality;
   showRewardedAd?: (placement: RewardedPlacement) => Promise<boolean>;
   track?: (event: string, payload?: PlatformEventPayload) => void;
 };
@@ -35,9 +40,11 @@ export function createGooglePlatformBridge(): PlatformBridge | undefined {
 
   const host = window.NativeGameHost;
   const mockRewardedAds = Boolean(window.__GAME_PLATFORM_CONFIG__?.mockRewardedAds);
+  const renderQuality = normalizeRenderQuality(host?.getRenderQuality?.() ?? host?.renderQuality, resolveConfiguredRenderQuality('balanced'));
 
   return {
     name: 'google-play',
+    renderQuality,
     capabilities: {
       ...defaultCapabilities,
       nativeShell: true,
