@@ -15,6 +15,12 @@ type ResultState = {
   moves: number;
 };
 
+type PlaySnapshot = {
+  pieces: ArrowPiece[];
+  lives: number;
+  moves: number;
+};
+
 type MotionKeyframe = {
   distance: number;
   time: number;
@@ -54,6 +60,7 @@ class ArrowAgainApp {
   private errorPieceId?: string;
   private hintIds = new Set<string>();
   private exitingPieceIds = new Set<string>();
+  private history: PlaySnapshot[] = [];
   private rewardBusy = false;
   private result?: ResultState;
   private pendingHardLevel?: LevelData;
@@ -232,6 +239,11 @@ class ArrowAgainApp {
               <span>${this.getHintActionLabel()}</span>
               <span class="hint-badge">3</span>
             </button>
+            <button class="action-button" type="button" data-action="undo" data-testid="undo-button" ${this.history.length === 0 || this.rewardBusy ? 'disabled' : ''}>
+              <span class="action-icon undo-icon"><img src="/assets/action-restart.png" alt="" aria-hidden="true" /></span>
+              <span>撤销</span>
+              <span class="tool-badge" data-testid="undo-count" ${this.history.length === 0 ? 'hidden' : ''}>${Math.min(this.history.length, 9)}</span>
+            </button>
             <button class="action-button" type="button" data-action="restart" data-testid="restart-button">
               <span class="action-icon"><img src="/assets/action-restart.png" alt="" aria-hidden="true" /></span>
               <span>重开</span>
@@ -351,6 +363,11 @@ class ArrowAgainApp {
       return;
     }
 
+    if (action === 'undo') {
+      this.undoLastMove();
+      return;
+    }
+
     if (action === 'hint') {
       void this.showRewardedHint();
       return;
@@ -403,6 +420,7 @@ class ArrowAgainApp {
     this.errorPieceId = undefined;
     this.hintIds.clear();
     this.exitingPieceIds.clear();
+    this.history = [];
     this.rewardBusy = false;
     this.result = undefined;
     if (clearModal) {
@@ -479,8 +497,8 @@ class ArrowAgainApp {
 
     const trayGradient = ctx.createLinearGradient(0, 0, 0, height);
     trayGradient.addColorStop(0, '#fbfdff');
-    trayGradient.addColorStop(0.48, '#e9f3f8');
-    trayGradient.addColorStop(1, '#bfd2df');
+    trayGradient.addColorStop(0.46, '#edf7fb');
+    trayGradient.addColorStop(1, '#b4ccdc');
     ctx.fillStyle = trayGradient;
     this.roundRect(ctx, 0.5, 0.5, width - 1, height - 1, radius);
     ctx.fill();
@@ -490,8 +508,8 @@ class ArrowAgainApp {
     this.roundRect(ctx, 2.5, 2.5, width - 5, height - 5, radius - 2);
     ctx.stroke();
 
-    ctx.lineWidth = Math.max(7, inset * 0.6);
-    ctx.strokeStyle = 'rgba(82, 110, 130, 0.12)';
+    ctx.lineWidth = Math.max(8, inset * 0.68);
+    ctx.strokeStyle = 'rgba(70, 103, 128, 0.16)';
     this.roundRect(ctx, inset * 0.42, inset * 0.7, width - inset * 0.84, height - inset * 0.9, radius - 2);
     ctx.stroke();
 
@@ -511,8 +529,8 @@ class ArrowAgainApp {
 
     const fieldGradient = ctx.createLinearGradient(0, fieldY, 0, fieldY + fieldHeight);
     fieldGradient.addColorStop(0, 'rgba(252, 254, 255, 0.98)');
-    fieldGradient.addColorStop(0.52, 'rgba(234, 243, 249, 0.96)');
-    fieldGradient.addColorStop(1, 'rgba(219, 232, 240, 0.92)');
+    fieldGradient.addColorStop(0.52, 'rgba(230, 242, 249, 0.96)');
+    fieldGradient.addColorStop(1, 'rgba(207, 224, 235, 0.94)');
     ctx.fillStyle = fieldGradient;
     this.roundRect(ctx, fieldX, fieldY, fieldWidth, fieldHeight, innerRadius);
     ctx.fill();
@@ -520,7 +538,7 @@ class ArrowAgainApp {
     ctx.save();
     this.roundRect(ctx, fieldX + 1, fieldY + 1, fieldWidth - 2, fieldHeight - 2, innerRadius - 1);
     ctx.clip();
-    const socketSize = Math.min(metrics.cellWidth * 0.64, metrics.cellHeight * 0.43, 58);
+    const socketSize = Math.min(metrics.cellWidth * 0.5, metrics.cellHeight * 0.34, 48);
     const socketRadius = Math.max(10, socketSize * 0.24);
 
     for (let row = 0; row < this.currentLevel.rows; row += 1) {
@@ -528,16 +546,16 @@ class ArrowAgainApp {
         const x = metrics.centerX(col) - socketSize / 2;
         const y = metrics.centerY(row) - socketSize / 2;
         ctx.save();
-        ctx.shadowColor = 'rgba(61, 86, 105, 0.12)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 3;
-        ctx.fillStyle = 'rgba(226, 237, 245, 0.46)';
+        ctx.shadowColor = 'rgba(61, 86, 105, 0.08)';
+        ctx.shadowBlur = 7;
+        ctx.shadowOffsetY = 2;
+        ctx.fillStyle = 'rgba(230, 240, 247, 0.3)';
         this.roundRect(ctx, x, y, socketSize, socketSize, socketRadius);
         ctx.fill();
         ctx.restore();
 
         ctx.lineWidth = 1.2;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.66)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.46)';
         this.roundRect(ctx, x + 0.5, y + 0.5, socketSize - 1, socketSize - 1, socketRadius);
         ctx.stroke();
       }
@@ -571,11 +589,11 @@ class ArrowAgainApp {
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     defs.innerHTML = `
       <filter id="route-shadow" x="-24%" y="-24%" width="148%" height="148%">
-        <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#3b5366" flood-opacity="0.12" />
-        <feDropShadow dx="0" dy="-3" stdDeviation="2" flood-color="#ffffff" flood-opacity="0.86" />
+        <feDropShadow dx="0" dy="8" stdDeviation="4.5" flood-color="#2c4a60" flood-opacity="0.18" />
+        <feDropShadow dx="0" dy="-4" stdDeviation="2.4" flood-color="#ffffff" flood-opacity="0.92" />
       </filter>
       <filter id="route-glow" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feGaussianBlur stdDeviation="4.8" result="blur" />
         <feMerge>
           <feMergeNode in="blur" />
           <feMergeNode in="SourceGraphic" />
@@ -588,10 +606,11 @@ class ArrowAgainApp {
     const availableIds = new Set(getAvailablePieces(activePieces, this.currentLevel).map((piece) => piece.id));
     const ambientGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const railGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const highlightGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const coreGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const flowGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const gateGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    this.mazeSvg.append(ambientGroup, railGroup, coreGroup, flowGroup, gateGroup);
+    this.mazeSvg.append(ambientGroup, railGroup, highlightGroup, coreGroup, flowGroup, gateGroup);
     this.appendAmbientMaze(ambientGroup, metrics);
 
     for (const piece of activePieces) {
@@ -600,6 +619,7 @@ class ArrowAgainApp {
       const isAvailable = availableIds.has(piece.id);
 
       this.appendMazePath(railGroup, path, 'maze-rail', color, isAvailable);
+      this.appendMazePath(highlightGroup, path, 'maze-highlight', color, isAvailable);
       this.appendMazePath(coreGroup, path, 'maze-core', color, isAvailable);
 
       if (isAvailable || this.hintIds.has(piece.id)) {
@@ -1059,6 +1079,7 @@ class ArrowAgainApp {
     }
 
     this.hintIds.clear();
+    this.pushHistory();
     this.moves += 1;
 
     if (!isPathClear(piece, this.getActivePieces(), this.currentLevel)) {
@@ -1101,6 +1122,37 @@ class ArrowAgainApp {
     return this.pieces.filter((piece) => !this.exitingPieceIds.has(piece.id));
   }
 
+  private pushHistory(): void {
+    this.history.push({
+      pieces: this.pieces.map((piece) => ({ ...piece })),
+      lives: this.lives,
+      moves: this.moves
+    });
+
+    if (this.history.length > 9) {
+      this.history.shift();
+    }
+  }
+
+  private undoLastMove(): void {
+    if (this.rewardBusy || this.exitingPieceIds.size > 0 || this.screen !== 'playing') {
+      return;
+    }
+
+    const snapshot = this.history.pop();
+    if (!snapshot) {
+      return;
+    }
+
+    this.pieces = snapshot.pieces.map((piece) => ({ ...piece }));
+    this.lives = snapshot.lives;
+    this.moves = snapshot.moves;
+    this.message = '已撤销上一步。';
+    this.errorPieceId = undefined;
+    this.hintIds.clear();
+    this.render();
+  }
+
   private getAvailableActivePieces(): ArrowPiece[] {
     return getAvailablePieces(this.getActivePieces(), this.currentLevel);
   }
@@ -1138,6 +1190,17 @@ class ArrowAgainApp {
     const message = this.root.querySelector<HTMLElement>('[data-testid="board-message"]');
     if (message) {
       message.textContent = this.message || '从边缘可飞出的箭头开始清除。';
+    }
+
+    const undoButton = this.root.querySelector<HTMLButtonElement>('[data-testid="undo-button"]');
+    if (undoButton) {
+      undoButton.disabled = this.history.length === 0 || this.rewardBusy || this.exitingPieceIds.size > 0;
+    }
+
+    const undoCount = this.root.querySelector<HTMLElement>('[data-testid="undo-count"]');
+    if (undoCount) {
+      undoCount.hidden = this.history.length === 0;
+      undoCount.textContent = `${Math.min(this.history.length, 9)}`;
     }
 
     if (!this.currentLevel.tutorial || this.moves > 0) {
@@ -1197,6 +1260,7 @@ class ArrowAgainApp {
         if (linear < 1) {
           window.requestAnimationFrame(tick);
         } else {
+          this.createExitBurst(hostSvg, point, this.getRouteColor(piece));
           element.classList.remove('leaving');
           motionPath.remove();
           resolve();
@@ -1205,6 +1269,37 @@ class ArrowAgainApp {
 
       window.requestAnimationFrame(tick);
     });
+  }
+
+  private createExitBurst(hostSvg: SVGSVGElement, point: MotionPoint, color: string): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    group.setAttribute('class', 'exit-burst');
+    group.setAttribute('style', `--burst-color: ${color}`);
+    group.setAttribute('transform', `translate(${point.x}, ${point.y})`);
+
+    for (let index = 0; index < 10; index += 1) {
+      const angle = (Math.PI * 2 * index) / 10;
+      const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      spark.setAttribute('class', 'exit-spark');
+      spark.setAttribute('cx', '0');
+      spark.setAttribute('cy', '0');
+      spark.setAttribute('r', `${index % 3 === 0 ? 4.2 : 3}`);
+      spark.setAttribute('style', `--tx: ${Math.cos(angle) * 34}px; --ty: ${Math.sin(angle) * 34}px; --delay: ${index * 18}ms`);
+      group.append(spark);
+    }
+
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('class', 'exit-pop-ring');
+    ring.setAttribute('cx', '0');
+    ring.setAttribute('cy', '0');
+    ring.setAttribute('r', '8');
+    group.append(ring);
+    hostSvg.append(group);
+    window.setTimeout(() => group.remove(), 760);
   }
 
   private createMotionTimeline(path: SVGGeometryElement): MotionTimeline {
