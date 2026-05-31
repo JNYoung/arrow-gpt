@@ -1,9 +1,9 @@
 import './styles.css';
 import { GameAudio } from './audio';
 import { LEVELS } from './game/levels';
-import { DIRECTION_ANGLE, DIRECTION_DELTA, getAvailablePieces, isPathClear } from './game/rules';
+import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
 import type { ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
-import { createPlatformBridge, type PlatformBridge } from './platform/meta';
+import { createPlatformBridge, type PlatformBridge } from './platform';
 import { loadSave, saveGame } from './storage';
 
 type Screen = 'home' | 'levels' | 'playing' | 'result';
@@ -13,6 +13,28 @@ type ResultState = {
   stars: number;
   lives: number;
   moves: number;
+};
+
+type MotionKeyframe = {
+  distance: number;
+  time: number;
+};
+
+type MotionTimeline = {
+  duration: number;
+  keyframes: MotionKeyframe[];
+  totalLength: number;
+};
+
+type MotionPoint = {
+  x: number;
+  y: number;
+  angle: number;
+};
+
+type Point = {
+  x: number;
+  y: number;
 };
 
 const appRoot = document.querySelector<HTMLDivElement>('#app');
@@ -31,10 +53,12 @@ class ArrowAgainApp {
   private message = '';
   private errorPieceId?: string;
   private hintIds = new Set<string>();
-  private animating = false;
+  private exitingPieceIds = new Set<string>();
+  private rewardBusy = false;
   private result?: ResultState;
   private pendingHardLevel?: LevelData;
   private canvas?: HTMLCanvasElement;
+  private mazeSvg?: SVGSVGElement;
   private svg?: SVGSVGElement;
   private boardWrap?: HTMLDivElement;
   private resizeObserver?: ResizeObserver;
@@ -55,7 +79,7 @@ class ArrowAgainApp {
 
   private render(): void {
     this.resizeObserver?.disconnect();
-    this.root.innerHTML = `<main class="app-shell">${this.renderScreen()}</main>`;
+    this.root.innerHTML = `<main class="app-shell" data-testid="app-shell">${this.renderScreen()}</main>`;
     this.bindScreen();
   }
 
@@ -79,7 +103,7 @@ class ArrowAgainApp {
     const nextLevel = LEVELS[Math.min(this.save.unlockedLevel - 1, LEVELS.length - 1)];
     const soundLabel = this.save.soundEnabled ? 'Sound on' : 'Sound off';
     return `
-      <section class="screen home-screen">
+      <section class="screen home-screen" data-testid="home-screen">
         <header class="top-row">
           <div class="brand">
             <div class="brand-mark" aria-hidden="true">→</div>
@@ -97,24 +121,24 @@ class ArrowAgainApp {
             ${this.renderHeroCells()}
           </div>
           <div class="home-actions">
-            <button class="primary-button" type="button" data-action="start">开始第 ${nextLevel.id} 关</button>
-            <button class="secondary-button" type="button" data-action="levels">关卡选择</button>
-            <button class="secondary-button" type="button" disabled>每日挑战 · Coming soon</button>
+            <button class="primary-button" type="button" data-action="start" data-testid="start-button">开始第 ${nextLevel.id} 关</button>
+            <button class="secondary-button" type="button" data-action="levels" data-testid="levels-button">关卡选择</button>
+            <button class="secondary-button" type="button" disabled>每日挑战 · 设计中</button>
           </div>
         </div>
-        <p class="board-message">MVP 已包含 10 关、本地进度、生命值和三星评级。</p>
+        <p class="board-message">验证版已包含 ${LEVELS.length} 关、本地进度、生命值、提示和三星评级。</p>
       </section>
     `;
   }
 
   private renderHeroCells(): string {
     const arrows = ['→', '', '↑', '', '→', '', '↓', '', '←', '', '→', '', '↑', '', '←'];
-    return arrows.map((symbol) => `<div class="hero-cell${symbol ? ' hot' : ''}">${symbol || '&nbsp;'}</div>`).join('');
+    return arrows.map((symbol) => `<div class="hero-cell${symbol ? ' hot' : ''}"><span>${symbol || '&nbsp;'}</span></div>`).join('');
   }
 
   private renderLevels(): string {
     return `
-      <section class="screen level-screen">
+      <section class="screen level-screen" data-testid="level-screen">
         <header class="top-row">
           <button class="icon-button" type="button" data-action="home" aria-label="返回首页">‹</button>
           <div class="level-title">
@@ -137,7 +161,7 @@ class ArrowAgainApp {
     const stars = this.save.starsByLevel[String(level.id)] ?? 0;
     const difficultyLabel = this.getDifficultyLabel(level);
     return `
-      <button class="level-button" type="button" data-action="play-level" data-level="${level.id}" ${locked ? 'disabled' : ''}>
+      <button class="level-button" type="button" data-action="play-level" data-level="${level.id}" data-testid="level-${level.id}" ${locked ? 'disabled' : ''}>
         <span class="level-number">第 ${level.id} 关</span>
         <span class="level-name">${level.name}</span>
         <span class="level-meta">
@@ -148,33 +172,70 @@ class ArrowAgainApp {
     `;
   }
 
+  private getHintActionLabel(): string {
+    if (this.rewardBusy) {
+      return '广告中';
+    }
+
+    return this.platform.capabilities.rewardedAd ? '提示' : '提示暂不可用';
+  }
+
+  private getReviveActionLabel(): string {
+    if (this.rewardBusy) {
+      return '广告加载中';
+    }
+
+    return this.platform.capabilities.rewardedAd ? '看广告复活' : '复活暂不可用';
+  }
+
   private renderPlaying(): string {
-    const available = getAvailablePieces(this.pieces, this.currentLevel).length;
+    const available = this.getAvailableActivePieces().length;
     return `
-      <section class="screen game-screen">
-        <header class="top-row">
-          <button class="icon-button" type="button" data-action="levels" aria-label="返回关卡">‹</button>
-          <div class="level-title">
-            <h1>第 ${this.currentLevel.id} 关 · ${this.currentLevel.name}</h1>
-            <p>${this.currentLevel.subtitle}</p>
+      <section class="screen game-screen" data-testid="game-screen">
+        <header class="game-hud" aria-label="关卡状态">
+          <button class="nav-back" type="button" data-action="levels" aria-label="返回关卡">‹</button>
+          <div class="life-pill" data-testid="lives" aria-label="生命 ${this.lives}/${this.currentLevel.lives}">
+            <img src="/assets/hud-heart.png" alt="" aria-hidden="true" />
+            <strong>${this.lives}/${this.currentLevel.lives}</strong>
           </div>
-          <button class="icon-button" type="button" data-action="restart" aria-label="重开">↺</button>
+          <div class="level-stack">
+            <h1>第 ${this.currentLevel.id} 关</h1>
+            <div class="level-dots" aria-hidden="true">
+              <span class="active"></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="move-card" data-testid="moves">
+              <span>步数</span>
+              <strong>${this.moves}/${this.currentLevel.targetMoves}</strong>
+            </div>
+          </div>
+          <button class="restart-orb" type="button" data-action="restart" aria-label="重开">
+            <img src="/assets/action-restart.png" alt="" aria-hidden="true" />
+          </button>
+          <div class="available-pill" data-testid="available-count">
+            <span>可用</span>
+            <strong>${available}</strong>
+          </div>
         </header>
-        <div class="hud-row">
-          <span class="hud-stat"><span class="lives">${'♥'.repeat(this.lives)}${'♡'.repeat(Math.max(0, this.currentLevel.lives - this.lives))}</span></span>
-          <span class="hud-stat">步数 ${this.moves}/${this.currentLevel.targetMoves}</span>
-          <span class="hud-stat">可射 ${available}</span>
-        </div>
-        <div class="board-wrap" style="aspect-ratio: ${this.currentLevel.cols} / ${this.currentLevel.rows}">
+        <div class="board-wrap" data-testid="board">
           <canvas class="board-canvas" aria-hidden="true"></canvas>
+          <svg class="maze-layer" aria-hidden="true"></svg>
           <svg class="arrow-layer" role="group" aria-label="箭头棋盘"></svg>
-          ${this.currentLevel.tutorial && this.moves === 0 ? '<div class="tutorial-bubble">tap to move</div><div class="tutorial-hand" aria-hidden="true"></div>' : ''}
+          ${this.currentLevel.tutorial && this.moves === 0 ? '<div class="tutorial-bubble">点这里</div><div class="tutorial-hand" aria-hidden="true"></div>' : ''}
         </div>
-        <div>
-          <p class="board-message">${this.message || '从边缘可飞出的箭头开始清除。'}</p>
+        <div class="play-footer">
+          <p class="board-message" data-testid="board-message">${this.message || '从边缘可飞出的箭头开始清除。'}</p>
           <div class="game-actions">
-            <button class="secondary-button" type="button" data-action="hint">提示</button>
-            <button class="secondary-button" type="button" data-action="restart">重开</button>
+            <button class="action-button" type="button" data-action="hint" data-testid="hint-button" ${this.rewardBusy ? 'disabled' : ''}>
+              <span class="action-icon"><img src="/assets/action-hint.png" alt="" aria-hidden="true" /></span>
+              <span>${this.getHintActionLabel()}</span>
+              <span class="hint-badge">3</span>
+            </button>
+            <button class="action-button" type="button" data-action="restart" data-testid="restart-button">
+              <span class="action-icon"><img src="/assets/action-restart.png" alt="" aria-hidden="true" /></span>
+              <span>重开</span>
+            </button>
           </div>
         </div>
       </section>
@@ -184,7 +245,7 @@ class ArrowAgainApp {
 
   private renderHardModal(level: LevelData): string {
     return `
-      <div class="modal-scrim" role="dialog" aria-modal="true" aria-labelledby="hard-title">
+      <div class="modal-scrim" role="dialog" aria-modal="true" aria-labelledby="hard-title" data-testid="hard-modal">
         <div class="modal">
           <h2 id="hard-title">${level.difficulty === 'boss' ? 'Boss 关' : '困难关'}</h2>
           <p>${level.hardWarning}</p>
@@ -200,10 +261,10 @@ class ArrowAgainApp {
   private renderResult(result: ResultState): string {
     const next = LEVELS.find((level) => level.id === result.level.id + 1);
     const title = result.won ? '关卡完成！' : '再试一次？';
-    const comment = result.won ? this.getResultComment(result.lives) : `生命值已耗尽，还剩 ${this.pieces.length} 枚箭头。`;
+    const comment = result.won ? this.getResultComment(result.lives) : this.message || `生命值已耗尽，还剩 ${this.pieces.length} 枚箭头。`;
     return `
       <section class="screen result-screen">
-        <div class="result-panel">
+        <div class="result-panel" data-testid="result-screen">
           <div class="brand-mark" style="margin:0 auto 18px" aria-hidden="true">${result.won ? '→' : '↺'}</div>
           <h1>${title}</h1>
           <p>第 ${result.level.id} 关 · ${result.level.name}</p>
@@ -212,11 +273,13 @@ class ArrowAgainApp {
           <p class="result-stat-line">剩余生命：${'♥'.repeat(result.lives)}${'♡'.repeat(Math.max(0, result.level.lives - result.lives))} · 步数：${result.moves}</p>
           ${result.won && result.level.achievement ? `<p class="result-stat-line">成就解锁：${result.level.achievement}</p>` : ''}
           <div class="result-actions">
-            <button class="secondary-button" type="button" data-action="retry-result">再试一次</button>
+            <button class="secondary-button" type="button" data-action="retry-result" data-testid="retry-button">再试一次</button>
             ${
               result.won && next
-                ? '<button class="primary-button" type="button" data-action="next-level">下一关 →</button>'
-                : '<button class="primary-button" type="button" data-action="levels">关卡选择</button>'
+                ? '<button class="primary-button" type="button" data-action="next-level" data-testid="next-level-button">下一关 →</button>'
+                : result.won
+                  ? '<button class="primary-button" type="button" data-action="levels" data-testid="result-levels-button">关卡选择</button>'
+                  : `<button class="primary-button" type="button" data-action="revive-result" data-testid="revive-button" ${this.rewardBusy ? 'disabled' : ''}>${this.getReviveActionLabel()}</button>`
             }
           </div>
           <button class="secondary-button" style="width:100%; margin-top:10px" type="button" data-action="share">分享成绩</button>
@@ -235,6 +298,7 @@ class ArrowAgainApp {
 
     if (this.screen === 'playing') {
       this.canvas = this.root.querySelector<HTMLCanvasElement>('.board-canvas') ?? undefined;
+      this.mazeSvg = this.root.querySelector<SVGSVGElement>('.maze-layer') ?? undefined;
       this.svg = this.root.querySelector<SVGSVGElement>('.arrow-layer') ?? undefined;
       this.boardWrap = this.root.querySelector<HTMLDivElement>('.board-wrap') ?? undefined;
       this.resizeObserver = new ResizeObserver(() => this.paintPlayingBoard());
@@ -288,7 +352,12 @@ class ArrowAgainApp {
     }
 
     if (action === 'hint') {
-      this.showHint();
+      void this.showRewardedHint();
+      return;
+    }
+
+    if (action === 'revive-result') {
+      void this.reviveFromReward();
       return;
     }
 
@@ -333,7 +402,8 @@ class ArrowAgainApp {
     this.message = level.tutorial ? '点击高亮箭头，观察它飞出棋盘。' : '';
     this.errorPieceId = undefined;
     this.hintIds.clear();
-    this.animating = false;
+    this.exitingPieceIds.clear();
+    this.rewardBusy = false;
     this.result = undefined;
     if (clearModal) {
       this.pendingHardLevel = undefined;
@@ -344,6 +414,7 @@ class ArrowAgainApp {
 
   private paintPlayingBoard(): void {
     this.drawBoard();
+    this.drawMazeRoutes();
     this.drawArrows();
     this.positionTutorialHand();
   }
@@ -358,13 +429,21 @@ class ArrowAgainApp {
       return undefined;
     }
 
+    const cellBase = Math.min(rect.width / this.currentLevel.cols, rect.height / this.currentLevel.rows);
+    const horizontalInset = Math.max(34, Math.min(48, cellBase * 0.76, rect.width * 0.13));
+    const verticalInset = Math.max(30, Math.min(48, cellBase * 0.7, rect.height * 0.09));
+    const playableWidth = Math.max(1, rect.width - horizontalInset * 2);
+    const playableHeight = Math.max(1, rect.height - verticalInset * 2);
+    const cellWidth = playableWidth / this.currentLevel.cols;
+    const cellHeight = playableHeight / this.currentLevel.rows;
+
     return {
       width: rect.width,
       height: rect.height,
-      cellWidth: rect.width / this.currentLevel.cols,
-      cellHeight: rect.height / this.currentLevel.rows,
-      centerX: (col: number) => (col + 0.5) * (rect.width / this.currentLevel.cols),
-      centerY: (row: number) => (row + 0.5) * (rect.height / this.currentLevel.rows)
+      cellWidth,
+      cellHeight,
+      centerX: (col: number) => horizontalInset + (col + 0.5) * cellWidth,
+      centerY: (row: number) => verticalInset + (row + 0.5) * cellHeight
     };
   }
 
@@ -391,38 +470,167 @@ class ArrowAgainApp {
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, metrics.width, metrics.height);
-    ctx.fillStyle = '#f8fff9';
-    this.roundRect(ctx, 0, 0, metrics.width, metrics.height, 8);
+
+    const width = metrics.width;
+    const height = metrics.height;
+    const radius = Math.min(36, Math.max(24, width * 0.075));
+    const inset = Math.max(11, Math.min(width, height) * 0.036);
+    const innerRadius = Math.max(18, radius - inset * 0.48);
+
+    const trayGradient = ctx.createLinearGradient(0, 0, 0, height);
+    trayGradient.addColorStop(0, '#fbfdff');
+    trayGradient.addColorStop(0.48, '#e9f3f8');
+    trayGradient.addColorStop(1, '#bfd2df');
+    ctx.fillStyle = trayGradient;
+    this.roundRect(ctx, 0.5, 0.5, width - 1, height - 1, radius);
     ctx.fill();
 
-    const availableIds = new Set(getAvailablePieces(this.pieces, this.currentLevel).map((piece) => piece.id));
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    this.roundRect(ctx, 2.5, 2.5, width - 5, height - 5, radius - 2);
+    ctx.stroke();
+
+    ctx.lineWidth = Math.max(7, inset * 0.6);
+    ctx.strokeStyle = 'rgba(82, 110, 130, 0.12)';
+    this.roundRect(ctx, inset * 0.42, inset * 0.7, width - inset * 0.84, height - inset * 0.9, radius - 2);
+    ctx.stroke();
+
+    const fieldX = inset;
+    const fieldY = inset;
+    const fieldWidth = width - inset * 2;
+    const fieldHeight = height - inset * 2;
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(55, 78, 96, 0.16)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = 'rgba(199, 217, 229, 0.42)';
+    this.roundRect(ctx, fieldX, fieldY + 2, fieldWidth, fieldHeight - 1, innerRadius);
+    ctx.fill();
+    ctx.restore();
+
+    const fieldGradient = ctx.createLinearGradient(0, fieldY, 0, fieldY + fieldHeight);
+    fieldGradient.addColorStop(0, 'rgba(252, 254, 255, 0.98)');
+    fieldGradient.addColorStop(0.52, 'rgba(234, 243, 249, 0.96)');
+    fieldGradient.addColorStop(1, 'rgba(219, 232, 240, 0.92)');
+    ctx.fillStyle = fieldGradient;
+    this.roundRect(ctx, fieldX, fieldY, fieldWidth, fieldHeight, innerRadius);
+    ctx.fill();
+
+    ctx.save();
+    this.roundRect(ctx, fieldX + 1, fieldY + 1, fieldWidth - 2, fieldHeight - 2, innerRadius - 1);
+    ctx.clip();
+    const socketSize = Math.min(metrics.cellWidth * 0.64, metrics.cellHeight * 0.43, 58);
+    const socketRadius = Math.max(10, socketSize * 0.24);
+
     for (let row = 0; row < this.currentLevel.rows; row += 1) {
       for (let col = 0; col < this.currentLevel.cols; col += 1) {
-        const x = col * metrics.cellWidth;
-        const y = row * metrics.cellHeight;
-        const piece = this.pieces.find((candidate) => candidate.row === row && candidate.col === col);
-        ctx.fillStyle = piece && availableIds.has(piece.id) ? 'rgba(247, 201, 95, 0.16)' : 'rgba(18, 63, 70, 0.035)';
-        this.roundRect(ctx, x + 3, y + 3, metrics.cellWidth - 6, metrics.cellHeight - 6, 8);
+        const x = metrics.centerX(col) - socketSize / 2;
+        const y = metrics.centerY(row) - socketSize / 2;
+        ctx.save();
+        ctx.shadowColor = 'rgba(61, 86, 105, 0.12)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 3;
+        ctx.fillStyle = 'rgba(226, 237, 245, 0.46)';
+        this.roundRect(ctx, x, y, socketSize, socketSize, socketRadius);
         ctx.fill();
+        ctx.restore();
+
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.66)';
+        this.roundRect(ctx, x + 0.5, y + 0.5, socketSize - 1, socketSize - 1, socketRadius);
+        ctx.stroke();
       }
     }
+    ctx.restore();
 
-    ctx.strokeStyle = 'rgba(18, 63, 70, 0.08)';
-    ctx.lineWidth = 1;
-    for (let col = 1; col < this.currentLevel.cols; col += 1) {
-      const x = col * metrics.cellWidth;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, metrics.height);
-      ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.88)';
+    this.roundRect(ctx, fieldX + 1, fieldY + 1, fieldWidth - 2, fieldHeight - 2, innerRadius - 1);
+    ctx.stroke();
+
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(74, 102, 123, 0.1)';
+    this.roundRect(ctx, fieldX, fieldY, fieldWidth, fieldHeight, innerRadius);
+    ctx.stroke();
+  }
+
+  private drawMazeRoutes(): void {
+    if (!this.mazeSvg) {
+      return;
     }
-    for (let row = 1; row < this.currentLevel.rows; row += 1) {
-      const y = row * metrics.cellHeight;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(metrics.width, y);
-      ctx.stroke();
+
+    const metrics = this.getMetrics();
+    if (!metrics) {
+      return;
     }
+
+    this.mazeSvg.setAttribute('viewBox', `0 0 ${metrics.width} ${metrics.height}`);
+    this.mazeSvg.innerHTML = '';
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML = `
+      <filter id="route-shadow" x="-24%" y="-24%" width="148%" height="148%">
+        <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#3b5366" flood-opacity="0.12" />
+        <feDropShadow dx="0" dy="-3" stdDeviation="2" flood-color="#ffffff" flood-opacity="0.86" />
+      </filter>
+      <filter id="route-glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    `;
+    this.mazeSvg.append(defs);
+
+    const activePieces = this.getActivePieces();
+    const availableIds = new Set(getAvailablePieces(activePieces, this.currentLevel).map((piece) => piece.id));
+    const ambientGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const railGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const coreGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const flowGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const gateGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    this.mazeSvg.append(ambientGroup, railGroup, coreGroup, flowGroup, gateGroup);
+    this.appendAmbientMaze(ambientGroup, metrics);
+
+    for (const piece of activePieces) {
+      const path = this.createMazePath(piece, metrics);
+      const color = this.getRouteColor(piece);
+      const isAvailable = availableIds.has(piece.id);
+
+      this.appendMazePath(railGroup, path, 'maze-rail', color, isAvailable);
+      this.appendMazePath(coreGroup, path, 'maze-core', color, isAvailable);
+
+      if (isAvailable || this.hintIds.has(piece.id)) {
+        this.appendMazePath(flowGroup, path, 'maze-flow', color, true);
+      }
+
+      if (isAvailable) {
+        this.appendExitGate(gateGroup, piece, metrics, color);
+      }
+    }
+  }
+
+  private appendAmbientMaze(group: SVGGElement, metrics: BoardMetrics): void {
+    const w = metrics.width;
+    const h = metrics.height;
+    const paths = [
+      `M ${w * 0.08} ${h * 0.16} L ${w * 0.36} ${h * 0.16} Q ${w * 0.44} ${h * 0.16} ${w * 0.44} ${h * 0.25} L ${w * 0.44} ${h * 0.44} Q ${w * 0.44} ${h * 0.52} ${w * 0.52} ${h * 0.52} L ${w * 0.84} ${h * 0.52}`,
+      `M ${w * 0.16} ${h * 0.30} L ${w * 0.30} ${h * 0.30} Q ${w * 0.38} ${h * 0.30} ${w * 0.38} ${h * 0.38} L ${w * 0.38} ${h * 0.70} Q ${w * 0.38} ${h * 0.78} ${w * 0.30} ${h * 0.78} L ${w * 0.12} ${h * 0.78}`,
+      `M ${w * 0.68} ${h * 0.14} L ${w * 0.82} ${h * 0.14} Q ${w * 0.92} ${h * 0.14} ${w * 0.92} ${h * 0.24} L ${w * 0.92} ${h * 0.72} Q ${w * 0.92} ${h * 0.84} ${w * 0.80} ${h * 0.84} L ${w * 0.58} ${h * 0.84}`,
+      `M ${w * 0.10} ${h * 0.48} L ${w * 0.28} ${h * 0.48} Q ${w * 0.36} ${h * 0.48} ${w * 0.36} ${h * 0.56} L ${w * 0.36} ${h * 0.60} Q ${w * 0.36} ${h * 0.68} ${w * 0.44} ${h * 0.68} L ${w * 0.66} ${h * 0.68}`,
+      `M ${w * 0.18} ${h * 0.92} L ${w * 0.18} ${h * 0.68} Q ${w * 0.18} ${h * 0.58} ${w * 0.28} ${h * 0.58} L ${w * 0.52} ${h * 0.58} Q ${w * 0.62} ${h * 0.58} ${w * 0.62} ${h * 0.48} L ${w * 0.62} ${h * 0.24}`,
+      `M ${w * 0.74} ${h * 0.92} L ${w * 0.74} ${h * 0.62} Q ${w * 0.74} ${h * 0.54} ${w * 0.66} ${h * 0.54} L ${w * 0.54} ${h * 0.54} Q ${w * 0.46} ${h * 0.54} ${w * 0.46} ${h * 0.62} L ${w * 0.46} ${h * 0.92}`
+    ];
+
+    paths.forEach((path, index) => {
+      const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      route.setAttribute('class', 'maze-ambient');
+      route.setAttribute('d', path);
+      route.setAttribute('style', `--ambient-delay: ${index * 120}ms`);
+      group.append(route);
+    });
   }
 
   private drawArrows(): void {
@@ -437,16 +645,17 @@ class ArrowAgainApp {
 
     this.svg.setAttribute('viewBox', `0 0 ${metrics.width} ${metrics.height}`);
     this.svg.innerHTML = '';
-    const availableIds = new Set(getAvailablePieces(this.pieces, this.currentLevel).map((piece) => piece.id));
-    const tutorialTarget = this.currentLevel.tutorial && this.moves === 0 ? getAvailablePieces(this.pieces, this.currentLevel)[0]?.id : undefined;
+    const activePieces = this.getActivePieces();
+    const availableIds = new Set(getAvailablePieces(activePieces, this.currentLevel).map((piece) => piece.id));
+    const tutorialTarget = this.currentLevel.tutorial && this.moves === 0 ? getAvailablePieces(activePieces, this.currentLevel)[0]?.id : undefined;
 
-    for (const piece of this.pieces) {
+    for (const piece of activePieces) {
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const size = Math.min(metrics.cellWidth, metrics.cellHeight) * 0.66;
-      const radius = size * 0.44;
+      const size = Math.min(metrics.cellWidth * 0.98, metrics.cellHeight * 0.68);
+      const radius = Math.max(11, size * 0.2);
       const x = metrics.centerX(piece.col);
       const y = metrics.centerY(piece.row);
-      const classes = ['arrow-piece'];
+      const classes = ['arrow-piece', `dir-${piece.dir}`];
       if (availableIds.has(piece.id)) {
         classes.push('available');
       }
@@ -462,26 +671,44 @@ class ArrowAgainApp {
 
       group.setAttribute('class', classes.join(' '));
       group.setAttribute('data-piece', piece.id);
+      group.setAttribute('data-testid', `piece-${piece.id}`);
+      group.setAttribute('data-row', String(piece.row));
+      group.setAttribute('data-col', String(piece.col));
+      group.setAttribute('data-dir', piece.dir);
       group.setAttribute('role', 'button');
       group.setAttribute('tabindex', '0');
       group.setAttribute('aria-label', `第 ${piece.row + 1} 行第 ${piece.col + 1} 列，方向 ${piece.dir}`);
-      group.setAttribute('transform', `translate(${x}, ${y}) rotate(${DIRECTION_ANGLE[piece.dir]})`);
+      group.setAttribute('transform', `translate(${x}, ${y})`);
 
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', '0');
-      circle.setAttribute('cy', '0');
-      circle.setAttribute('r', `${radius}`);
+      const ring = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      ring.setAttribute('class', 'piece-ring');
+      ring.setAttribute('x', `${-size / 2 - 2}`);
+      ring.setAttribute('y', `${-size / 2 - 2}`);
+      ring.setAttribute('width', `${size + 4}`);
+      ring.setAttribute('height', `${size + 4}`);
+      ring.setAttribute('rx', `${radius}`);
 
-      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      const shaft = size * 0.2;
-      const tail = size * 0.37;
-      const head = size * 0.43;
-      arrow.setAttribute(
-        'd',
-        `M ${-tail} ${-shaft} L ${head * 0.12} ${-shaft} L ${head * 0.12} ${-size * 0.34} L ${head} 0 L ${head * 0.12} ${size * 0.34} L ${head * 0.12} ${shaft} L ${-tail} ${shaft} Z`
-      );
+      const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      hitbox.setAttribute('class', 'piece-hitbox');
+      hitbox.setAttribute('x', `${-size / 2 - 4}`);
+      hitbox.setAttribute('y', `${-size / 2 - 4}`);
+      hitbox.setAttribute('width', `${size + 8}`);
+      hitbox.setAttribute('height', `${size + 8}`);
+      hitbox.setAttribute('rx', `${radius}`);
 
-      group.append(circle, arrow);
+      const tileImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      tileImage.setAttribute('class', 'piece-image');
+      tileImage.setAttribute('href', this.getPieceAsset(piece.dir));
+      tileImage.setAttribute('x', `${-size / 2}`);
+      tileImage.setAttribute('y', `${-size / 2}`);
+      tileImage.setAttribute('width', `${size}`);
+      tileImage.setAttribute('height', `${size}`);
+      tileImage.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+      const body = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      body.setAttribute('class', 'piece-body');
+      body.append(hitbox, ring, tileImage);
+      group.append(body);
       group.addEventListener('click', () => this.tryShoot(piece.id, group, metrics));
       group.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -493,14 +720,315 @@ class ArrowAgainApp {
     }
   }
 
+  private appendMazePath(group: SVGGElement, path: string, className: string, color: string, isAvailable: boolean): void {
+    const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    route.setAttribute('class', `${className}${isAvailable ? ' available' : ''}`);
+    route.setAttribute('d', path);
+    route.setAttribute('style', `--route-color: ${color}`);
+    group.append(route);
+  }
+
+  private getPieceAsset(direction: ArrowPiece['dir']): string {
+    return `/assets/arrow-${direction}.png`;
+  }
+
+  private appendExitGate(group: SVGGElement, piece: ArrowPiece, metrics: BoardMetrics, color: string): void {
+    const gate = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const size = Math.min(metrics.cellWidth, metrics.cellHeight);
+    const gateWidth = size * 0.66;
+    const gateHeight = size * 0.24;
+    const post = gateHeight * 0.74;
+    const badgeOffset = size * 0.12;
+    const badgeRadius = size * 0.16;
+    const x = metrics.centerX(piece.col);
+    const y = metrics.centerY(piece.row);
+    let plateX = x - gateWidth / 2;
+    let plateY = y - gateHeight / 2;
+    let badgeX = x;
+    let badgeY = y;
+    let rotation = 0;
+    let symbol = '→';
+
+    if (piece.dir === 'up') {
+      plateY = 2;
+      badgeY = -badgeOffset;
+      symbol = '↑';
+    } else if (piece.dir === 'down') {
+      plateY = metrics.height - gateHeight - 2;
+      badgeY = metrics.height + badgeOffset;
+      symbol = '↓';
+    } else if (piece.dir === 'left') {
+      plateX = 2;
+      plateY = y - gateWidth / 2;
+      badgeX = -badgeOffset;
+      rotation = 90;
+      symbol = '←';
+    } else {
+      plateX = metrics.width - gateHeight - 2;
+      plateY = y - gateWidth / 2;
+      badgeX = metrics.width + badgeOffset;
+      rotation = 90;
+      symbol = '→';
+    }
+
+    gate.setAttribute('class', 'exit-gate');
+    gate.setAttribute('style', `--route-color: ${color}`);
+    gate.setAttribute('aria-hidden', 'true');
+
+    const plate = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    plate.setAttribute('class', 'exit-gate-plate');
+    plate.setAttribute('x', `${plateX}`);
+    plate.setAttribute('y', `${plateY}`);
+    plate.setAttribute('width', `${rotation === 0 ? gateWidth : gateHeight}`);
+    plate.setAttribute('height', `${rotation === 0 ? gateHeight : gateWidth}`);
+    plate.setAttribute('rx', `${gateHeight / 2}`);
+
+    const lip = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    lip.setAttribute('class', 'exit-gate-lip');
+    lip.setAttribute('x', `${plateX + (rotation === 0 ? gateWidth * 0.12 : gateHeight * 0.2)}`);
+    lip.setAttribute('y', `${plateY + (rotation === 0 ? gateHeight * 0.18 : gateWidth * 0.12)}`);
+    lip.setAttribute('width', `${rotation === 0 ? gateWidth * 0.76 : gateHeight * 0.6}`);
+    lip.setAttribute('height', `${rotation === 0 ? gateHeight * 0.22 : gateWidth * 0.76}`);
+    lip.setAttribute('rx', `${gateHeight * 0.14}`);
+
+    const firstPost = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const secondPost = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    firstPost.setAttribute('class', 'exit-gate-post');
+    secondPost.setAttribute('class', 'exit-gate-post');
+    if (rotation === 0) {
+      firstPost.setAttribute('x', `${plateX - post * 0.45}`);
+      firstPost.setAttribute('y', `${plateY - gateHeight * 0.34}`);
+      firstPost.setAttribute('width', `${post}`);
+      firstPost.setAttribute('height', `${gateHeight * 1.68}`);
+      secondPost.setAttribute('x', `${plateX + gateWidth - post * 0.55}`);
+      secondPost.setAttribute('y', `${plateY - gateHeight * 0.34}`);
+      secondPost.setAttribute('width', `${post}`);
+      secondPost.setAttribute('height', `${gateHeight * 1.68}`);
+    } else {
+      firstPost.setAttribute('x', `${plateX - gateHeight * 0.34}`);
+      firstPost.setAttribute('y', `${plateY - post * 0.45}`);
+      firstPost.setAttribute('width', `${gateHeight * 1.68}`);
+      firstPost.setAttribute('height', `${post}`);
+      secondPost.setAttribute('x', `${plateX - gateHeight * 0.34}`);
+      secondPost.setAttribute('y', `${plateY + gateWidth - post * 0.55}`);
+      secondPost.setAttribute('width', `${gateHeight * 1.68}`);
+      secondPost.setAttribute('height', `${post}`);
+    }
+    firstPost.setAttribute('rx', `${post * 0.22}`);
+    secondPost.setAttribute('rx', `${post * 0.22}`);
+
+    const badge = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    badge.setAttribute('class', 'exit-arrow-badge');
+    badge.setAttribute('cx', `${badgeX}`);
+    badge.setAttribute('cy', `${badgeY}`);
+    badge.setAttribute('r', `${badgeRadius}`);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('class', 'exit-arrow-symbol');
+    label.setAttribute('x', `${badgeX}`);
+    label.setAttribute('y', `${badgeY}`);
+    label.textContent = symbol;
+
+    gate.append(firstPost, secondPost, plate, lip, badge, label);
+    group.append(gate);
+  }
+
+  private createMazePath(piece: ArrowPiece, metrics: BoardMetrics): string {
+    const x = metrics.centerX(piece.col);
+    const y = metrics.centerY(piece.row);
+    const cell = Math.min(metrics.cellWidth, metrics.cellHeight);
+    const rawLane = this.getLaneOffset(piece);
+    const lane = rawLane === 0 ? ((piece.row + piece.col + this.currentLevel.id) % 2 === 0 ? -0.75 : 0.75) : rawLane;
+    const lateral = lane * cell * 0.28;
+    const outerPad = cell * 0.22;
+    const innerPad = outerPad * 2.2;
+    const minTurnSpace = cell * 1.45;
+    const minLaneShift = cell * 0.32;
+    const radius = cell * 0.42;
+
+    if (piece.dir === 'up') {
+      const laneX = this.clamp(x + lateral, innerPad, metrics.width - innerPad);
+      const edgeY = outerPad * 1.16;
+      const forwardSpace = y - edgeY;
+      if (forwardSpace < minTurnSpace || Math.abs(laneX - x) < minLaneShift) {
+        return this.roundedPolylinePath(
+          [
+            { x, y },
+            { x, y: -outerPad }
+          ],
+          radius
+        );
+      }
+
+      const lead = this.clamp(forwardSpace * 0.3, cell * 0.7, cell * 1.05);
+      const exitApproachY = this.clamp(edgeY + lead, edgeY + cell * 0.34, y - lead);
+      return this.roundedPolylinePath(
+        [
+          { x, y },
+          { x, y: y - lead },
+          { x: laneX, y: y - lead },
+          { x: laneX, y: exitApproachY },
+          { x, y: exitApproachY },
+          { x, y: -outerPad }
+        ],
+        radius
+      );
+    }
+
+    if (piece.dir === 'down') {
+      const laneX = this.clamp(x + lateral, innerPad, metrics.width - innerPad);
+      const edgeY = metrics.height - outerPad * 1.16;
+      const forwardSpace = edgeY - y;
+      if (forwardSpace < minTurnSpace || Math.abs(laneX - x) < minLaneShift) {
+        return this.roundedPolylinePath(
+          [
+            { x, y },
+            { x, y: metrics.height + outerPad }
+          ],
+          radius
+        );
+      }
+
+      const lead = this.clamp(forwardSpace * 0.3, cell * 0.7, cell * 1.05);
+      const exitApproachY = this.clamp(edgeY - lead, y + lead, edgeY - cell * 0.34);
+      return this.roundedPolylinePath(
+        [
+          { x, y },
+          { x, y: y + lead },
+          { x: laneX, y: y + lead },
+          { x: laneX, y: exitApproachY },
+          { x, y: exitApproachY },
+          { x, y: metrics.height + outerPad }
+        ],
+        radius
+      );
+    }
+
+    if (piece.dir === 'left') {
+      const laneY = this.clamp(y + lateral, innerPad, metrics.height - innerPad);
+      const edgeX = outerPad * 1.16;
+      const forwardSpace = x - edgeX;
+      if (forwardSpace < minTurnSpace || Math.abs(laneY - y) < minLaneShift) {
+        return this.roundedPolylinePath(
+          [
+            { x, y },
+            { x: -outerPad, y }
+          ],
+          radius
+        );
+      }
+
+      const lead = this.clamp(forwardSpace * 0.3, cell * 0.7, cell * 1.05);
+      const exitApproachX = this.clamp(edgeX + lead, edgeX + cell * 0.34, x - lead);
+      return this.roundedPolylinePath(
+        [
+          { x, y },
+          { x: x - lead, y },
+          { x: x - lead, y: laneY },
+          { x: exitApproachX, y: laneY },
+          { x: exitApproachX, y },
+          { x: -outerPad, y }
+        ],
+        radius
+      );
+    }
+
+    const laneY = this.clamp(y + lateral, innerPad, metrics.height - innerPad);
+    const edgeX = metrics.width - outerPad * 1.16;
+    const forwardSpace = edgeX - x;
+    if (forwardSpace < minTurnSpace || Math.abs(laneY - y) < minLaneShift) {
+      return this.roundedPolylinePath(
+        [
+          { x, y },
+          { x: metrics.width + outerPad, y }
+        ],
+        radius
+      );
+    }
+
+    const lead = this.clamp(forwardSpace * 0.3, cell * 0.7, cell * 1.05);
+    const exitApproachX = this.clamp(edgeX - lead, x + lead, edgeX - cell * 0.34);
+    return this.roundedPolylinePath(
+      [
+        { x, y },
+        { x: x + lead, y },
+        { x: x + lead, y: laneY },
+        { x: exitApproachX, y: laneY },
+        { x: exitApproachX, y },
+        { x: metrics.width + outerPad, y }
+      ],
+      radius
+    );
+  }
+
+  private roundedPolylinePath(points: Point[], radius: number): string {
+    const filtered = points.filter((point, index) => {
+      const previous = points[index - 1];
+      return !previous || Math.hypot(point.x - previous.x, point.y - previous.y) > 0.5;
+    });
+
+    if (filtered.length === 0) {
+      return '';
+    }
+
+    if (filtered.length === 1) {
+      return `M ${filtered[0].x} ${filtered[0].y}`;
+    }
+
+    const commands = [`M ${filtered[0].x} ${filtered[0].y}`];
+    for (let index = 1; index < filtered.length - 1; index += 1) {
+      const previous = filtered[index - 1];
+      const current = filtered[index];
+      const next = filtered[index + 1];
+      const previousLength = Math.hypot(current.x - previous.x, current.y - previous.y);
+      const nextLength = Math.hypot(next.x - current.x, next.y - current.y);
+      const cornerRadius = Math.min(radius, previousLength * 0.42, nextLength * 0.42);
+
+      if (cornerRadius < 1) {
+        commands.push(`L ${current.x} ${current.y}`);
+        continue;
+      }
+
+      const entry = {
+        x: current.x - ((current.x - previous.x) / previousLength) * cornerRadius,
+        y: current.y - ((current.y - previous.y) / previousLength) * cornerRadius
+      };
+      const exit = {
+        x: current.x + ((next.x - current.x) / nextLength) * cornerRadius,
+        y: current.y + ((next.y - current.y) / nextLength) * cornerRadius
+      };
+      commands.push(`L ${entry.x} ${entry.y}`);
+      commands.push(`Q ${current.x} ${current.y} ${exit.x} ${exit.y}`);
+    }
+
+    const last = filtered[filtered.length - 1];
+    commands.push(`L ${last.x} ${last.y}`);
+    return commands.join(' ');
+  }
+
+  private getLaneOffset(piece: ArrowPiece): number {
+    return ((piece.row * 3 + piece.col * 5 + this.currentLevel.id) % 5) - 2;
+  }
+
+  private getRouteColor(piece: ArrowPiece): string {
+    const colors: Record<ArrowPiece['dir'], string> = {
+      up: '#2d9cdb',
+      right: '#27ae60',
+      down: '#f2c94c',
+      left: '#eb5757'
+    };
+    return colors[piece.dir];
+  }
+
   private positionTutorialHand(): void {
     const hand = this.root.querySelector<HTMLDivElement>('.tutorial-hand');
+    const bubble = this.root.querySelector<HTMLDivElement>('.tutorial-bubble');
     const metrics = this.getMetrics();
     if (!hand || !metrics || !this.boardWrap) {
       return;
     }
 
-    const target = getAvailablePieces(this.pieces, this.currentLevel)[0];
+    const target = this.getAvailableActivePieces()[0];
     if (!target) {
       hand.remove();
       return;
@@ -508,10 +1036,20 @@ class ArrowAgainApp {
 
     hand.style.left = `${metrics.centerX(target.col)}px`;
     hand.style.top = `${metrics.centerY(target.row)}px`;
+
+    if (bubble) {
+      const bubbleX = this.clamp(metrics.centerX(target.col), metrics.cellWidth * 0.8, metrics.width - metrics.cellWidth * 0.8);
+      const targetY = metrics.centerY(target.row);
+      const placeBelow = targetY < metrics.cellHeight * 1.25;
+      const bubbleY = placeBelow ? targetY + metrics.cellHeight * 0.42 : targetY - metrics.cellHeight * 0.58;
+      bubble.style.left = `${bubbleX}px`;
+      bubble.style.top = `${this.clamp(bubbleY, 12, metrics.height - 44)}px`;
+      bubble.style.transform = placeBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)';
+    }
   }
 
   private tryShoot(pieceId: string, element: SVGGElement, metrics: BoardMetrics): void {
-    if (this.animating || this.pendingHardLevel) {
+    if (this.pendingHardLevel || this.rewardBusy || this.exitingPieceIds.has(pieceId)) {
       return;
     }
 
@@ -523,64 +1061,144 @@ class ArrowAgainApp {
     this.hintIds.clear();
     this.moves += 1;
 
-    if (!isPathClear(piece, this.pieces, this.currentLevel)) {
+    if (!isPathClear(piece, this.getActivePieces(), this.currentLevel)) {
       this.lives -= 1;
       this.errorPieceId = piece.id;
       this.message = '这枚箭头前方被挡住了。';
       this.audio.play('blocked');
       this.platform.haptic([30, 40, 30]);
+      this.refreshPlayingUi();
       if (this.lives <= 0) {
         window.setTimeout(() => this.finishLevel(false), 260);
       } else {
         window.setTimeout(() => {
           this.errorPieceId = undefined;
-          this.render();
+          this.refreshPlayingUi();
         }, 260);
-        this.render();
       }
       return;
     }
 
-    this.animating = true;
+    this.exitingPieceIds.add(piece.id);
     this.message = '漂亮，箭头飞出去了。';
     this.audio.play('move');
     this.platform.haptic(18);
+    this.refreshPlayingUi();
     void this.animateExit(piece, element, metrics).then(() => {
       this.pieces = this.pieces.filter((candidate) => candidate.id !== piece.id);
-      this.animating = false;
+      this.exitingPieceIds.delete(piece.id);
+      element.remove();
       this.errorPieceId = undefined;
-      if (this.pieces.length === 0) {
+      if (this.pieces.length === 0 && this.exitingPieceIds.size === 0) {
         this.finishLevel(true);
       } else {
-        this.render();
+        this.refreshPlayingUi();
       }
     });
   }
 
+  private getActivePieces(): ArrowPiece[] {
+    return this.pieces.filter((piece) => !this.exitingPieceIds.has(piece.id));
+  }
+
+  private getAvailableActivePieces(): ArrowPiece[] {
+    return getAvailablePieces(this.getActivePieces(), this.currentLevel);
+  }
+
+  private refreshPlayingUi(): void {
+    if (this.screen !== 'playing') {
+      return;
+    }
+
+    const lives = this.root.querySelector<HTMLElement>('[data-testid="lives"]');
+    if (lives) {
+      lives.setAttribute('aria-label', `生命 ${this.lives}/${this.currentLevel.lives}`);
+      const count = lives.querySelector('strong');
+      if (count) {
+        count.textContent = `${this.lives}/${this.currentLevel.lives}`;
+      }
+    }
+
+    const moves = this.root.querySelector<HTMLElement>('[data-testid="moves"]');
+    if (moves) {
+      const value = moves.querySelector('strong');
+      if (value) {
+        value.textContent = `${this.moves}/${this.currentLevel.targetMoves}`;
+      }
+    }
+
+    const availableCount = this.root.querySelector<HTMLElement>('[data-testid="available-count"]');
+    if (availableCount) {
+      const value = availableCount.querySelector('strong');
+      if (value) {
+        value.textContent = `${this.getAvailableActivePieces().length}`;
+      }
+    }
+
+    const message = this.root.querySelector<HTMLElement>('[data-testid="board-message"]');
+    if (message) {
+      message.textContent = this.message || '从边缘可飞出的箭头开始清除。';
+    }
+
+    if (!this.currentLevel.tutorial || this.moves > 0) {
+      this.root.querySelector('.tutorial-bubble')?.remove();
+      this.root.querySelector('.tutorial-hand')?.remove();
+    }
+
+    this.drawMazeRoutes();
+    this.refreshArrowStates();
+    this.positionTutorialHand();
+  }
+
+  private refreshArrowStates(): void {
+    const availableIds = new Set(this.getAvailableActivePieces().map((piece) => piece.id));
+    const tutorialTarget = this.currentLevel.tutorial && this.moves === 0 ? this.getAvailableActivePieces()[0]?.id : undefined;
+
+    this.root.querySelectorAll<SVGGElement>('.arrow-piece').forEach((element) => {
+      const pieceId = element.dataset.piece;
+      const isExiting = pieceId ? this.exitingPieceIds.has(pieceId) : false;
+      element.classList.toggle('available', Boolean(pieceId && availableIds.has(pieceId) && !isExiting));
+      element.classList.toggle('error', pieceId === this.errorPieceId);
+      element.classList.toggle('tutorial-target', Boolean(pieceId && pieceId === tutorialTarget && !isExiting));
+      element.classList.toggle('hinted', Boolean(pieceId && this.hintIds.has(pieceId) && !isExiting));
+    });
+  }
+
   private async animateExit(piece: ArrowPiece, element: SVGGElement, metrics: BoardMetrics): Promise<void> {
-    const startX = metrics.centerX(piece.col);
-    const startY = metrics.centerY(piece.row);
-    const delta = DIRECTION_DELTA[piece.dir];
-    const exitX = delta.col < 0 ? -metrics.cellWidth : delta.col > 0 ? metrics.width + metrics.cellWidth : startX;
-    const exitY = delta.row < 0 ? -metrics.cellHeight : delta.row > 0 ? metrics.height + metrics.cellHeight : startY;
-    const angle = DIRECTION_ANGLE[piece.dir];
-    const duration = 360;
+    const hostSvg = element.ownerSVGElement;
+    if (!hostSvg) {
+      return;
+    }
+
+    const motionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    motionPath.setAttribute('d', this.createMazePath(piece, metrics));
+    motionPath.setAttribute('class', 'motion-probe');
+    hostSvg.append(motionPath);
+
+    const timeline = this.createMotionTimeline(motionPath);
+    const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 90 : timeline.duration;
     const startedAt = performance.now();
+    element.classList.add('leaving');
     element.style.pointerEvents = 'none';
 
     await new Promise<void>((resolve) => {
       const tick = (now: number) => {
         const linear = Math.min(1, (now - startedAt) / duration);
-        const eased = 1 - Math.pow(1 - linear, 3);
-        const x = startX + (exitX - startX) * eased;
-        const y = startY + (exitY - startY) * eased;
-        const scale = 1 - 0.12 * eased;
-        element.setAttribute('transform', `translate(${x}, ${y}) rotate(${angle}) scale(${scale})`);
-        element.style.opacity = `${1 - 0.8 * eased}`;
+        const motionTime = this.easeInOutCubic(linear);
+        const distance = this.getMotionDistance(timeline, motionTime);
+        const point = this.getMotionPoint(motionPath, distance, timeline.totalLength);
+        const exitFade = this.smoothstep(0.86, 1, linear);
+        const lift = Math.sin(linear * Math.PI) * 0.025;
+        const scale = 1 + lift - 0.06 * exitFade;
+        const relativeAngle = point.angle - DIRECTION_ANGLE[piece.dir];
+        element.setAttribute('transform', `translate(${point.x}, ${point.y}) rotate(${relativeAngle}) scale(${scale})`);
+        element.style.opacity = `${1 - 0.58 * exitFade}`;
 
         if (linear < 1) {
           window.requestAnimationFrame(tick);
         } else {
+          element.classList.remove('leaving');
+          motionPath.remove();
           resolve();
         }
       };
@@ -589,10 +1207,161 @@ class ArrowAgainApp {
     });
   }
 
+  private createMotionTimeline(path: SVGGeometryElement): MotionTimeline {
+    const totalLength = Math.max(1, path.getTotalLength());
+    const steps = Math.min(150, Math.max(72, Math.ceil(totalLength / 4)));
+    const keyframes: MotionKeyframe[] = [];
+    const speeds: number[] = [];
+    const costs: number[] = [0];
+    let totalCost = 0;
+    let turnPressure = 0;
+
+    for (let index = 0; index <= steps; index += 1) {
+      const distance = (totalLength * index) / steps;
+      const before = this.getTangentAngle(path, Math.max(0, distance - totalLength * 0.028), totalLength);
+      const after = this.getTangentAngle(path, Math.min(totalLength, distance + totalLength * 0.028), totalLength);
+      const turn = Math.min(1, Math.abs(this.shortestAngleDelta(before, after)) / 72);
+      const edgeWeight = index < 3 || index > steps - 3 ? 0.86 : 1;
+      const speed = Math.max(0.5, (1 - turn * 0.44) * edgeWeight);
+      keyframes.push({ distance, time: 0 });
+      speeds.push(speed);
+      turnPressure += turn;
+    }
+
+    for (let index = 1; index <= steps; index += 1) {
+      const segmentLength = keyframes[index].distance - keyframes[index - 1].distance;
+      const speed = (speeds[index] + speeds[index - 1]) / 2;
+      totalCost += segmentLength / speed;
+      costs[index] = totalCost;
+    }
+
+    for (let index = 1; index <= steps; index += 1) {
+      keyframes[index].time = costs[index] / totalCost;
+    }
+
+    const averageTurn = turnPressure / keyframes.length;
+    const duration = Math.round(this.clamp(430 + totalLength * 0.28 + averageTurn * 220, 560, 760));
+    return { duration, keyframes, totalLength };
+  }
+
+  private getMotionDistance(timeline: MotionTimeline, time: number): number {
+    if (time <= 0) {
+      return 0;
+    }
+    if (time >= 1) {
+      return timeline.totalLength;
+    }
+
+    let low = 0;
+    let high = timeline.keyframes.length - 1;
+    while (low < high - 1) {
+      const mid = Math.floor((low + high) / 2);
+      if (timeline.keyframes[mid].time < time) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+
+    const start = timeline.keyframes[low];
+    const end = timeline.keyframes[high];
+    const span = Math.max(0.0001, end.time - start.time);
+    const local = (time - start.time) / span;
+    return start.distance + (end.distance - start.distance) * local;
+  }
+
+  private getMotionPoint(path: SVGGeometryElement, distance: number, totalLength: number): MotionPoint {
+    const safeDistance = this.clamp(distance, 0, totalLength);
+    const point = path.getPointAtLength(safeDistance);
+    const angle = this.getTangentAngle(path, safeDistance, totalLength);
+    return { x: point.x, y: point.y, angle };
+  }
+
+  private getTangentAngle(path: SVGGeometryElement, distance: number, totalLength: number): number {
+    const probe = Math.max(2, totalLength * 0.006);
+    const previous = path.getPointAtLength(this.clamp(distance - probe, 0, totalLength));
+    const next = path.getPointAtLength(this.clamp(distance + probe, 0, totalLength));
+    return (Math.atan2(next.y - previous.y, next.x - previous.x) * 180) / Math.PI;
+  }
+
+  private shortestAngleDelta(from: number, to: number): number {
+    return ((to - from + 540) % 360) - 180;
+  }
+
+  private easeInOutCubic(value: number): number {
+    return value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2;
+  }
+
+  private smoothstep(edge0: number, edge1: number, value: number): number {
+    const progress = this.clamp((value - edge0) / (edge1 - edge0), 0, 1);
+    return progress * progress * (3 - 2 * progress);
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  private async showRewardedHint(): Promise<void> {
+    if (this.rewardBusy || this.screen !== 'playing') {
+      return;
+    }
+
+    if (!this.platform.capabilities.rewardedAd) {
+      this.message = '当前平台暂未接入提示广告，先用重开或继续观察可飞出的边缘箭头。';
+      this.render();
+      return;
+    }
+
+    this.rewardBusy = true;
+    this.message = '正在播放提示广告...';
+    this.render();
+    const rewarded = await this.platform.showRewardedAd('hint');
+    this.rewardBusy = false;
+
+    if (!rewarded || this.screen !== 'playing') {
+      this.message = '广告未完成，暂时无法获得提示。';
+      this.render();
+      return;
+    }
+
+    this.showHint();
+  }
+
   private showHint(): void {
-    const available = getAvailablePieces(this.pieces, this.currentLevel).slice(0, 3);
+    const available = this.getAvailableActivePieces().slice(0, 3);
     this.hintIds = new Set(available.map((piece) => piece.id));
-    this.message = available.length > 0 ? '高亮的是当前可以飞出的箭头。' : '当前没有可飞出的箭头，可以重开。';
+    this.message = available.length > 0 ? '广告完成，已高亮当前可以飞出的箭头。' : '当前没有可飞出的箭头，可以重开。';
+    this.render();
+  }
+
+  private async reviveFromReward(): Promise<void> {
+    if (!this.result || this.result.won || this.rewardBusy) {
+      return;
+    }
+
+    if (!this.platform.capabilities.rewardedAd) {
+      this.message = '当前平台暂未接入复活广告，请先重开这一关。';
+      this.render();
+      return;
+    }
+
+    this.rewardBusy = true;
+    this.render();
+    const rewarded = await this.platform.showRewardedAd('revive');
+    this.rewardBusy = false;
+
+    if (!rewarded) {
+      this.render();
+      return;
+    }
+
+    this.lives = 1;
+    this.message = '复活成功，保留当前棋盘继续挑战。';
+    this.errorPieceId = undefined;
+    this.hintIds.clear();
+    this.exitingPieceIds.clear();
+    this.result = undefined;
+    this.screen = 'playing';
     this.render();
   }
 
