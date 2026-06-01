@@ -1,7 +1,14 @@
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-import { analyzeLevel, blocksAnyPiece, directions, expectedDifficulty, isClear } from './level-tools.mjs';
+import {
+  analyzeLevel,
+  blocksAnyPiece,
+  directions,
+  expectedDifficulty,
+  isClear,
+  spatialDistributionFailures
+} from './level-tools.mjs';
 
 const outputPath = path.join(process.cwd(), 'src', 'game', 'levels.json');
 
@@ -199,7 +206,8 @@ function generateLevel(spec, previousScore) {
           : 0;
     const trendPenalty = analysis.score + 20 < previousScore && spec.id % 10 !== 1 ? previousScore - analysis.score : 0;
     const labelPenalty = expected !== spec.difficulty && spec.difficulty !== 'easy' ? 10 : 0;
-    const scorePenalty = Math.abs(analysis.score - spec.score) + startPenalty + trendPenalty + labelPenalty;
+    const distributionPenalty = spatialDistributionFailures(level).length * 9;
+    const scorePenalty = Math.abs(analysis.score - spec.score) + startPenalty + trendPenalty + labelPenalty + distributionPenalty;
 
     if (scorePenalty < bestPenalty) {
       bestLevel = level;

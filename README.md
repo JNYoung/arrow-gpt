@@ -108,6 +108,7 @@ screenshots, and App Store privacy metadata.
 ## Release Data
 
 Release pages and platform data live in `docs/release-data/platform-data.md`.
+AdMob app/unit creation and sync steps live in `docs/admob-setup.md`.
 Native packaging status and local machine blockers live in
 `docs/release-data/native-build-report.md`.
 The deployable static review pages are copied from:
@@ -121,6 +122,19 @@ The deployable static review pages are copied from:
 Before submission, replace every `TODO_*`, `REPLACE_WITH_*`, and placeholder
 `ca-app-pub-000...` / `pub-000...` value in `platform-manifest.json`,
 Android/iOS native config, and the public policy pages.
+
+After creating AdMob Android/iOS apps and rewarded units, fill
+`platform-manifest.json` and sync native app IDs with:
+
+```bash
+npm run admob:sync
+```
+
+For local AdMob SDK smoke tests before real IDs exist, use Google sample app IDs:
+
+```bash
+npm run admob:sync:test
+```
 
 ## Native Environment Notes
 

@@ -44,6 +44,20 @@
 | double reward unit | `TODO_ADMOB_DOUBLE_REWARD_UNIT` | 可暂不在 UI 开放，但后台 ID 先占位 |
 | app-ads.txt | `google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0` | 将 `pub-000...` 替换为你的 publisher ID，并部署在开发者网站根目录 |
 
+同步命令：
+
+```bash
+npm run admob:sync
+```
+
+本地 SDK 冒烟测试可临时写入 Google sample app id：
+
+```bash
+npm run admob:sync:test
+```
+
+`npm run verify:platform:release` 会阻止 sample id 或 placeholder 被用于正式发布。
+
 ## Meta / Facebook 数据
 
 | 字段 | 当前值 | 上线前动作 |

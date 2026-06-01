@@ -3,7 +3,7 @@ import { GameAudio } from './audio';
 import { LEVELS } from './game/levels';
 import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
 import type { ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
-import { createPlatformBridge, normalizeRenderQuality, type PlatformBridge, type RenderQuality } from './platform';
+import { createPlatformBridge, normalizeRenderQuality, type PlatformBridge, type RenderQuality, type SharePayload } from './platform';
 import { loadSave, saveGame } from './storage';
 
 type Screen = 'home' | 'levels' | 'playing' | 'result';
@@ -455,8 +455,30 @@ class ArrowAgainApp {
     }
 
     if (action === 'share' && this.result) {
-      void this.platform.share(`我在 Arrow Again 第 ${this.result.level.id} 关拿到 ${this.result.stars} 星！`);
+      void this.platform.share(this.createResultSharePayload(this.result));
     }
+  }
+
+  private createResultSharePayload(result: ResultState): SharePayload {
+    const title = 'Arrow Again 箭了又箭';
+    const url = window.location.origin && window.location.origin !== 'null' ? window.location.origin : undefined;
+    const assetBase = url ?? window.location.href.replace(/\/[^/]*$/, '');
+    const text = result.won
+      ? `我在 Arrow Again 第 ${result.level.id} 关拿到 ${result.stars} 星，用 ${result.moves} 步清场！`
+      : `我在 Arrow Again 第 ${result.level.id} 关差一点通关，来试试你的路线判断。`;
+
+    return {
+      title,
+      text,
+      url,
+      image: `${assetBase.replace(/\/$/, '')}/social-share.png`,
+      data: {
+        level: result.level.id,
+        stars: result.stars,
+        moves: result.moves,
+        won: result.won
+      }
+    };
   }
 
   private startLevel(level: LevelData, skipWarning = false): void {

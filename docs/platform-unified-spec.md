@@ -25,17 +25,17 @@ platform.track('level_complete', { level: 12, stars: 3 });
 | `src/platform/spec.ts` | 游戏可调用的稳定接口、能力声明、广告位枚举 |
 | `src/platform/web.ts` | 浏览器/H5，本地验证用 mock rewarded ad |
 | `src/platform/meta.ts` | Meta Instant Games，接 FBInstant 生命周期、分享、日志、激励视频 |
-| `src/platform/google.ts` | Google Play Android/Capacitor 壳，接原生 host bridge、AdMob/analytics 等 |
+| `src/platform/google.ts` | Android/iOS Capacitor 壳，接 Capacitor Share、AdMob rewarded、可选原生 host bridge/analytics |
 | `src/platform/index.ts` | 自动识别当前运行环境并返回对应 adapter |
 
 ## 运行时能力矩阵
 
-| 能力 | Web/H5 | Meta Instant | Google Play Android |
+| 能力 | Web/H5 | Meta Instant | Android/iOS Capacitor |
 | --- | --- | --- | --- |
 | 初始化 | no-op | `FBInstant.initializeAsync/startGameAsync` | Capacitor WebView no-op，原生插件可扩展 |
 | 加载进度 | no-op | `FBInstant.setLoadingProgress` | no-op 或原生 loading bridge |
-| 激励广告 | 本地 mock | `FBInstant.getRewardedVideoAsync` + placement id | `window.NativeGameHost.showRewardedAd` |
-| 分享 | Web Share API | `FBInstant.shareAsync` | Web Share API 或原生 Share 插件 |
+| 激励广告 | 本地 mock | `FBInstant.getRewardedVideoAsync` + placement id | `@capacitor-community/admob` rewarded ad，仍可被 `window.NativeGameHost.showRewardedAd` 覆盖 |
+| 分享 | Web Share API | `FBInstant.shareAsync` | `@capacitor/share`，失败时回退 Web Share API |
 | 震动 | `navigator.vibrate` | `navigator.vibrate` | `navigator.vibrate` 或原生 haptics |
 | 埋点 | no-op | `FBInstant.logEvent` | `window.NativeGameHost.track` |
 | 渲染质量 | `window.__GAME_PLATFORM_CONFIG__.renderQuality` | 同 Web | `window.NativeGameHost.renderQuality` 或 `getRenderQuality()` |
@@ -73,7 +73,7 @@ platform.track('level_complete', { level: 12, stars: 3 });
 仍需补齐：
 
 - Meta 后台真实 rewarded placement id，并注入 `window.__GAME_PLATFORM_CONFIG__.rewardedPlacements`。
-- Google Play Android 的原生 `NativeGameHost.showRewardedAd`，建议用 AdMob rewarded ad 封装。
+- Google/Apple 后台真实 AdMob app id 和 rewarded ad unit id，并同步到 `platform-manifest.json` 后执行 `npm run admob:sync`。
 - Google Play release signing、AAB 上传、Data safety、隐私政策、素材截图。
 - 每个游戏一份 `platform-manifest`，声明 app id、商店名、广告位、埋点命名和目标端。
 
@@ -111,8 +111,8 @@ platform.track('level_complete', { level: 12, stars: 3 });
 
 ## 下一步落地顺序
 
-1. 做 Google Android `NativeGameHost` 原生桥，先接 rewarded ad 和 analytics。
-2. 替换 `platform-manifest.json` 中的 Meta app id、广告位、AdMob unit、隐私政策 URL 和支持邮箱，并跑 `npm run verify:platform:release`。
+1. 在 AdMob 后台创建 Android/iOS app 和 `hint` / `revive` / `double-reward` rewarded ad units。
+2. 替换 `platform-manifest.json` 中的 Meta app id、广告位、AdMob app/unit、隐私政策 URL 和支持邮箱，执行 `npm run admob:sync`，并跑 `npm run verify:platform:release`。
 3. 把这套 `src/platform` 抽成小游戏模板模块，复制到坦克大战、Traffic Jam 后只改 manifest。
 
 ## 参考

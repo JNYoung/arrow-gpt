@@ -63,6 +63,10 @@ function looksLikePlaceholder(value) {
   );
 }
 
+function looksLikeGoogleSampleAdMob(value) {
+  return typeof value === 'string' && value.includes('ca-app-pub-3940256099942544');
+}
+
 function requireReleaseValue(pathExpression) {
   const value = requireString(pathExpression);
   if (value && looksLikePlaceholder(value)) {
@@ -106,6 +110,9 @@ function requireAdMobAppId(pathExpression) {
   if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}~\d{10}$/.test(value)) {
     blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000~0000000000`);
   }
+  if (value && looksLikeGoogleSampleAdMob(value)) {
+    blockRelease(`${pathExpression} is still a Google sample AdMob app id`);
+  }
 }
 
 function requireStringArray(pathExpression) {
@@ -148,6 +155,65 @@ const requiredPlacements = ['hint', 'revive', 'double-reward'];
 function requirePlacements(prefix) {
   for (const placement of requiredPlacements) {
     requireReleaseValue(`${prefix}.rewardedPlacements.${placement}`);
+  }
+}
+
+function requireAdMobAdUnit(pathExpression) {
+  const value = requireReleaseValue(pathExpression);
+  if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}\/\d{10}$/.test(value)) {
+    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000/0000000000`);
+  }
+  if (value && looksLikeGoogleSampleAdMob(value)) {
+    blockRelease(`${pathExpression} is still a Google sample AdMob ad unit`);
+  }
+}
+
+function requireAdMobPlacements(prefix) {
+  for (const placement of requiredPlacements) {
+    requireAdMobAdUnit(`${prefix}.rewardedPlacements.${placement}`);
+  }
+}
+
+async function readAndroidAdMobAppId() {
+  try {
+    const contents = await readFile(path.join(process.cwd(), 'android', 'app', 'src', 'main', 'res', 'values', 'strings.xml'), 'utf8');
+    return contents.match(/<string\s+name="admob_app_id">([^<]+)<\/string>/)?.[1];
+  } catch {
+    fail('Android strings.xml is missing for AdMob app id verification');
+    return undefined;
+  }
+}
+
+async function readIosAdMobAppId() {
+  try {
+    const contents = await readFile(path.join(process.cwd(), 'ios', 'App', 'App', 'Info.plist'), 'utf8');
+    return contents.match(/<key>GADApplicationIdentifier<\/key>\s*<string>([^<]+)<\/string>/)?.[1];
+  } catch {
+    fail('iOS Info.plist is missing for AdMob app id verification');
+    return undefined;
+  }
+}
+
+function verifyNativeAdMobAppId(pathExpression, nativeLabel, nativeValue) {
+  const manifestValue = get(pathExpression);
+  if (!nativeValue) {
+    fail(`${nativeLabel} is missing AdMob app id`);
+    return;
+  }
+  if (!/^ca-app-pub-\d{16}~\d{10}$/.test(nativeValue)) {
+    fail(`${nativeLabel} should look like ca-app-pub-0000000000000000~0000000000`);
+    return;
+  }
+  if (looksLikePlaceholder(nativeValue) || looksLikeGoogleSampleAdMob(nativeValue)) {
+    blockRelease(`${nativeLabel} is not a production AdMob app id`);
+  }
+  if (
+    typeof manifestValue === 'string' &&
+    !looksLikePlaceholder(manifestValue) &&
+    !looksLikeGoogleSampleAdMob(manifestValue) &&
+    nativeValue !== manifestValue
+  ) {
+    blockRelease(`${nativeLabel} does not match ${pathExpression}; run npm run admob:sync`);
   }
 }
 
@@ -204,7 +270,7 @@ requireReleaseValue('platforms.googlePlayAndroid.versionName');
 requireReleaseValue('platforms.googlePlayAndroid.bundleCommand');
 requireReleaseValue('platforms.googlePlayAndroid.nativeBridge');
 requireAdMobAppId('platforms.googlePlayAndroid.adMobAppId');
-requirePlacements('platforms.googlePlayAndroid');
+requireAdMobPlacements('platforms.googlePlayAndroid');
 
 requireBoolean('platforms.iosAppStore.enabled');
 requireAndroidApplicationId('platforms.iosAppStore.bundleId');
@@ -214,7 +280,14 @@ requireReleaseValue('platforms.iosAppStore.prepareCommand');
 await requireFile('platforms.iosAppStore.workspacePath');
 requireReleaseValue('platforms.iosAppStore.scheme');
 requireAdMobAppId('platforms.iosAppStore.adMobAppId');
-requirePlacements('platforms.iosAppStore');
+requireAdMobPlacements('platforms.iosAppStore');
+
+verifyNativeAdMobAppId(
+  'platforms.googlePlayAndroid.adMobAppId',
+  'android/app/src/main/res/values/strings.xml admob_app_id',
+  await readAndroidAdMobAppId()
+);
+verifyNativeAdMobAppId('platforms.iosAppStore.adMobAppId', 'ios/App/App/Info.plist GADApplicationIdentifier', await readIosAdMobAppId());
 
 if (releaseMode && releaseBlockers.length > 0) {
   failures.push(...releaseBlockers);

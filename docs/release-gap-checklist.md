@@ -18,7 +18,7 @@
 距离真正上线，仍差 4 类工作：
 
 1. 平台配置落库并可校验。
-2. 真实广告/埋点原生接入。
+2. 真实 AdMob 后台 ID 创建、同步和真机验证。
 3. 商店与审核物料补齐。
 4. 真机和目标平台 smoke test。
 
@@ -64,22 +64,30 @@ manifest 至少要包含：
 - `npm run verify:platform` 会通过并列出 release blockers。
 - `npm run verify:platform:release` 会在占位值未替换前失败，适合提审前使用。
 
-#### 2. Google Play Android 真实广告桥
+#### 2. AdMob rewarded / 原生分享接入
 
-目标：让 `src/platform/google.ts` 不再只停留在接口层，真正接到原生 host。
+目标：让 `src/platform/google.ts` 不再只停留在接口层，真正接到 Capacitor Share 与 AdMob rewarded。
 
-要做：
+已新增：
 
-- 在 Android 壳实现 `window.NativeGameHost.showRewardedAd`
-- 接 `hint` / `revive` 两个 placement
-- 接 `track` 埋点出口
-- 明确广告失败、取消、无库存时的返回值约定
+- `@capacitor/share`
+- `@capacitor-community/admob`
+- `npm run admob:sync`
+- `npm run admob:sync:test`
+- Android / iOS AdMob app id 一致性巡检
 
 验收标准：
 
 - Android 真机或模拟器上能走一次提示广告
 - Android 真机或模拟器上能走一次复活广告
+- iOS 真机或模拟器上可初始化 AdMob SDK
 - 游戏 UI 文案和返回结果一致
+
+当前状态：
+
+- 代码桥已接入。
+- 后台真实 AdMob app id / rewarded ad unit id 仍未创建或未回填。
+- `npm run verify:platform` 会列出这些 release blockers；`npm run verify:platform:release` 会阻断提审。
 
 #### 3. 上架物料与合规
 
@@ -88,7 +96,7 @@ manifest 至少要包含：
 - 隐私政策 URL
 - Android 签名
 - 最终包名 / 版本号
-- 真实 AdMob app ID / ad unit IDs
+- 真实 AdMob app ID / ad unit IDs，并执行 `npm run admob:sync`
 - Meta App ID / placement IDs
 - 商店截图
 - 商店最终文案审核
@@ -163,15 +171,15 @@ manifest 至少要包含：
 - 分享素材优化
 - 更完整的新手引导
 - 低端机性能优化
-- 真实 AdMob / Meta 原生 SDK 接入
+- 真实广告数据后的插屏节奏优化
 
 这些不阻塞首发，但会影响留存和变现。
 
 ## 建议的执行顺序
 
 1. `platform-manifest.json` + `verify-platform-manifest`
-2. Google Android `NativeGameHost.showRewardedAd` + `track`
-3. Android 真机 smoke test
+2. 创建 AdMob Android/iOS app + rewarded ad unit，回填 manifest 并执行 `npm run admob:sync`
+3. Android/iOS 真机 smoke test
 4. Meta placement 配置 + Meta smoke test
 5. 商店文案 / 截图 / 隐私政策 / Data safety
 6. 出 Android AAB 和 Meta zip 作为首批上线包
@@ -180,7 +188,7 @@ manifest 至少要包含：
 
 - 最终包名、展示名、版本策略
 - Meta app id 和广告位 id
-- AdMob 广告位 id
+- AdMob app id 与 rewarded 广告位 id
 - 隐私政策 URL
 - 可部署 `app-home.html` / `privacy.html` / `data-deletion.html` / `app-ads.txt` 的公开域名
 - Google Play / Apple / Meta 开发者后台权限
@@ -188,4 +196,4 @@ manifest 至少要包含：
 
 ## 一句话判断
 
-如果只按“能提第一版 Android/Meta 包”算，当前最缺的不是玩法，而是平台配置落库、真实广告桥和上架物料。
+如果只按“能提第一版 Android/Meta 包”算，当前最缺的不是玩法，而是平台后台 ID、上架物料和真机 smoke test。

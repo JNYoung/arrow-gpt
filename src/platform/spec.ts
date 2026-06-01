@@ -7,6 +7,7 @@ export type RenderQuality = 'high' | 'balanced' | 'low';
 export type SharePayload = {
   title?: string;
   text: string;
+  url?: string;
   image?: string;
   data?: Record<string, unknown>;
 };
@@ -25,8 +26,11 @@ export type PlatformCapabilities = {
 
 export type PlatformRuntimeConfig = {
   mockRewardedAds?: boolean;
+  adMobTestMode?: boolean;
+  adMobTestDeviceIds?: string[];
   rewardedPlacements?: Partial<Record<RewardedPlacement, string>>;
   renderQuality?: RenderQuality;
+  shareUrl?: string;
 };
 
 export interface PlatformBridge {
@@ -93,7 +97,8 @@ export async function shareOnWeb(payload: string | SharePayload): Promise<void> 
   if (navigator.share) {
     await navigator.share({
       title: normalized.title ?? 'Arrow Again',
-      text: normalized.text
+      text: normalized.text,
+      url: normalized.url
     });
   }
 }

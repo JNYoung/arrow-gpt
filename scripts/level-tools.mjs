@@ -169,6 +169,107 @@ export function analyzeLevel(level) {
   };
 }
 
+export function analyzeSpatialDistribution(level) {
+  const pieceCount = level.pieces.length;
+  let maxWindow2 = 0;
+  let maxWindow3 = 0;
+
+  for (let row = 0; row <= level.rows - 2; row += 1) {
+    for (let col = 0; col <= level.cols - 2; col += 1) {
+      maxWindow2 = Math.max(maxWindow2, countPiecesInWindow(level, row, col, 2));
+    }
+  }
+
+  for (let row = 0; row <= level.rows - 3; row += 1) {
+    for (let col = 0; col <= level.cols - 3; col += 1) {
+      maxWindow3 = Math.max(maxWindow3, countPiecesInWindow(level, row, col, 3));
+    }
+  }
+
+  const quadrants = [0, 0, 0, 0];
+  for (const piece of level.pieces) {
+    const top = piece.row + 0.5 < level.rows / 2;
+    const left = piece.col + 0.5 < level.cols / 2;
+    quadrants[(top ? 0 : 2) + (left ? 0 : 1)] += 1;
+  }
+
+  const occupied = new Set(level.pieces.map((piece) => `${piece.row}:${piece.col}`));
+  const adjacentPairs = level.pieces.reduce((total, piece) => {
+    const down = occupied.has(`${piece.row + 1}:${piece.col}`) ? 1 : 0;
+    const right = occupied.has(`${piece.row}:${piece.col + 1}`) ? 1 : 0;
+    return total + down + right;
+  }, 0);
+
+  return {
+    maxWindow2,
+    maxWindow3,
+    quadrants,
+    quadrantShare: Math.max(...quadrants) / Math.max(1, pieceCount),
+    rowCoverage: new Set(level.pieces.map((piece) => piece.row)).size / level.rows,
+    colCoverage: new Set(level.pieces.map((piece) => piece.col)).size / level.cols,
+    adjacentRatio: adjacentPairs / Math.max(1, pieceCount)
+  };
+}
+
+export function spatialDistributionLimits(level) {
+  const pieceCount = level.pieces.length;
+  const compactLevel = pieceCount < 10;
+
+  return {
+    maxWindow2:
+      level.difficulty === 'boss'
+        ? Math.max(5, Math.ceil(pieceCount * 0.28))
+        : level.difficulty === 'hard'
+          ? Math.max(4, Math.ceil(pieceCount * 0.32))
+          : level.difficulty === 'medium'
+            ? Math.max(4, Math.ceil(pieceCount * 0.34))
+            : Math.max(3, Math.ceil(pieceCount * 0.38)),
+    maxWindow3:
+      level.difficulty === 'boss'
+        ? Math.max(8, Math.ceil(pieceCount * 0.42))
+        : level.difficulty === 'hard'
+          ? Math.max(6, Math.ceil(pieceCount * 0.5))
+          : level.difficulty === 'medium'
+            ? Math.max(5, Math.ceil(pieceCount * 0.48))
+            : Math.max(4, Math.ceil(pieceCount * 0.55)),
+    maxQuadrantShare:
+      level.difficulty === 'boss' ? 0.72 : level.difficulty === 'hard' ? 0.68 : level.difficulty === 'medium' ? 0.66 : 0.7,
+    minRowCoverage: compactLevel ? 0.4 : 0.5,
+    minColCoverage: compactLevel ? 0.4 : 0.5
+  };
+}
+
+export function spatialDistributionFailures(level) {
+  const distribution = analyzeSpatialDistribution(level);
+  const limits = spatialDistributionLimits(level);
+  const failures = [];
+
+  if (distribution.maxWindow2 > limits.maxWindow2) {
+    failures.push(`2x2 cluster ${distribution.maxWindow2} exceeds ${limits.maxWindow2}`);
+  }
+  if (distribution.maxWindow3 > limits.maxWindow3) {
+    failures.push(`3x3 cluster ${distribution.maxWindow3} exceeds ${limits.maxWindow3}`);
+  }
+  if (distribution.quadrantShare > limits.maxQuadrantShare) {
+    failures.push(`quadrant share ${distribution.quadrantShare.toFixed(2)} exceeds ${limits.maxQuadrantShare.toFixed(2)}`);
+  }
+  if (distribution.rowCoverage < limits.minRowCoverage) {
+    failures.push(`row coverage ${distribution.rowCoverage.toFixed(2)} below ${limits.minRowCoverage.toFixed(2)}`);
+  }
+  if (distribution.colCoverage < limits.minColCoverage) {
+    failures.push(`column coverage ${distribution.colCoverage.toFixed(2)} below ${limits.minColCoverage.toFixed(2)}`);
+  }
+
+  return failures;
+}
+
+function countPiecesInWindow(level, startRow, startCol, size) {
+  return level.pieces.filter(
+    (piece) =>
+      piece.row >= startRow && piece.row < startRow + size && piece.col >= startCol && piece.col < startCol + size
+  ).length;
+}
+
 export function expectedDifficulty(score, id) {
   if (id === 1) {
     return 'tutorial';
