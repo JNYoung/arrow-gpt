@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-import { analyzeLevel, expectedDifficulty } from './level-tools.mjs';
+import { analyzeLevel, analyzeSpatialDistribution, expectedDifficulty, spatialDistributionFailures } from './level-tools.mjs';
 
 const levelsPath = path.join(process.cwd(), 'src', 'game', 'levels.json');
 const levels = JSON.parse(await readFile(levelsPath, 'utf8'));
@@ -65,6 +65,11 @@ for (const [index, level] of levels.entries()) {
   if ((level.difficulty === 'hard' || level.difficulty === 'boss') && availableRatio > 0.64) {
     fail(`Level ${level.id} ${level.difficulty} start is too open (${analysis.startAvailable}/${analysis.pieceCount})`);
   }
+
+  const spatialFailures = spatialDistributionFailures(level);
+  for (const spatialFailure of spatialFailures) {
+    fail(`Level ${level.id} distribution is uneven: ${spatialFailure}`);
+  }
 }
 
 for (let index = 1; index < analyses.length; index += 1) {
@@ -103,6 +108,7 @@ for (let start = 0; start < analyses.length; start += 10) {
 }
 
 const summary = analyses.map((analysis) => ({
+  distribution: analyzeSpatialDistribution(levels[analysis.id - 1]),
   id: analysis.id,
   difficulty: analysis.difficulty,
   pieces: analysis.pieceCount,
@@ -112,9 +118,25 @@ const summary = analyses.map((analysis) => ({
 }));
 
 if (failures.length > 0) {
-  console.table(summary);
+  console.table(
+    summary.map(({ distribution, ...level }) => ({
+      ...level,
+      max3: distribution.maxWindow3,
+      quadrant: Number(distribution.quadrantShare.toFixed(2))
+    }))
+  );
   throw new Error(`Balance verification failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}`);
 }
 
-console.table(summary.filter((level) => level.id <= 5 || level.id % 10 === 0 || level.id > 95));
-console.log('Balance verified: 100 levels are completable, score progression is bounded, and difficulty labels match the computed curve.');
+console.table(
+  summary
+    .filter((level) => level.id <= 5 || level.id % 10 === 0 || level.id > 95)
+    .map(({ distribution, ...level }) => ({
+      ...level,
+      max3: distribution.maxWindow3,
+      quadrant: Number(distribution.quadrantShare.toFixed(2))
+    }))
+);
+console.log(
+  'Balance verified: 100 levels are completable, score progression is bounded, spatial distribution is checked in order, and difficulty labels match the computed curve.'
+);

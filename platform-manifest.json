@@ -3,8 +3,21 @@
   "displayName": "Arrow Again",
   "orientation": "portrait",
   "releaseStatus": "draft",
-  "privacyPolicyUrl": "TODO_PRIVACY_POLICY_URL",
-  "supportEmail": "TODO_SUPPORT_EMAIL",
+  "privacyPolicyUrl": "https://jnyoung.github.io/arrow-gpt/privacy.html",
+  "dataDeletionUrl": "https://jnyoung.github.io/arrow-gpt/data-deletion.html",
+  "supportEmail": "j.n.young0209@gmail.com",
+  "releaseAssets": {
+    "appHomeUrl": "https://jnyoung.github.io/arrow-gpt/app-home.html",
+    "supportUrl": "https://jnyoung.github.io/arrow-gpt/support.html",
+    "landingPagePath": "public/app-home.html",
+    "privacyPagePath": "public/privacy.html",
+    "dataDeletionPagePath": "public/data-deletion.html",
+    "appAdsTxtPath": "public/app-ads.txt",
+    "iconSvgPath": "public/icon.svg",
+    "iconPng1024Path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+    "splashPngPath": "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
+    "shareImagePath": "public/social-share.png"
+  },
   "platforms": {
     "webH5": {
       "enabled": true,
@@ -15,6 +28,10 @@
       "appId": "TODO_META_APP_ID",
       "packageCommand": "npm run meta:zip",
       "fbappConfigPath": "public/fbapp-config.json",
+      "shareImagePath": "public/social-share.png",
+      "loginPermissions": [
+        "public_profile"
+      ],
       "rewardedPlacements": {
         "hint": "TODO_META_HINT_PLACEMENT",
         "revive": "TODO_META_REVIVE_PLACEMENT",
@@ -25,13 +42,29 @@
       "enabled": true,
       "applicationId": "com.arrowagain.game",
       "versionCode": 1,
-      "versionName": "0.1.0",
+      "versionName": "1.0.0",
       "bundleCommand": "npm run google:aab",
       "nativeBridge": "window.NativeGameHost",
+      "adMobAppId": "ca-app-pub-0000000000000000~0000000000",
       "rewardedPlacements": {
         "hint": "TODO_ADMOB_HINT_UNIT",
         "revive": "TODO_ADMOB_REVIVE_UNIT",
         "double-reward": "TODO_ADMOB_DOUBLE_REWARD_UNIT"
+      }
+    },
+    "iosAppStore": {
+      "enabled": true,
+      "bundleId": "com.arrowagain.game",
+      "versionCode": 1,
+      "versionName": "1.0.0",
+      "prepareCommand": "npm run ios:prepare",
+      "workspacePath": "ios/App/App.xcworkspace",
+      "scheme": "App",
+      "adMobAppId": "ca-app-pub-0000000000000000~0000000000",
+      "rewardedPlacements": {
+        "hint": "TODO_ADMOB_IOS_HINT_UNIT",
+        "revive": "TODO_ADMOB_IOS_REVIVE_UNIT",
+        "double-reward": "TODO_ADMOB_IOS_DOUBLE_REWARD_UNIT"
       }
     }
   }

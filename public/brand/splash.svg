@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <linearGradient id="splashBg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#F9FBF4"/>
+      <stop offset=".58" stop-color="#E6F5EE"/>
+      <stop offset="1" stop-color="#CAE9DC"/>
+    </linearGradient>
+    <filter id="splashShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="95.62" stdDeviation="92.888" flood-color="#264057" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#splashBg)"/>
+  <circle cx="491.76" cy="546.4" r="1038.16" fill="#ffffff" opacity=".34"/>
+  <circle cx="2404.16" cy="2130.96" r="764.96" fill="#BFE5D5" opacity=".32"/>
+  <g opacity="0.32">
+    <path d="M327.84 2158.28 H2404.16" stroke="#FFFFFF" stroke-width="218.56" stroke-linecap="round"/>
+    <path d="M327.84 2158.28 H2404.16" stroke="#6BC5A0" stroke-width="106.548" stroke-linecap="round"/>
+    <path d="M491.76 2404.16 H1529.92 V2021.68 H2130.96" stroke="#FFFFFF" stroke-width="204.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M491.76 2404.16 H1529.92 V2021.68 H2130.96" stroke="#5AA4E8" stroke-width="101.08399999999999" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(983.52 546.4000000000001) scale(0.74703125)" filter="url(#splashShadow)">
+    
+  <defs>
+    <linearGradient id="iconBg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#F7FBF3"/>
+      <stop offset=".54" stop-color="#DDF3EC"/>
+      <stop offset="1" stop-color="#CDEBE0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="26.624" stdDeviation="26.624" flood-color="#274157" flood-opacity=".18"/>
+    </filter>
+    <filter id="tileShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="12.288" stdDeviation="12.288" flood-color="#24435B" flood-opacity=".25"/>
+    </filter>
+  </defs>
+  
+      <rect width="1024" height="1024" rx="225.28" fill="url(#iconBg)"/>
+      <path d="M0 788.48 C286.72 645.12 655.36 972.8 1024 716.8 L1024 1024 L0 1024Z" fill="#D9EEE7" opacity=".75"/>
+      <path d="M-81.92 204.8 C184.32 -61.44 430.08 122.88 624.64 -40.96" stroke="#ffffff" stroke-width="22.528" opacity=".32" fill="none"/>
+    
+  
+    <g filter="url(#softShadow)">
+      <rect x="163.84" y="184.32" width="696.32" height="655.36" rx="112.64" fill="#EFF9F5"/>
+      <rect x="189.44" y="209.92" width="645.12" height="604.16" rx="87.04" fill="#DDEFE8" opacity=".72"/>
+      <path d="M276.48 327.68 H645.12 Q747.52 327.68 747.52 440.32 V645.12" stroke="#ffffff" stroke-width="94.208" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M276.48 327.68 H645.12 Q747.52 327.68 747.52 440.32 V645.12" stroke="#6BC5A0" stroke-width="53.248" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M245.76 675.84 H501.76 V460.8 H624.64" stroke="#ffffff" stroke-width="90.112" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M245.76 675.84 H501.76 V460.8 H624.64" stroke="#5AA4E8" stroke-width="50.176" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M337.92 235.52 V532.48 H204.8" stroke="#ffffff" stroke-width="88.064" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M337.92 235.52 V532.48 H204.8" stroke="#E8615B" stroke-width="49.152" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+  <g filter="url(#tileShadow)">
+    <g>
+    <rect x="506.87999999999994" y="373.76" width="174.08" height="174.08" rx="38.2976" fill="#ffffff"/>
+    <rect x="520.8063999999999" y="387.6864" width="146.2272" height="146.2272" rx="29.872128000000004" fill="#63B77E"/>
+    <polygon points="553.8815999999999,419.0208 639.1808,460.8 553.8815999999999,502.5792" fill="#F8FFF9"/>
+    <path d="M541.6959999999999 405.0944 H632.2176" stroke="#ffffff" stroke-width="7.833600000000001" opacity=".36" stroke-linecap="round"/>
+  </g>
+    <g>
+    <rect x="220.15999999999997" y="455.68" width="153.6" height="153.6" rx="33.792" fill="#ffffff"/>
+    <rect x="232.44799999999998" y="467.968" width="129.024" height="129.024" rx="26.357760000000003" fill="#D85B55"/>
+    <polygon points="332.288,495.61600000000004 257.024,532.48 332.288,569.344" fill="#F8FFF9"/>
+    <path d="M250.87999999999997 483.32800000000003 H330.75199999999995" stroke="#ffffff" stroke-width="6.912" opacity=".36" stroke-linecap="round"/>
+  </g>
+    <g>
+    <rect x="601.6" y="581.12" width="148.48" height="148.48" rx="32.6656" fill="#ffffff"/>
+    <rect x="613.4784" y="592.9984" width="124.72319999999999" height="124.72319999999999" rx="25.479167999999998" fill="#E3B333"/>
+    <polygon points="640.2048,621.2096 675.84,693.9648 711.4752000000001,621.2096" fill="#F8FFF9"/>
+    <path d="M631.296 607.8464 H708.5056" stroke="#ffffff" stroke-width="6.6815999999999995" opacity=".36" stroke-linecap="round"/>
+  </g>
+  </g>
+
+  </g>
+  <text x="1366" y="1502.6000000000001" text-anchor="middle" fill="#1F2B3A" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="174.848" font-weight="850" letter-spacing="5.464">Arrow Again</text>
+  <text x="1366" y="1669.2520000000002" text-anchor="middle" fill="#5C7182" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="81.96" font-weight="700">Unblock the arrows. Clear the maze.</text>
+</svg>

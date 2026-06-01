@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#DDF3EC" />
+    <meta name="description" content="Arrow Again is a mobile arrow-maze puzzle game." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Arrow Again" />
+    <meta property="og:description" content="Tap the free arrows, clear every route, and solve a satisfying maze puzzle." />
+    <meta property="og:image" content="./social-share.png" />
+    <title>Arrow Again - App Home</title>
+    <style>
+      :root {
+        --ink: #1f2b3a;
+        --muted: #5c7182;
+        --mint: #ddf3ec;
+        --leaf: #63b77e;
+        --blue: #5aa4e8;
+        --red: #d85b55;
+        --paper: rgba(255, 255, 255, 0.78);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Avenir Next", "Nunito", "Trebuchet MS", sans-serif;
+        background:
+          radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.9), transparent 34%),
+          radial-gradient(circle at 86% 78%, rgba(99, 183, 126, 0.24), transparent 30%),
+          linear-gradient(135deg, #f9fbf4 0%, #e5f5ee 55%, #c6eadb 100%);
+      }
+
+      main {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 52px 0 40px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 34px;
+        align-items: center;
+      }
+
+      .app-icon {
+        width: min(320px, 70vw);
+        border-radius: 32%;
+        box-shadow: 0 28px 70px rgba(38, 64, 87, 0.2);
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--leaf);
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(52px, 8vw, 96px);
+        line-height: 0.92;
+        letter-spacing: -0.08em;
+      }
+
+      .lead {
+        max-width: 620px;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: clamp(20px, 3vw, 31px);
+        font-weight: 760;
+        line-height: 1.18;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 42px;
+      }
+
+      .card {
+        min-height: 180px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.78);
+        border-radius: 32px;
+        background: var(--paper);
+        box-shadow: 0 20px 55px rgba(38, 64, 87, 0.12);
+        backdrop-filter: blur(18px);
+      }
+
+      .card strong {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 18px;
+      }
+
+      .card p,
+      .card a {
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.55;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 34px;
+      }
+
+      .links a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 999px;
+        color: #f8fbf6;
+        font-weight: 860;
+        text-decoration: none;
+        background: var(--ink);
+      }
+
+      .links a.secondary {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      footer {
+        margin-top: 46px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      @media (max-width: 760px) {
+        main {
+          padding-top: 28px;
+        }
+
+        .hero,
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .app-icon {
+          width: 188px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div>
+          <img class="app-icon" src="./icon-512.png" alt="Arrow Again app icon" />
+        </div>
+        <div>
+          <p class="eyebrow">Mobile Puzzle Game</p>
+          <h1>Arrow Again</h1>
+          <p class="lead">A clean, tactile arrow-maze game for quick mobile sessions. Tap every free arrow, clear the board, and solve denser routes as the puzzle evolves.</p>
+          <div class="links">
+            <a href="./">Play Web Build</a>
+            <a class="secondary" href="./privacy.html">Privacy Policy</a>
+            <a class="secondary" href="./data-deletion.html">Data Deletion</a>
+            <a class="secondary" href="./support.html">Support</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="cards" aria-label="App review information">
+        <article class="card">
+          <strong>App Category</strong>
+          <p>Games / Puzzle / Casual. The game uses local progress, optional rewarded ads, and platform share APIs where available.</p>
+        </article>
+        <article class="card">
+          <strong>Advertising</strong>
+          <p>Rewarded ads are used for hint and revive flows. Ad unit IDs are configured per platform before release.</p>
+        </article>
+        <article class="card">
+          <strong>Support</strong>
+          <p>Support email: <a href="mailto:j.n.young0209@gmail.com">j.n.young0209@gmail.com</a></p>
+        </article>
+      </section>
+
+      <footer>
+        This page is the public app home for store review, AdMob verification, and support routing.
+      </footer>
+    </main>
+  </body>
+</html>

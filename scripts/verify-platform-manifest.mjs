@@ -55,7 +55,16 @@ function requireOneOf(pathExpression, allowedValues) {
 }
 
 function looksLikePlaceholder(value) {
-  return /^(TODO|TBD|REPLACE|PLACEHOLDER|META_|ADMOB_)/i.test(value) || value.includes('_TODO_');
+  return (
+    /^(TODO|TBD|REPLACE|PLACEHOLDER|META_|ADMOB_)/i.test(value) ||
+    value.includes('_TODO_') ||
+    value.includes('REPLACE_WITH_') ||
+    value.includes('0000000000000000')
+  );
+}
+
+function looksLikeGoogleSampleAdMob(value) {
+  return typeof value === 'string' && value.includes('ca-app-pub-3940256099942544');
 }
 
 function requireReleaseValue(pathExpression) {
@@ -89,16 +98,55 @@ function requireAndroidApplicationId(pathExpression) {
   }
 }
 
+function requireEmail(pathExpression) {
+  const value = requireReleaseValue(pathExpression);
+  if (value && !looksLikePlaceholder(value) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    blockRelease(`${pathExpression} must be a valid support email`);
+  }
+}
+
+function requireAdMobAppId(pathExpression) {
+  const value = requireReleaseValue(pathExpression);
+  if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}~\d{10}$/.test(value)) {
+    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000~0000000000`);
+  }
+  if (value && looksLikeGoogleSampleAdMob(value)) {
+    blockRelease(`${pathExpression} is still a Google sample AdMob app id`);
+  }
+}
+
+function requireStringArray(pathExpression) {
+  const value = get(pathExpression);
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || entry.trim().length === 0)) {
+    fail(`${pathExpression} must be an array of non-empty strings`);
+  }
+}
+
 async function requireFile(pathExpression) {
   const value = requireString(pathExpression);
   if (!value) {
-    return;
+    return undefined;
   }
 
   try {
     await access(path.join(process.cwd(), value));
   } catch {
     fail(`${pathExpression} points to missing file ${value}`);
+    return undefined;
+  }
+
+  return value;
+}
+
+async function requireAppAdsTxt(pathExpression) {
+  const value = await requireFile(pathExpression);
+  if (!value) {
+    return;
+  }
+
+  const contents = await readFile(path.join(process.cwd(), value), 'utf8');
+  if (/pub-0{8,}/.test(contents) || contents.includes('REPLACE')) {
+    blockRelease(`${pathExpression} still contains placeholder app-ads.txt publisher data`);
   }
 }
 
@@ -107,6 +155,65 @@ const requiredPlacements = ['hint', 'revive', 'double-reward'];
 function requirePlacements(prefix) {
   for (const placement of requiredPlacements) {
     requireReleaseValue(`${prefix}.rewardedPlacements.${placement}`);
+  }
+}
+
+function requireAdMobAdUnit(pathExpression) {
+  const value = requireReleaseValue(pathExpression);
+  if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}\/\d{10}$/.test(value)) {
+    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000/0000000000`);
+  }
+  if (value && looksLikeGoogleSampleAdMob(value)) {
+    blockRelease(`${pathExpression} is still a Google sample AdMob ad unit`);
+  }
+}
+
+function requireAdMobPlacements(prefix) {
+  for (const placement of requiredPlacements) {
+    requireAdMobAdUnit(`${prefix}.rewardedPlacements.${placement}`);
+  }
+}
+
+async function readAndroidAdMobAppId() {
+  try {
+    const contents = await readFile(path.join(process.cwd(), 'android', 'app', 'src', 'main', 'res', 'values', 'strings.xml'), 'utf8');
+    return contents.match(/<string\s+name="admob_app_id">([^<]+)<\/string>/)?.[1];
+  } catch {
+    fail('Android strings.xml is missing for AdMob app id verification');
+    return undefined;
+  }
+}
+
+async function readIosAdMobAppId() {
+  try {
+    const contents = await readFile(path.join(process.cwd(), 'ios', 'App', 'App', 'Info.plist'), 'utf8');
+    return contents.match(/<key>GADApplicationIdentifier<\/key>\s*<string>([^<]+)<\/string>/)?.[1];
+  } catch {
+    fail('iOS Info.plist is missing for AdMob app id verification');
+    return undefined;
+  }
+}
+
+function verifyNativeAdMobAppId(pathExpression, nativeLabel, nativeValue) {
+  const manifestValue = get(pathExpression);
+  if (!nativeValue) {
+    fail(`${nativeLabel} is missing AdMob app id`);
+    return;
+  }
+  if (!/^ca-app-pub-\d{16}~\d{10}$/.test(nativeValue)) {
+    fail(`${nativeLabel} should look like ca-app-pub-0000000000000000~0000000000`);
+    return;
+  }
+  if (looksLikePlaceholder(nativeValue) || looksLikeGoogleSampleAdMob(nativeValue)) {
+    blockRelease(`${nativeLabel} is not a production AdMob app id`);
+  }
+  if (
+    typeof manifestValue === 'string' &&
+    !looksLikePlaceholder(manifestValue) &&
+    !looksLikeGoogleSampleAdMob(manifestValue) &&
+    nativeValue !== manifestValue
+  ) {
+    blockRelease(`${nativeLabel} does not match ${pathExpression}; run npm run admob:sync`);
   }
 }
 
@@ -119,11 +226,27 @@ requireReleaseValue('displayName');
 requireOneOf('orientation', ['portrait', 'landscape']);
 requireOneOf('releaseStatus', ['draft', 'ready']);
 requireUrl('privacyPolicyUrl');
-requireReleaseValue('supportEmail');
+requireUrl('dataDeletionUrl');
+requireEmail('supportEmail');
 
 if (get('releaseStatus') !== 'ready') {
   blockRelease('releaseStatus must be "ready" before store submission');
 }
+
+if (!isObject(get('releaseAssets'))) {
+  fail('releaseAssets must be an object');
+}
+
+requireUrl('releaseAssets.appHomeUrl');
+requireUrl('releaseAssets.supportUrl');
+await requireFile('releaseAssets.landingPagePath');
+await requireFile('releaseAssets.privacyPagePath');
+await requireFile('releaseAssets.dataDeletionPagePath');
+await requireAppAdsTxt('releaseAssets.appAdsTxtPath');
+await requireFile('releaseAssets.iconSvgPath');
+await requireFile('releaseAssets.iconPng1024Path');
+await requireFile('releaseAssets.splashPngPath');
+await requireFile('releaseAssets.shareImagePath');
 
 if (!isObject(get('platforms'))) {
   fail('platforms must be an object');
@@ -136,6 +259,8 @@ requireBoolean('platforms.metaInstant.enabled');
 requireReleaseValue('platforms.metaInstant.appId');
 requireReleaseValue('platforms.metaInstant.packageCommand');
 await requireFile('platforms.metaInstant.fbappConfigPath');
+await requireFile('platforms.metaInstant.shareImagePath');
+requireStringArray('platforms.metaInstant.loginPermissions');
 requirePlacements('platforms.metaInstant');
 
 requireBoolean('platforms.googlePlayAndroid.enabled');
@@ -144,7 +269,25 @@ requirePositiveInteger('platforms.googlePlayAndroid.versionCode');
 requireReleaseValue('platforms.googlePlayAndroid.versionName');
 requireReleaseValue('platforms.googlePlayAndroid.bundleCommand');
 requireReleaseValue('platforms.googlePlayAndroid.nativeBridge');
-requirePlacements('platforms.googlePlayAndroid');
+requireAdMobAppId('platforms.googlePlayAndroid.adMobAppId');
+requireAdMobPlacements('platforms.googlePlayAndroid');
+
+requireBoolean('platforms.iosAppStore.enabled');
+requireAndroidApplicationId('platforms.iosAppStore.bundleId');
+requirePositiveInteger('platforms.iosAppStore.versionCode');
+requireReleaseValue('platforms.iosAppStore.versionName');
+requireReleaseValue('platforms.iosAppStore.prepareCommand');
+await requireFile('platforms.iosAppStore.workspacePath');
+requireReleaseValue('platforms.iosAppStore.scheme');
+requireAdMobAppId('platforms.iosAppStore.adMobAppId');
+requireAdMobPlacements('platforms.iosAppStore');
+
+verifyNativeAdMobAppId(
+  'platforms.googlePlayAndroid.adMobAppId',
+  'android/app/src/main/res/values/strings.xml admob_app_id',
+  await readAndroidAdMobAppId()
+);
+verifyNativeAdMobAppId('platforms.iosAppStore.adMobAppId', 'ios/App/App/Info.plist GADApplicationIdentifier', await readIosAdMobAppId());
 
 if (releaseMode && releaseBlockers.length > 0) {
   failures.push(...releaseBlockers);
