@@ -3,8 +3,16 @@ import { GameAudio } from './audio';
 import { LEVELS } from './game/levels';
 import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
 import type { ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
-import { createPlatformBridge, normalizeRenderQuality, type PlatformBridge, type RenderQuality, type SharePayload } from './platform';
+import {
+  createPlatformBridge,
+  normalizeRenderQuality,
+  type PlatformBridge,
+  type PlatformEventPayload,
+  type RenderQuality,
+  type SharePayload
+} from './platform';
 import { loadSave, saveGame } from './storage';
+import platformManifest from '../platform-manifest.json';
 
 type Screen = 'home' | 'levels' | 'playing' | 'result';
 type ResultState = {
@@ -45,6 +53,9 @@ type Point = {
 
 const appRoot = document.querySelector<HTMLDivElement>('#app');
 const debugAllLevels = new URLSearchParams(window.location.search).get('debug');
+const supportEmail = platformManifest.supportEmail;
+const supportUrl = platformManifest.releaseAssets.supportUrl;
+const retentionGoalLevels = 3;
 
 declare global {
   interface Window {
@@ -77,6 +88,8 @@ class ArrowAgainApp {
   private exitingPieceIds = new Set<string>();
   private history: PlaySnapshot[] = [];
   private rewardBusy = false;
+  private hintsUsed = 0;
+  private revivesUsed = 0;
   private result?: ResultState;
   private pendingHardLevel?: LevelData;
   private canvas?: HTMLCanvasElement;
@@ -99,8 +112,60 @@ class ArrowAgainApp {
 
   async start(): Promise<void> {
     await this.platform.ready();
+    this.recordSessionStart();
     this.platform.progress(100);
+    this.track('game_start', {
+      total_sessions: this.save.totalSessions,
+      streak_days: this.save.streakDays,
+      unlocked_level: this.save.unlockedLevel,
+      total_stars: this.getTotalStars()
+    });
     this.render();
+  }
+
+  private recordSessionStart(): void {
+    const today = this.getLocalDateKey();
+    const dayDelta = this.getDateDeltaDays(this.save.lastPlayedDate, today);
+
+    if (this.save.streakDays === 0) {
+      this.save.streakDays = 1;
+    } else if (dayDelta === 1) {
+      this.save.streakDays += 1;
+    } else if (dayDelta > 1) {
+      this.save.streakDays = 1;
+    }
+
+    this.save.lastPlayedDate = today;
+    this.save.totalSessions += 1;
+    saveGame(this.save);
+  }
+
+  private getLocalDateKey(now = new Date()): string {
+    const year = now.getFullYear();
+    const month = `${now.getMonth() + 1}`.padStart(2, '0');
+    const day = `${now.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private getDateDeltaDays(previousDate: string, nextDate: string): number {
+    const previous = new Date(`${previousDate}T00:00:00`);
+    const next = new Date(`${nextDate}T00:00:00`);
+    const diff = next.getTime() - previous.getTime();
+    return Number.isFinite(diff) ? Math.round(diff / 86_400_000) : 0;
+  }
+
+  private track(event: string, payload: PlatformEventPayload = {}): void {
+    try {
+      this.platform.track(event, {
+        platform: this.platform.name,
+        screen: this.screen,
+        level: this.currentLevel.id,
+        difficulty: this.currentLevel.difficulty,
+        ...payload
+      });
+    } catch {
+      // Analytics must never interrupt gameplay.
+    }
   }
 
   private render(): void {
@@ -128,6 +193,8 @@ class ArrowAgainApp {
   private renderHome(): string {
     const nextLevel = LEVELS[Math.min(this.save.unlockedLevel - 1, LEVELS.length - 1)];
     const soundLabel = this.save.soundEnabled ? 'Sound on' : 'Sound off';
+    const completedLevels = this.getCompletedLevelCount();
+    const totalStars = this.getTotalStars();
     return `
       <section class="screen home-screen" data-testid="home-screen">
         <header class="top-row">
@@ -146,15 +213,50 @@ class ArrowAgainApp {
           <div class="hero-board" aria-hidden="true">
             ${this.renderHeroCells()}
           </div>
+          <div class="home-progress" data-testid="home-progress">
+            <div>
+              <span>连续</span>
+              <strong>${Math.max(1, this.save.streakDays)} 天</strong>
+            </div>
+            <div>
+              <span>已过</span>
+              <strong>${completedLevels}/${LEVELS.length}</strong>
+            </div>
+            <div>
+              <span>星星</span>
+              <strong>${totalStars}</strong>
+            </div>
+          </div>
+          <p class="retention-line">${this.getHomeRetentionCopy(nextLevel)}</p>
           <div class="home-actions">
             <button class="primary-button" type="button" data-action="start" data-testid="start-button">开始第 ${nextLevel.id} 关</button>
             <button class="secondary-button" type="button" data-action="levels" data-testid="levels-button">关卡选择</button>
-            <button class="secondary-button" type="button" disabled>每日挑战 · 设计中</button>
+            <button class="secondary-button" type="button" data-action="feedback" data-testid="home-feedback-button">反馈与支持</button>
           </div>
         </div>
-        <p class="board-message">验证版已包含 ${LEVELS.length} 关、本地进度、生命值、提示和三星评级。</p>
+        <p class="board-message">今日目标：通关 ${retentionGoalLevels} 关，保持连续游玩节奏。</p>
       </section>
     `;
+  }
+
+  private getHomeRetentionCopy(nextLevel: LevelData): string {
+    if (this.save.totalSessions <= 1) {
+      return '先完成前三关，熟悉从边缘清场的节奏。';
+    }
+
+    if (this.save.streakDays >= 2) {
+      return `连续 ${this.save.streakDays} 天回到棋盘，第 ${nextLevel.id} 关正在等你。`;
+    }
+
+    return `上次停在第 ${nextLevel.id} 关，今天再推进 ${retentionGoalLevels} 关。`;
+  }
+
+  private getCompletedLevelCount(): number {
+    return Object.values(this.save.starsByLevel).filter((stars) => stars > 0).length;
+  }
+
+  private getTotalStars(): number {
+    return Object.values(this.save.starsByLevel).reduce((total, stars) => total + stars, 0);
   }
 
   private renderHeroCells(): string {
@@ -354,7 +456,10 @@ class ArrowAgainApp {
                   : `<button class="primary-button" type="button" data-action="revive-result" data-testid="revive-button" ${this.rewardBusy ? 'disabled' : ''}>${this.getReviveActionLabel()}</button>`
             }
           </div>
-          <button class="secondary-button" style="width:100%; margin-top:10px" type="button" data-action="share">分享成绩</button>
+          <div class="result-secondary-actions">
+            <button class="secondary-button" type="button" data-action="share" data-testid="share-button">分享成绩</button>
+            <button class="secondary-button" type="button" data-action="feedback" data-testid="result-feedback-button">反馈问题</button>
+          </div>
         </div>
       </section>
     `;
@@ -385,12 +490,14 @@ class ArrowAgainApp {
     this.audio.play('tap');
 
     if (action === 'home') {
+      this.track('screen_home_open', { from_screen: this.screen, screen: 'home' });
       this.screen = 'home';
       this.render();
       return;
     }
 
     if (action === 'levels') {
+      this.track('screen_levels_open', { from_screen: this.screen, screen: 'levels' });
       this.pendingHardLevel = undefined;
       this.screen = 'levels';
       this.render();
@@ -414,12 +521,13 @@ class ArrowAgainApp {
       this.save.soundEnabled = !this.save.soundEnabled;
       this.audio.setEnabled(this.save.soundEnabled);
       saveGame(this.save);
+      this.track('settings_sound_toggle', { enabled: this.save.soundEnabled });
       this.render();
       return;
     }
 
     if (action === 'restart' || action === 'retry-result') {
-      this.startLevel(this.currentLevel, true);
+      this.startLevel(this.currentLevel, true, action === 'retry-result' ? 'retry' : 'restart');
       return;
     }
 
@@ -438,10 +546,15 @@ class ArrowAgainApp {
       return;
     }
 
+    if (action === 'feedback') {
+      this.openFeedback();
+      return;
+    }
+
     if (action === 'confirm-hard' && this.pendingHardLevel) {
       const level = this.pendingHardLevel;
       this.pendingHardLevel = undefined;
-      this.prepareLevel(level);
+      this.prepareLevel(level, true, 'hard_confirm');
       return;
     }
 
@@ -449,13 +562,13 @@ class ArrowAgainApp {
       const resultLevelId = this.result.level.id;
       const next = LEVELS.find((level) => level.id === resultLevelId + 1);
       if (next) {
-        this.startLevel(next);
+        this.startLevel(next, false, 'next');
       }
       return;
     }
 
     if (action === 'share' && this.result) {
-      void this.platform.share(this.createResultSharePayload(this.result));
+      void this.shareResult(this.result);
     }
   }
 
@@ -481,19 +594,97 @@ class ArrowAgainApp {
     };
   }
 
-  private startLevel(level: LevelData, skipWarning = false): void {
+  private async shareResult(result: ResultState): Promise<void> {
+    this.track('share_result_request', {
+      won: result.won,
+      stars: result.stars,
+      moves: result.moves
+    });
+
+    try {
+      await this.platform.share(this.createResultSharePayload(result));
+      this.track('share_result_complete', {
+        won: result.won,
+        stars: result.stars,
+        moves: result.moves
+      });
+    } catch {
+      this.track('share_result_fail', {
+        won: result.won,
+        stars: result.stars,
+        moves: result.moves
+      });
+    }
+  }
+
+  private openFeedback(): void {
+    const feedbackAt = new Date().toISOString();
+    this.save.feedbackCount += 1;
+    this.save.lastFeedbackAt = feedbackAt;
+    saveGame(this.save);
+    this.track('feedback_open', {
+      feedback_count: this.save.feedbackCount,
+      result_won: this.result?.won ?? false,
+      moves: this.moves,
+      lives: this.lives,
+      total_sessions: this.save.totalSessions
+    });
+
+    const subject = encodeURIComponent(`Arrow Again feedback - level ${this.currentLevel.id}`);
+    const body = encodeURIComponent(this.createFeedbackBody(feedbackAt));
+    const mailto = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
+    const opened = window.open(mailto, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      window.location.href = mailto;
+    }
+  }
+
+  private createFeedbackBody(feedbackAt: string): string {
+    const resultLine = this.result
+      ? `${this.result.won ? 'won' : 'lost'}, stars ${this.result.stars}, moves ${this.result.moves}`
+      : 'not on result screen';
+
+    return [
+      'Thanks for helping improve Arrow Again.',
+      '',
+      'What happened?',
+      '',
+      '',
+      'Context',
+      `Time: ${feedbackAt}`,
+      `Platform: ${this.platform.name}`,
+      `Screen: ${this.screen}`,
+      `Level: ${this.currentLevel.id} (${this.currentLevel.difficulty})`,
+      `Result: ${resultLine}`,
+      `Lives: ${this.lives}/${this.currentLevel.lives}`,
+      `Moves: ${this.moves}/${this.currentLevel.targetMoves}`,
+      `Unlocked level: ${this.save.unlockedLevel}`,
+      `Total stars: ${this.getTotalStars()}`,
+      `Sessions: ${this.save.totalSessions}`,
+      `Streak days: ${this.save.streakDays}`,
+      `Support page: ${supportUrl}`,
+      `User agent: ${navigator.userAgent}`
+    ].join('\n');
+  }
+
+  private startLevel(level: LevelData, skipWarning = false, source = 'start'): void {
     this.currentLevel = level;
     if (!skipWarning && level.hardWarning) {
       this.pendingHardLevel = level;
       this.screen = 'playing';
+      this.track('hard_level_prompt', {
+        source,
+        target_level: level.id,
+        target_difficulty: level.difficulty
+      });
       this.prepareLevel(level, false);
       return;
     }
 
-    this.prepareLevel(level);
+    this.prepareLevel(level, true, source);
   }
 
-  private prepareLevel(level: LevelData, clearModal = true): void {
+  private prepareLevel(level: LevelData, clearModal = true, source = 'start'): void {
     this.currentLevel = level;
     this.pieces = level.pieces.map((piece) => ({ ...piece }));
     this.lives = level.lives;
@@ -504,9 +695,17 @@ class ArrowAgainApp {
     this.exitingPieceIds.clear();
     this.history = [];
     this.rewardBusy = false;
+    this.hintsUsed = 0;
+    this.revivesUsed = 0;
     this.result = undefined;
     if (clearModal) {
       this.pendingHardLevel = undefined;
+      this.track('level_start', {
+        source,
+        target_moves: level.targetMoves,
+        pieces: level.pieces.length,
+        lives: level.lives
+      });
     }
     this.screen = 'playing';
     this.render();
@@ -1199,6 +1398,12 @@ class ArrowAgainApp {
       this.message = '这枚箭头前方被挡住了。';
       this.audio.play('blocked');
       this.platform.haptic([30, 40, 30]);
+      this.track('level_blocked_move', {
+        moves: this.moves,
+        lives: Math.max(0, this.lives),
+        remaining_pieces: this.pieces.length,
+        piece_dir: piece.dir
+      });
       this.refreshPlayingUi();
       if (this.lives <= 0) {
         window.setTimeout(() => this.finishLevel(false), 260);
@@ -1261,6 +1466,11 @@ class ArrowAgainApp {
     this.message = '已撤销上一步。';
     this.errorPieceId = undefined;
     this.hintIds.clear();
+    this.track('level_undo', {
+      moves: this.moves,
+      lives: this.lives,
+      remaining_pieces: this.pieces.length
+    });
     this.render();
   }
 
@@ -1518,6 +1728,7 @@ class ArrowAgainApp {
 
     if (!this.platform.capabilities.rewardedAd) {
       this.message = '当前平台暂未接入提示广告，先用重开或继续观察可飞出的边缘箭头。';
+      this.track('rewarded_fail', { placement: 'hint', reason: 'unavailable' });
       this.render();
       return;
     }
@@ -1525,15 +1736,30 @@ class ArrowAgainApp {
     this.rewardBusy = true;
     this.message = '正在播放提示广告...';
     this.render();
+    this.track('rewarded_request', {
+      placement: 'hint',
+      moves: this.moves,
+      lives: this.lives
+    });
     const rewarded = await this.platform.showRewardedAd('hint');
     this.rewardBusy = false;
 
     if (!rewarded || this.screen !== 'playing') {
       this.message = '广告未完成，暂时无法获得提示。';
+      this.track('rewarded_fail', {
+        placement: 'hint',
+        reason: this.screen === 'playing' ? 'not_completed' : 'screen_changed'
+      });
       this.render();
       return;
     }
 
+    this.hintsUsed += 1;
+    this.track('rewarded_complete', {
+      placement: 'hint',
+      moves: this.moves,
+      lives: this.lives
+    });
     this.showHint();
   }
 
@@ -1545,26 +1771,40 @@ class ArrowAgainApp {
   }
 
   private async reviveFromReward(): Promise<void> {
-    if (!this.result || this.result.won || this.rewardBusy) {
+    const result = this.result;
+    if (!result || result.won || this.rewardBusy) {
       return;
     }
 
     if (!this.platform.capabilities.rewardedAd) {
       this.message = '当前平台暂未接入复活广告，请先重开这一关。';
+      this.track('rewarded_fail', { placement: 'revive', reason: 'unavailable' });
       this.render();
       return;
     }
 
     this.rewardBusy = true;
     this.render();
+    this.track('rewarded_request', {
+      placement: 'revive',
+      moves: result.moves,
+      lives: result.lives
+    });
     const rewarded = await this.platform.showRewardedAd('revive');
     this.rewardBusy = false;
 
     if (!rewarded) {
+      this.track('rewarded_fail', { placement: 'revive', reason: 'not_completed' });
       this.render();
       return;
     }
 
+    this.revivesUsed += 1;
+    this.track('rewarded_complete', {
+      placement: 'revive',
+      moves: result.moves,
+      lives: result.lives
+    });
     this.lives = 1;
     this.message = '复活成功，保留当前棋盘继续挑战。';
     this.errorPieceId = undefined;
@@ -1596,6 +1836,19 @@ class ArrowAgainApp {
       this.audio.play('lose');
       this.platform.haptic([60, 30, 60]);
     }
+
+    this.track(won ? 'level_complete' : 'level_fail', {
+      stars,
+      moves: this.moves,
+      lives: Math.max(0, this.lives),
+      target_moves: this.currentLevel.targetMoves,
+      remaining_pieces: Math.max(0, this.pieces.length - this.exitingPieceIds.size),
+      hints_used: this.hintsUsed,
+      revives_used: this.revivesUsed,
+      unlocked_level: this.save.unlockedLevel,
+      completed_levels: this.getCompletedLevelCount(),
+      total_stars: this.getTotalStars()
+    });
 
     this.screen = 'result';
     this.render();

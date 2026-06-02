@@ -108,6 +108,8 @@ screenshots, and App Store privacy metadata.
 ## Release Data
 
 Release pages and platform data live in `docs/release-data/platform-data.md`.
+ASO, retention, feedback, and closed-test notes live in
+`docs/release-data/aso-retention-feedback-plan.md`.
 AdMob app/unit creation and sync steps live in `docs/admob-setup.md`.
 Native packaging status and local machine blockers live in
 `docs/release-data/native-build-report.md`.

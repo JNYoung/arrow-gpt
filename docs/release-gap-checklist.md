@@ -1,6 +1,6 @@
 # Arrow Again 上线缺口清单
 
-日期：2026-05-31
+日期：2026-06-02
 
 ## 结论先行
 
@@ -14,6 +14,7 @@
 - Android / iOS Capacitor 壳。
 - 可重复生成的图标、开屏图、PWA 图标和分享图。
 - AdMob / Meta / App Store / Google Play 的发布资料模板。
+- 留存首页模块、反馈入口和最小上线埋点闭环。
 
 距离真正上线，仍差 4 类工作：
 
@@ -60,7 +61,8 @@ manifest 至少要包含：
 
 - 结构校验已落地。
 - manifest 仍是 `draft`。
-- Meta app id、Meta rewarded placement、AdMob ad unit、隐私政策 URL、支持邮箱仍是占位值。
+- Meta app id、Meta rewarded placement、AdMob app id / ad unit 仍是占位值。
+- 隐私政策 URL、数据删除 URL、支持邮箱已有当前值，但提审前仍需最终法律文本确认。
 - `npm run verify:platform` 会通过并列出 release blockers。
 - `npm run verify:platform:release` 会在占位值未替换前失败，适合提审前使用。
 
@@ -93,7 +95,7 @@ manifest 至少要包含：
 
 当前 repo 已明确缺这些：
 
-- 隐私政策 URL
+- 隐私政策最终法律文本确认
 - Android 签名
 - 最终包名 / 版本号
 - 真实 AdMob app ID / ad unit IDs，并执行 `npm run admob:sync`
@@ -106,6 +108,7 @@ manifest 至少要包含：
 已落库：
 
 - `docs/release-data/platform-data.md`
+- `docs/release-data/aso-retention-feedback-plan.md`
 - `public/app-home.html`
 - `public/privacy.html`
 - `public/data-deletion.html`
@@ -144,9 +147,9 @@ manifest 至少要包含：
 
 #### 5. 埋点最小闭环
 
-当前 `track` 接口已抽象，但还没有明确最小上线事件集。
+当前 `track` 接口已抽象，游戏运行时已接入最小上线事件集。
 
-建议至少落库这些事件：
+已落库这些事件：
 
 - `game_start`
 - `level_start`
@@ -155,12 +158,22 @@ manifest 至少要包含：
 - `rewarded_request`
 - `rewarded_complete`
 - `rewarded_fail`
+- `feedback_open`
+- `share_result_request`
+- `share_result_complete`
+- `share_result_fail`
 
 验收标准：
 
 - 事件名固定
 - 参数字段固定
 - Web mock / Meta / Google 行为差异有文档
+
+当前状态：
+
+- 游戏代码已调用上述事件。
+- `docs/release-data/aso-retention-feedback-plan.md` 已记录事件、反馈闭环和 closed test 建议。
+- 真实后台 analytics 仍依赖 Meta / 原生 host bridge / 后续接入。
 
 ### P2：可在首发后继续迭代
 

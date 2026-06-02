@@ -28,6 +28,12 @@ export interface SaveData {
   unlockedLevel: number;
   starsByLevel: Record<string, number>;
   soundEnabled: boolean;
+  firstPlayedAt: string;
+  lastPlayedDate: string;
+  streakDays: number;
+  totalSessions: number;
+  feedbackCount: number;
+  lastFeedbackAt?: string;
 }
 
 export interface BoardMetrics {
