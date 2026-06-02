@@ -40,6 +40,7 @@ function resolveJdk21() {
     process.env.JAVA_HOME,
     javaHomeFromMac('21'),
     '/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home',
+    '/Applications/Android Studio.app/Contents/jbr/Contents/Home',
     '/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home',
     '/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home'
   ].filter(Boolean);

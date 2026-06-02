@@ -4,8 +4,8 @@
   "description": "A polished arrow-maze puzzle game built for quick mobile sessions.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#E8F5F0",
-  "theme_color": "#DDF3EC",
+  "background_color": "#F0F8EB",
+  "theme_color": "#BFE7D1",
   "icons": [
     {
       "src": "/icon-192.png",
