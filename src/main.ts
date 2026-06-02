@@ -94,7 +94,7 @@ class ArrowAgainApp {
     this.renderQuality = this.platform.renderQuality;
     this.applyRenderQuality();
     this.installRuntimeBridge();
-    window.addEventListener('resize', () => this.drawBoard());
+    window.addEventListener('resize', () => this.paintPlayingBoard());
   }
 
   async start(): Promise<void> {
@@ -261,10 +261,6 @@ class ArrowAgainApp {
       <section class="screen game-screen" data-testid="game-screen">
         <header class="game-hud" aria-label="关卡状态">
           <button class="nav-back" type="button" data-action="levels" aria-label="返回关卡">‹</button>
-          <div class="life-pill" data-testid="lives" aria-label="生命 ${this.lives}/${this.currentLevel.lives}">
-            <img src="/assets/hud-heart.png" alt="" aria-hidden="true" />
-            <strong>${this.lives}/${this.currentLevel.lives}</strong>
-          </div>
           <div class="level-stack">
             <h1>第 ${this.currentLevel.id} 关</h1>
             <div class="level-dots" aria-hidden="true">
@@ -272,14 +268,18 @@ class ArrowAgainApp {
               <span></span>
               <span></span>
             </div>
-            <div class="move-card" data-testid="moves">
-              <span>步数</span>
-              <strong>${this.moves}/${this.currentLevel.targetMoves}</strong>
-            </div>
           </div>
           <button class="restart-orb" type="button" data-action="restart" aria-label="重开">
             <img src="/assets/action-restart.png" alt="" aria-hidden="true" />
           </button>
+          <div class="life-pill" data-testid="lives" aria-label="生命 ${this.lives}/${this.currentLevel.lives}">
+            <img src="/assets/hud-heart.png" alt="" aria-hidden="true" />
+            <strong>${this.lives}/${this.currentLevel.lives}</strong>
+          </div>
+          <div class="move-card" data-testid="moves">
+            <span>步数</span>
+            <strong>${this.moves}/${this.currentLevel.targetMoves}</strong>
+          </div>
           <div class="available-pill" data-testid="available-count">
             <span>可用</span>
             <strong>${available}</strong>
@@ -513,10 +513,16 @@ class ArrowAgainApp {
   }
 
   private paintPlayingBoard(): void {
-    this.drawBoard();
-    this.drawMazeRoutes();
-    this.drawArrows();
-    this.positionTutorialHand();
+    const metrics = this.getMetrics();
+    if (!metrics) {
+      return;
+    }
+
+    this.applyBoardVisualScale(metrics);
+    this.drawBoard(metrics);
+    this.drawMazeRoutes(metrics);
+    this.drawArrows(metrics);
+    this.positionTutorialHand(metrics);
   }
 
   private getMetrics(): BoardMetrics | undefined {
@@ -547,12 +553,28 @@ class ArrowAgainApp {
     };
   }
 
-  private drawBoard(): void {
+  private applyBoardVisualScale(metrics: BoardMetrics): void {
+    if (!this.boardWrap) {
+      return;
+    }
+
+    const cell = Math.min(metrics.cellWidth, metrics.cellHeight);
+    const density = this.currentLevel.pieces.length / Math.max(1, this.currentLevel.rows * this.currentLevel.cols);
+    const denseScale = this.currentLevel.pieces.length >= 30 || cell < 34 || density > 0.34 ? 0.78 : 1;
+    const stroke = (value: number) => `${Math.round(value * 10) / 10}px`;
+
+    this.boardWrap.style.setProperty('--maze-ambient-width', stroke(this.clamp(cell * 0.62 * denseScale, 13, 31)));
+    this.boardWrap.style.setProperty('--maze-rail-width', stroke(this.clamp(cell * 0.74 * denseScale, 15, 33)));
+    this.boardWrap.style.setProperty('--maze-highlight-width', stroke(this.clamp(cell * 0.18 * denseScale, 3.5, 9)));
+    this.boardWrap.style.setProperty('--maze-core-width', stroke(this.clamp(cell * 0.34 * denseScale, 6, 16)));
+    this.boardWrap.style.setProperty('--maze-flow-width', stroke(this.clamp(cell * 0.18 * denseScale, 3.8, 8)));
+  }
+
+  private drawBoard(metrics = this.getMetrics()): void {
     if (!this.canvas) {
       return;
     }
 
-    const metrics = this.getMetrics();
     if (!metrics) {
       return;
     }
@@ -655,12 +677,11 @@ class ArrowAgainApp {
     ctx.stroke();
   }
 
-  private drawMazeRoutes(): void {
+  private drawMazeRoutes(metrics = this.getMetrics()): void {
     if (!this.mazeSvg) {
       return;
     }
 
-    const metrics = this.getMetrics();
     if (!metrics) {
       return;
     }
@@ -738,12 +759,11 @@ class ArrowAgainApp {
     });
   }
 
-  private drawArrows(): void {
+  private drawArrows(metrics = this.getMetrics()): void {
     if (!this.svg) {
       return;
     }
 
-    const metrics = this.getMetrics();
     if (!metrics) {
       return;
     }
@@ -1132,10 +1152,9 @@ class ArrowAgainApp {
     return colors[piece.dir];
   }
 
-  private positionTutorialHand(): void {
+  private positionTutorialHand(metrics = this.getMetrics()): void {
     const hand = this.root.querySelector<HTMLDivElement>('.tutorial-hand');
     const bubble = this.root.querySelector<HTMLDivElement>('.tutorial-bubble');
-    const metrics = this.getMetrics();
     if (!hand || !metrics || !this.boardWrap) {
       return;
     }
@@ -1300,9 +1319,13 @@ class ArrowAgainApp {
       this.root.querySelector('.tutorial-hand')?.remove();
     }
 
-    this.drawMazeRoutes();
+    const metrics = this.getMetrics();
+    if (metrics) {
+      this.applyBoardVisualScale(metrics);
+      this.drawMazeRoutes(metrics);
+    }
     this.refreshArrowStates();
-    this.positionTutorialHand();
+    this.positionTutorialHand(metrics);
   }
 
   private refreshArrowStates(): void {

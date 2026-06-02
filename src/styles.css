@@ -223,7 +223,7 @@ button {
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 6px;
+  gap: 8px;
   padding: calc(8px + var(--safe-top)) clamp(8px, 2.8vw, 18px) calc(12px + var(--safe-bottom));
 }
 
@@ -246,13 +246,18 @@ button {
 }
 
 .game-hud {
-  position: relative;
-  min-height: 146px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(92px, 0.86fr) minmax(0, 1fr);
+  grid-template-areas:
+    "back level restart"
+    "lives moves available";
+  align-items: center;
+  gap: 8px;
+  min-height: 118px;
 }
 
 .nav-back,
 .restart-orb {
-  position: absolute;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -268,10 +273,10 @@ button {
 }
 
 .nav-back {
-  left: 2px;
-  top: 15px;
-  width: 42px;
-  height: 42px;
+  grid-area: back;
+  justify-self: start;
+  width: 44px;
+  height: 44px;
   font-size: 24px;
   font-weight: 900;
 }
@@ -293,58 +298,58 @@ button {
 }
 
 .life-pill {
-  position: absolute;
-  left: 0;
-  top: 54px;
-  min-width: 146px;
-  height: 58px;
-  border-radius: 22px;
-  gap: 10px;
-  padding: 8px 18px 8px 14px;
+  grid-area: lives;
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  border-radius: 18px;
+  gap: 7px;
+  padding: 8px 10px;
 }
 
 .life-pill img {
-  width: 38px;
-  height: 38px;
+  width: 31px;
+  height: 31px;
   object-fit: contain;
   filter: drop-shadow(0 5px 6px rgba(207, 64, 55, 0.2));
 }
 
 .life-pill strong {
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 950;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .level-stack {
-  position: absolute;
-  left: 50%;
-  top: 8px;
-  transform: translateX(-50%);
+  grid-area: level;
   display: grid;
   justify-items: center;
-  gap: 11px;
-  width: min(48vw, 190px);
+  align-self: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
   color: #223142;
   text-align: center;
 }
 
 .level-stack h1 {
   margin: 0;
-  font-size: clamp(26px, 7.2vw, 40px);
+  font-size: clamp(24px, 6.4vw, 34px);
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .level-dots {
   display: inline-flex;
-  gap: 15px;
+  gap: 12px;
 }
 
 .level-dots span {
-  width: 15px;
-  height: 15px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #d6dde4;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
@@ -358,30 +363,32 @@ button {
 }
 
 .move-card {
-  min-width: 128px;
-  min-height: 72px;
+  grid-area: moves;
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
   flex-direction: column;
-  border-radius: 20px;
-  padding: 10px 16px 12px;
+  border-radius: 18px;
+  padding: 8px 10px 9px;
 }
 
 .move-card span {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 850;
   line-height: 1.05;
 }
 
 .move-card strong {
-  margin-top: 3px;
-  font-size: 30px;
+  margin-top: 2px;
+  font-size: 26px;
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
 }
 
 .restart-orb {
-  right: 2px;
-  top: 18px;
+  grid-area: restart;
+  justify-self: end;
   width: 56px;
   height: 56px;
 }
@@ -393,32 +400,32 @@ button {
 }
 
 .available-pill {
-  position: absolute;
-  right: 0;
-  top: 76px;
-  min-width: 126px;
-  height: 54px;
-  gap: 10px;
+  grid-area: available;
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  gap: 7px;
   border-radius: 18px;
-  padding: 9px 18px;
+  padding: 8px 10px;
 }
 
 .available-pill span {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 850;
+  white-space: nowrap;
 }
 
 .available-pill strong {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 950;
 }
 
 .board-wrap {
   align-self: center;
   justify-self: center;
-  width: min(calc(100% - 28px), calc((100dvh - 318px) * 0.69), 540px);
+  width: min(calc(100% - 16px), calc((100dvh - var(--safe-top) - var(--safe-bottom) - 286px) * 0.68), 540px);
   aspect-ratio: 0.68;
-  margin: -3px 0 2px;
+  margin: 0 0 2px;
   position: relative;
   border-radius: 34px;
   overflow: visible;
@@ -511,25 +518,25 @@ button {
 
 .maze-ambient {
   stroke: rgba(255, 255, 255, 0.78);
-  stroke-width: 31;
+  stroke-width: var(--maze-ambient-width, 31px);
   opacity: 0.68;
 }
 
 .maze-rail {
   stroke: rgba(253, 254, 255, 0.98);
-  stroke-width: 33;
+  stroke-width: var(--maze-rail-width, 33px);
 }
 
 .maze-highlight {
   stroke: rgba(255, 255, 255, 0.82);
-  stroke-width: 9;
+  stroke-width: var(--maze-highlight-width, 9px);
   opacity: 0.72;
   transform: translateY(-2px);
 }
 
 .maze-core {
   stroke: var(--route-color);
-  stroke-width: 16;
+  stroke-width: var(--maze-core-width, 16px);
   opacity: 0.18;
 }
 
@@ -539,7 +546,7 @@ button {
 
 .maze-flow {
   stroke: var(--route-color);
-  stroke-width: 8;
+  stroke-width: var(--maze-flow-width, 8px);
   stroke-dasharray: 20 15;
   opacity: 0.84;
   animation: routeFlow var(--flow-duration, 1.72s) linear infinite;
@@ -547,10 +554,22 @@ button {
 }
 
 .dense-board .maze-flow {
-  stroke-width: 10;
   stroke-dasharray: none;
   opacity: 0.52;
   animation: none;
+}
+
+.dense-board .maze-ambient-group,
+.dense-board .maze-rail-group {
+  filter: none;
+}
+
+.dense-board .maze-ambient {
+  opacity: 0.42;
+}
+
+.dense-board .maze-highlight {
+  opacity: 0.42;
 }
 
 .dense-board .exit-gate {
@@ -565,11 +584,6 @@ button {
 
 .low-fx-board .maze-ambient {
   opacity: 0.34;
-  stroke-width: 27;
-}
-
-.low-fx-board .maze-rail {
-  stroke-width: 28;
 }
 
 .low-fx-board .maze-highlight {
@@ -577,7 +591,6 @@ button {
 }
 
 .low-fx-board .maze-core {
-  stroke-width: 13;
   opacity: 0.14;
 }
 
@@ -586,7 +599,6 @@ button {
 }
 
 .low-fx-board .maze-flow {
-  stroke-width: 9;
   stroke-dasharray: none;
   opacity: 0.44;
   animation: none;
@@ -715,9 +727,13 @@ button {
   font-size: 14px;
 }
 
+.play-footer {
+  min-width: 0;
+}
+
 .game-screen .game-actions {
   width: min(100%, 470px);
-  margin: 8px auto 0;
+  margin: 7px auto 0;
   justify-content: center;
 }
 
@@ -727,7 +743,7 @@ button {
   place-items: center;
   gap: 4px;
   flex: 1;
-  min-height: 74px;
+  min-height: clamp(64px, 8.7dvh, 74px);
   border-radius: 20px;
   cursor: pointer;
   background:
@@ -800,59 +816,68 @@ button {
   transform: scaleX(-1);
 }
 
-@media (min-width: 900px) and (max-height: 820px) {
+@media (min-width: 620px) and (max-height: 620px) {
   .game-screen {
     width: min(100%, 1080px);
-    grid-template-columns: minmax(180px, 240px) minmax(330px, 420px) minmax(180px, 240px);
+    grid-template-columns: minmax(132px, 0.9fr) minmax(224px, 1fr) minmax(132px, 0.9fr);
     grid-template-rows: minmax(0, 1fr);
-    column-gap: 24px;
+    column-gap: clamp(12px, 2.5vw, 24px);
     row-gap: 10px;
-    align-items: center;
+    align-items: stretch;
     padding-top: calc(12px + var(--safe-top));
+    padding-bottom: calc(12px + var(--safe-bottom));
   }
 
   .game-hud {
     grid-column: 1;
     grid-row: 1;
     width: 100%;
-    min-height: 500px;
-  }
-
-  .nav-back {
-    top: 0;
+    height: 100%;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "back"
+      "level"
+      "lives"
+      "moves"
+      "available"
+      "restart";
+    align-content: center;
+    gap: clamp(8px, 2.2dvh, 14px);
   }
 
   .life-pill,
   .available-pill {
-    left: 0;
-    right: auto;
+    height: 48px;
+  }
+
+  .move-card {
+    min-height: 54px;
+  }
+
+  .nav-back {
+    justify-self: start;
+  }
+
+  .life-pill,
+  .available-pill,
+  .move-card {
     width: 100%;
     min-width: 0;
   }
 
-  .life-pill {
-    top: 88px;
-  }
-
-  .available-pill {
-    top: 166px;
-  }
-
   .restart-orb {
-    left: 0;
-    right: auto;
-    top: 250px;
+    justify-self: start;
   }
 
   .level-stack {
-    top: 326px;
     width: 100%;
   }
 
   .board-wrap {
     grid-column: 2;
     grid-row: 1;
-    width: min(calc(100% - 18px), calc((100dvh - 116px) * 0.68), 420px);
+    width: min(calc(100% - 18px), calc((100dvh - var(--safe-top) - var(--safe-bottom) - 34px) * 0.68), 420px);
     margin: 0;
   }
 
