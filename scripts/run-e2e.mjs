@@ -60,6 +60,11 @@ async function run() {
     await page.goto(baseUrl);
     await assertVisible(page.getByTestId('home-screen'), 'Home screen should render');
     await assertVisible(page.getByTestId('start-button'), 'Start button should render');
+    await assertVisible(page.getByTestId('home-progress'), 'Home retention progress should render');
+    await assertVisible(page.getByTestId('home-feedback-button'), 'Home feedback entry should render');
+    if ((await page.getByText('设计中').count()) > 0) {
+      throw new Error('Store-ready home screen should not expose unfinished-feature copy');
+    }
 
     await page.getByTestId('start-button').click();
     await assertVisible(page.getByTestId('game-screen'), 'Game screen should render after start');
@@ -127,6 +132,7 @@ async function run() {
 
     await assertVisible(page.getByTestId('result-screen'), 'Winning level 1 should show the result screen');
     await assertVisible(page.getByTestId('next-level-button'), 'Winning level 1 should expose the next level action');
+    await assertVisible(page.getByTestId('result-feedback-button'), 'Result screen should expose feedback entry');
 
     await page.goto(`${baseUrl}?debug=levels`);
     await page.getByTestId('levels-button').click();
