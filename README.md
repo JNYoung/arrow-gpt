@@ -119,13 +119,15 @@ The deployable static review pages are copied from:
 
 - `public/app-home.html`
 - `public/privacy.html`
+- `public/terms.html`
 - `public/data-deletion.html`
 - `public/support.html`
 - `public/app-ads.txt`
+- `public/robots.txt`
 
 Before submission, replace every remaining `TODO_*` and `REPLACE_WITH_*` value
-in `platform-manifest.json` and the public policy pages. AdMob production IDs
-and `public/app-ads.txt` already use the live publisher values.
+in `platform-manifest.json`. AdMob production IDs and `public/app-ads.txt`
+already use the live publisher values.
 
 After changing AdMob Android/iOS app IDs, sync native app IDs with:
 

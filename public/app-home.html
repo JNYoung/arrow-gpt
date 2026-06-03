@@ -3,198 +3,747 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#DDF3EC" />
-    <meta name="description" content="Arrow Again is a mobile arrow-maze puzzle game." />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Arrow Again official app website for store review, AdMob app-ads.txt verification, privacy, terms, and support." />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Arrow Again" />
-    <meta property="og:description" content="Tap the free arrows, clear every route, and solve a satisfying maze puzzle." />
+    <meta property="og:description" content="A clean arrow puzzle game for quick mobile sessions." />
     <meta property="og:image" content="./social-share.png" />
-    <title>Arrow Again - App Home</title>
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <title>Arrow Again - Official App Website</title>
     <style>
       :root {
-        --ink: #1f2b3a;
-        --muted: #5c7182;
-        --mint: #ddf3ec;
-        --leaf: #63b77e;
-        --blue: #5aa4e8;
-        --red: #d85b55;
-        --paper: rgba(255, 255, 255, 0.78);
+        color-scheme: light;
+        --ink: #111827;
+        --muted: #5f6b7a;
+        --line: #dfe8dd;
+        --green: #12a63b;
+        --green-dark: #07872e;
+        --green-soft: #e6f7df;
+        --amber: #ee9600;
+        --blue: #1b74e8;
+        --paper: #ffffff;
+        --paper-soft: #fbfef9;
+        --shadow: 0 18px 45px rgba(20, 45, 20, 0.1);
+        --radius: 8px;
+        --max: 1200px;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html {
+        scroll-behavior: smooth;
+      }
+
       body {
-        min-height: 100vh;
         margin: 0;
         color: var(--ink);
-        font-family: "Avenir Next", "Nunito", "Trebuchet MS", sans-serif;
-        background:
-          radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.9), transparent 34%),
-          radial-gradient(circle at 86% 78%, rgba(99, 183, 126, 0.24), transparent 30%),
-          linear-gradient(135deg, #f9fbf4 0%, #e5f5ee 55%, #c6eadb 100%);
+        font-family:
+          Inter, "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+        background: #fff;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      svg {
+        display: block;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        min-height: 76px;
+        padding: 0 max(24px, calc((100vw - var(--max)) / 2));
+        border-bottom: 1px solid rgba(18, 166, 59, 0.13);
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-width: max-content;
+        font-size: 26px;
+        font-weight: 850;
+        line-height: 1;
+      }
+
+      .brand img {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius);
+        box-shadow: 0 10px 20px rgba(18, 166, 59, 0.18);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: clamp(18px, 3vw, 44px);
+        font-size: 16px;
+        font-weight: 760;
+        white-space: nowrap;
+      }
+
+      .nav-links a {
+        position: relative;
+        padding: 25px 0;
+      }
+
+      .nav-links a:hover,
+      .nav-links a[aria-current="page"] {
+        color: var(--green-dark);
+      }
+
+      .nav-links a[aria-current="page"]::after,
+      .nav-links a:hover::after {
+        position: absolute;
+        right: 0;
+        bottom: 16px;
+        left: 0;
+        height: 3px;
+        content: "";
+        background: var(--green);
+        border-radius: 3px;
       }
 
       main {
-        width: min(1080px, calc(100% - 32px));
-        margin: 0 auto;
-        padding: 52px 0 40px;
+        overflow: hidden;
       }
 
       .hero {
         display: grid;
-        grid-template-columns: 0.9fr 1.1fr;
-        gap: 34px;
+        grid-template-columns: minmax(360px, 0.86fr) minmax(480px, 1.15fr);
+        gap: 42px;
         align-items: center;
-      }
-
-      .app-icon {
-        width: min(320px, 70vw);
-        border-radius: 32%;
-        box-shadow: 0 28px 70px rgba(38, 64, 87, 0.2);
-      }
-
-      .eyebrow {
-        margin: 0 0 14px;
-        color: var(--leaf);
-        font-size: 13px;
-        font-weight: 900;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        width: min(var(--max), calc(100% - 48px));
+        min-height: 560px;
+        margin: 0 auto;
+        padding: 48px 0 42px;
       }
 
       h1 {
+        max-width: 580px;
+        margin: 0 0 18px;
+        font-size: clamp(60px, 6.8vw, 104px);
+        font-weight: 950;
+        line-height: 0.95;
+      }
+
+      .hero-text {
+        max-width: 580px;
         margin: 0;
-        font-size: clamp(52px, 8vw, 96px);
-        line-height: 0.92;
-        letter-spacing: -0.08em;
-      }
-
-      .lead {
-        max-width: 620px;
-        margin: 24px 0 0;
-        color: var(--muted);
-        font-size: clamp(20px, 3vw, 31px);
-        font-weight: 760;
-        line-height: 1.18;
-      }
-
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 42px;
-      }
-
-      .card {
-        min-height: 180px;
-        padding: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.78);
-        border-radius: 32px;
-        background: var(--paper);
-        box-shadow: 0 20px 55px rgba(38, 64, 87, 0.12);
-        backdrop-filter: blur(18px);
-      }
-
-      .card strong {
-        display: block;
-        margin-bottom: 12px;
-        font-size: 18px;
-      }
-
-      .card p,
-      .card a {
-        color: var(--muted);
-        font-size: 15px;
+        color: #202937;
+        font-size: 25px;
         font-weight: 650;
-        line-height: 1.55;
+        line-height: 1.42;
       }
 
-      .links {
+      .hero-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 18px;
         margin-top: 34px;
       }
 
-      .links a {
+      .button {
         display: inline-flex;
         align-items: center;
-        min-height: 46px;
-        padding: 0 18px;
-        border-radius: 999px;
-        color: #f8fbf6;
-        font-weight: 860;
-        text-decoration: none;
-        background: var(--ink);
+        justify-content: center;
+        gap: 10px;
+        min-height: 58px;
+        padding: 0 28px;
+        border: 1px solid var(--green);
+        border-radius: var(--radius);
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1;
+        transition:
+          transform 160ms ease,
+          box-shadow 160ms ease,
+          background 160ms ease;
       }
 
-      .links a.secondary {
-        color: var(--ink);
-        background: rgba(255, 255, 255, 0.7);
+      .button svg {
+        width: 21px;
+        height: 21px;
       }
 
-      footer {
-        margin-top: 46px;
+      .button path,
+      .icon path,
+      .resource-icon path {
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      .button.primary {
+        color: #fff;
+        background: linear-gradient(180deg, #18c84b, #079931);
+        box-shadow: 0 14px 28px rgba(18, 166, 59, 0.22);
+      }
+
+      .button.secondary {
+        color: var(--green-dark);
+        background: #fff;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 34px rgba(20, 45, 20, 0.13);
+      }
+
+      .quick-points {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        max-width: 620px;
+        margin-top: 38px;
+      }
+
+      .quick-points strong,
+      .quick-points span {
+        display: block;
+      }
+
+      .quick-points strong {
+        font-size: 17px;
+        font-weight: 850;
+      }
+
+      .quick-points span {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hero-visual {
+        position: relative;
+        isolation: isolate;
+      }
+
+      .hero-visual::before {
+        position: absolute;
+        right: 0;
+        bottom: 3%;
+        z-index: -1;
+        width: 70%;
+        height: 22%;
+        content: "";
+        background: linear-gradient(90deg, rgba(201, 239, 157, 0), rgba(170, 223, 98, 0.52));
+        clip-path: polygon(4% 100%, 100% 20%, 100% 100%);
+      }
+
+      .hero-visual img {
+        display: block;
+        width: min(100%, 770px);
+        margin-left: auto;
+        filter: drop-shadow(0 22px 28px rgba(28, 56, 28, 0.16));
+      }
+
+      .section {
+        width: min(var(--max), calc(100% - 48px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 28px;
+        margin-bottom: 26px;
+      }
+
+      .section-heading.compact {
+        display: block;
+        max-width: 780px;
+      }
+
+      .section-heading h2 {
+        margin: 0;
+        font-size: clamp(32px, 4vw, 46px);
+        font-weight: 900;
+        line-height: 1.08;
+      }
+
+      .section-heading p {
+        max-width: 560px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .section-heading.compact p {
+        margin-top: 10px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .feature-card {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 22px;
+        align-items: center;
+        min-height: 162px;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--paper);
+        box-shadow: 0 12px 24px rgba(17, 24, 39, 0.04);
+      }
+
+      .icon {
+        display: grid;
+        grid-row: 1 / span 2;
+        width: 72px;
+        height: 72px;
+        place-items: center;
+        color: #fff;
+        border-radius: var(--radius);
+      }
+
+      .icon svg {
+        width: 38px;
+        height: 38px;
+      }
+
+      .icon.green {
+        background: linear-gradient(145deg, #19c649, #079431);
+      }
+
+      .icon.amber {
+        background: linear-gradient(145deg, #ffbd22, #df8200);
+      }
+
+      .icon.blue {
+        background: linear-gradient(145deg, #2d8fff, #0756c7);
+      }
+
+      .feature-card h3 {
+        grid-column: 2;
+        margin: 0 0 8px;
+        font-size: 22px;
+        font-weight: 850;
+        line-height: 1.2;
+      }
+
+      .feature-card p {
+        grid-column: 2;
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .resource-list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        overflow: hidden;
+        border: 1px solid #cfe5c7;
+        border-radius: var(--radius);
+        background: var(--paper-soft);
+        box-shadow: var(--shadow);
+      }
+
+      .resource-item {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 15px;
+        min-height: 148px;
+        padding: 24px;
+        border-right: 1px solid #d9ead2;
+      }
+
+      .resource-item:last-child {
+        border-right: 0;
+      }
+
+      .resource-item:hover {
+        background: #f5fbf1;
+      }
+
+      .resource-icon {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: var(--radius);
+      }
+
+      .resource-icon svg {
+        width: 27px;
+        height: 27px;
+      }
+
+      .resource-icon.green {
+        color: var(--green-dark);
+        background: var(--green-soft);
+      }
+
+      .resource-icon.amber {
+        color: #c97300;
+        background: #fff0c8;
+      }
+
+      .resource-icon.blue {
+        color: #0e5fc7;
+        background: #dcecff;
+      }
+
+      .resource-icon.solid {
+        color: #fff;
+        background: var(--green);
+      }
+
+      .resource-item strong {
+        display: block;
+        font-size: 18px;
+        font-weight: 850;
+        line-height: 1.25;
+      }
+
+      .resource-item small {
+        display: block;
+        margin-top: 8px;
         color: var(--muted);
         font-size: 13px;
-        font-weight: 650;
+        line-height: 1.55;
       }
 
-      @media (max-width: 760px) {
-        main {
-          padding-top: 28px;
+      .site-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(var(--max), calc(100% - 48px));
+        margin: 0 auto;
+        padding: 26px 0 38px;
+        color: #697386;
+        border-top: 1px solid var(--line);
+        font-size: 15px;
+      }
+
+      .site-footer a {
+        font-weight: 760;
+      }
+
+      @media (max-width: 1080px) {
+        .resource-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .resource-item:nth-child(2n) {
+          border-right: 0;
+        }
+      }
+
+      @media (max-width: 920px) {
+        .site-header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 12px;
+          padding-top: 16px;
+          padding-bottom: 12px;
+        }
+
+        .nav-links {
+          width: 100%;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+          gap: 10px 16px;
+          overflow-x: visible;
+          padding-bottom: 2px;
+        }
+
+        .nav-links a {
+          padding: 8px 0 13px;
+        }
+
+        .nav-links a[aria-current="page"]::after,
+        .nav-links a:hover::after {
+          bottom: 5px;
         }
 
         .hero,
-        .cards {
+        .feature-grid {
           grid-template-columns: 1fr;
         }
 
-        .app-icon {
-          width: 188px;
+        .hero {
+          min-height: auto;
+          padding-top: 42px;
+        }
+
+        h1 {
+          font-size: clamp(52px, 14vw, 82px);
+        }
+
+        .hero-text {
+          font-size: 22px;
+        }
+
+        .section-heading,
+        .site-footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .site-header {
+          padding-right: 16px;
+          padding-left: 16px;
+        }
+
+        .brand {
+          font-size: 24px;
+        }
+
+        .brand img {
+          width: 38px;
+          height: 38px;
+        }
+
+        .hero,
+        .section,
+        .site-footer {
+          width: min(100% - 32px, var(--max));
+        }
+
+        .hero-actions,
+        .button {
+          width: 100%;
+        }
+
+        .quick-points,
+        .resource-list {
+          grid-template-columns: 1fr;
+        }
+
+        .resource-item,
+        .resource-item:nth-child(2n) {
+          border-right: 0;
+          border-bottom: 1px solid #d9ead2;
+        }
+
+        .resource-item:last-child {
+          border-bottom: 0;
+        }
+
+        .feature-card {
+          grid-template-columns: 56px 1fr;
+          gap: 16px;
+          padding: 22px;
+        }
+
+        .icon {
+          width: 56px;
+          height: 56px;
+        }
+
+        .icon svg {
+          width: 31px;
+          height: 31px;
         }
       }
     </style>
   </head>
   <body>
+    <header class="site-header">
+      <a class="brand" href="./app-home.html" aria-label="Arrow Again app home">
+        <img src="./icon-192.png" alt="" />
+        <span>Arrow Again</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="./app-home.html" aria-current="page">Home</a>
+        <a href="#features">Gameplay</a>
+        <a href="./privacy.html">Privacy</a>
+        <a href="./terms.html">Terms</a>
+        <a href="./support.html">Support</a>
+      </nav>
+    </header>
+
     <main>
       <section class="hero">
         <div>
-          <img class="app-icon" src="./icon-512.png" alt="Arrow Again app icon" />
-        </div>
-        <div>
-          <p class="eyebrow">Mobile Puzzle Game</p>
           <h1>Arrow Again</h1>
-          <p class="lead">A clean, tactile arrow-maze game for quick mobile sessions. Tap every free arrow, clear the board, and solve denser routes as the puzzle evolves.</p>
-          <div class="links">
-            <a href="./">Play Web Build</a>
-            <a class="secondary" href="./privacy.html">Privacy Policy</a>
-            <a class="secondary" href="./data-deletion.html">Data Deletion</a>
-            <a class="secondary" href="./support.html">Support</a>
+          <p class="hero-text">Match arrow paths, clear every route, and solve a satisfying mobile puzzle built for quick play sessions.</p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="./privacy.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3 5 6v5c0 4.7 3 8.7 7 10 4-1.3 7-5.3 7-10V6l-7-3Z" />
+                <path d="m9 12 2 2 4-5" />
+              </svg>
+              Privacy Policy
+            </a>
+            <a class="button secondary" href="./support.html">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16v12H4z" />
+                <path d="m4 7 8 6 8-6" />
+              </svg>
+              Contact Support
+            </a>
+          </div>
+          <div class="quick-points" aria-label="Game overview">
+            <div>
+              <strong>Easy to start</strong>
+              <span>Simple rules</span>
+            </div>
+            <div>
+              <strong>Route strategy</strong>
+              <span>Plan the order</span>
+            </div>
+            <div>
+              <strong>Rewarded ads</strong>
+              <span>Optional boosts</span>
+            </div>
           </div>
         </div>
+        <div class="hero-visual" aria-label="Arrow Again gameplay image">
+          <img src="./brand/official-site-hero.png" alt="Arrow Again gameplay shown on a phone with colorful arrow tiles" />
+        </div>
       </section>
 
-      <section class="cards" aria-label="App review information">
-        <article class="card">
-          <strong>App Category</strong>
-          <p>Games / Puzzle / Casual. The game uses local progress, optional rewarded ads, and platform share APIs where available.</p>
-        </article>
-        <article class="card">
-          <strong>Advertising</strong>
-          <p>Rewarded ads are used for hint and revive flows. Ad unit IDs are configured per platform before release.</p>
-        </article>
-        <article class="card">
-          <strong>Support</strong>
-          <p>Support email: <a href="mailto:j.n.young0209@gmail.com">j.n.young0209@gmail.com</a></p>
-        </article>
+      <section class="section" id="features" aria-labelledby="features-title">
+        <div class="section-heading">
+          <h2 id="features-title">Gameplay Highlights</h2>
+          <p>Designed for short mobile sessions with clear goals, tactile moves, and steadily denser boards.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="icon green" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v18" />
+                <path d="m6 9 6-6 6 6" />
+                <path d="M5 21h14" />
+              </svg>
+            </span>
+            <h3>Fast Rules</h3>
+            <p>Tap available arrows, free blocked routes, and clear the board without a long tutorial.</p>
+          </article>
+          <article class="feature-card">
+            <span class="icon amber" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M13 2 5 13h6l-1 9 8-12h-6l1-8Z" />
+              </svg>
+            </span>
+            <h3>Optional Rewards</h3>
+            <p>Rewarded ads support hint and revive flows without blocking the core puzzle loop.</p>
+          </article>
+          <article class="feature-card">
+            <span class="icon blue" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 4h8v3a4 4 0 0 1-8 0V4Z" />
+                <path d="M6 5H4v2a4 4 0 0 0 4 4" />
+                <path d="M18 5h2v2a4 4 0 0 1-4 4" />
+                <path d="M12 15v4" />
+                <path d="M8 21h8" />
+              </svg>
+            </span>
+            <h3>Store-ready Support</h3>
+            <p>Public privacy, support, data deletion, and app-ads.txt resources are available for review teams.</p>
+          </article>
+        </div>
       </section>
 
-      <footer>
-        This page is the public app home for store review, AdMob verification, and support routing.
-      </footer>
+      <section class="section" aria-labelledby="review-title">
+        <div class="section-heading compact">
+          <h2 id="review-title">App Review and AdMob Resources</h2>
+          <p>Use this page as the public developer website in app store listings. The root domain also hosts app-ads.txt for AdMob crawler verification.</p>
+        </div>
+        <div class="resource-list">
+          <a class="resource-item" href="./privacy.html">
+            <span class="resource-icon green" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3 5 6v5c0 4.7 3 8.7 7 10 4-1.3 7-5.3 7-10V6l-7-3Z" />
+                <path d="m9 12 2 2 4-5" />
+              </svg>
+            </span>
+            <span>
+              <strong>Privacy Policy</strong>
+              <small>Advertising, local storage, platform data, and support requests.</small>
+            </span>
+          </a>
+          <a class="resource-item" href="./terms.html">
+            <span class="resource-icon amber" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 3h7l3 3v15H7z" />
+                <path d="M14 3v4h4" />
+                <path d="M9 12h6" />
+                <path d="M9 16h6" />
+              </svg>
+            </span>
+            <span>
+              <strong>Terms</strong>
+              <small>Basic usage terms for the app, site, and advertising surfaces.</small>
+            </span>
+          </a>
+          <a class="resource-item" href="./support.html">
+            <span class="resource-icon blue" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 6h16v12H4z" />
+                <path d="m4 7 8 6 8-6" />
+              </svg>
+            </span>
+            <span>
+              <strong>Support</strong>
+              <small>User feedback, ad reward issues, privacy requests, and store review contact.</small>
+            </span>
+          </a>
+          <a class="resource-item" href="./data-deletion.html">
+            <span class="resource-icon green" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M5 7h14" />
+                <path d="M8 7V5h8v2" />
+                <path d="M7 7l1 14h8l1-14" />
+              </svg>
+            </span>
+            <span>
+              <strong>Data Deletion</strong>
+              <small>Instructions for clearing local progress and requesting platform-linked deletion.</small>
+            </span>
+          </a>
+          <a class="resource-item" href="./app-ads.txt">
+            <span class="resource-icon solid" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="m5 12 4 4 10-10" />
+              </svg>
+            </span>
+            <span>
+              <strong>App-ads.txt</strong>
+              <small>Publisher file is present at the website root for Google AdMob verification.</small>
+            </span>
+          </a>
+        </div>
+      </section>
     </main>
+
+    <footer class="site-footer">
+      <span>© 2026 Arrow Again. All rights reserved.</span>
+      <a href="mailto:j.n.young0209@gmail.com">j.n.young0209@gmail.com</a>
+    </footer>
   </body>
 </html>
