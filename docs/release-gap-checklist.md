@@ -76,6 +76,7 @@ manifest 至少要包含：
 - `@capacitor-community/admob`
 - `npm run admob:sync`
 - `npm run admob:sync:test`
+- `npm run android:debug:ads`
 - Android / iOS AdMob app id 一致性巡检
 
 验收标准：
@@ -88,7 +89,10 @@ manifest 至少要包含：
 当前状态：
 
 - 代码桥已接入。
-- 后台真实 AdMob app id / rewarded ad unit id 仍未创建或未回填。
+- Android debug 包已用 Google sample rewarded ad unit 验证提示广告：广告展示、reward granted、返回游戏高亮提示均通过。
+- AdMob Android / iOS app id 与 3 个 rewarded ad unit 已创建并回填；`npm run admob:sync` 已同步原生配置。
+- `public/app-ads.txt` 已替换 Google publisher id，仍需部署到公开域名根目录。
+- Meta 包已注入 FBInstant SDK 和 runtime placement 配置；真实 Meta 广告展示仍需要后台 App ID / placement ID。
 - `npm run verify:platform` 会列出这些 release blockers；`npm run verify:platform:release` 会阻断提审。
 
 #### 3. 上架物料与合规
@@ -98,7 +102,7 @@ manifest 至少要包含：
 - 隐私政策最终法律文本确认
 - Android 签名
 - 最终包名 / 版本号
-- 真实 AdMob app ID / ad unit IDs，并执行 `npm run admob:sync`
+- `app-ads.txt` 公开域名根目录部署与 AdMob 隐私/同意消息配置
 - Meta App ID / placement IDs
 - 商店截图
 - 商店最终文案审核
@@ -191,9 +195,9 @@ manifest 至少要包含：
 ## 建议的执行顺序
 
 1. `platform-manifest.json` + `verify-platform-manifest`
-2. 创建 AdMob Android/iOS app + rewarded ad unit，回填 manifest 并执行 `npm run admob:sync`
-3. Android/iOS 真机 smoke test
-4. Meta placement 配置 + Meta smoke test
+2. Android/iOS 真机 smoke test
+3. Meta app / placement 配置 + Meta smoke test
+4. `app-ads.txt` 公开部署与 AdMob 隐私/同意消息配置
 5. 商店文案 / 截图 / 隐私政策 / Data safety
 6. 出 Android AAB 和 Meta zip 作为首批上线包
 
@@ -201,7 +205,6 @@ manifest 至少要包含：
 
 - 最终包名、展示名、版本策略
 - Meta app id 和广告位 id
-- AdMob app id 与 rewarded 广告位 id
 - 隐私政策 URL
 - 可部署 `app-home.html` / `privacy.html` / `data-deletion.html` / `app-ads.txt` 的公开域名
 - Google Play / Apple / Meta 开发者后台权限

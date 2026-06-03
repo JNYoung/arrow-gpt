@@ -28,7 +28,7 @@
 | 隐私政策草稿 | `public/privacy.html` | `https://jnyoung.github.io/arrow-gpt/privacy.html` |
 | 数据删除说明 | `public/data-deletion.html` | `https://jnyoung.github.io/arrow-gpt/data-deletion.html` |
 | 支持页 | `public/support.html` | `https://jnyoung.github.io/arrow-gpt/support.html` |
-| app-ads.txt 模板 | `public/app-ads.txt` | `https://YOUR_DOMAIN/app-ads.txt` |
+| app-ads.txt | `public/app-ads.txt` | `https://YOUR_DOMAIN/app-ads.txt` |
 | App icon SVG | `public/icon.svg` | `https://YOUR_DOMAIN/icon.svg` |
 | App icon 512 | `public/icon-512.png` | `https://YOUR_DOMAIN/icon-512.png` |
 | Share image | `public/social-share.png` | `https://YOUR_DOMAIN/social-share.png` |
@@ -37,12 +37,15 @@
 
 | 字段 | 当前值 | 上线前动作 |
 | --- | --- | --- |
-| Android AdMob app ID | `ca-app-pub-0000000000000000~0000000000` | 替换为 AdMob 后台真实 Android app ID，并同步 `android/app/src/main/res/values/strings.xml` 与 `platform-manifest.json` |
-| iOS AdMob app ID | `ca-app-pub-0000000000000000~0000000000` | 替换为真实 iOS app ID，并同步 `ios/App/App/Info.plist` 与 `platform-manifest.json` |
-| hint rewarded unit | `TODO_ADMOB_HINT_UNIT` | 替换为真实 rewarded ad unit ID |
-| revive rewarded unit | `TODO_ADMOB_REVIVE_UNIT` | 替换为真实 rewarded ad unit ID |
-| double reward unit | `TODO_ADMOB_DOUBLE_REWARD_UNIT` | 可暂不在 UI 开放，但后台 ID 先占位 |
-| app-ads.txt | `google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0` | 将 `pub-000...` 替换为你的 publisher ID，并部署在开发者网站根目录 |
+| Android AdMob app ID | `ca-app-pub-2481288993515154~1565848203` | 已同步 `android/app/src/main/res/values/strings.xml` 与 `platform-manifest.json` |
+| iOS AdMob app ID | `ca-app-pub-2481288993515154~1506138451` | 已同步 `ios/App/App/Info.plist` 与 `platform-manifest.json` |
+| Android hint rewarded unit | `ca-app-pub-2481288993515154/7636736455` | 已回填 |
+| Android revive rewarded unit | `ca-app-pub-2481288993515154/9949250626` | 已回填 |
+| Android double reward unit | `ca-app-pub-2481288993515154/4633344766` | 已回填 |
+| iOS hint rewarded unit | `ca-app-pub-2481288993515154/5936338057` | 已回填 |
+| iOS revive rewarded unit | `ca-app-pub-2481288993515154/2769598752` | 已回填 |
+| iOS double reward unit | `ca-app-pub-2481288993515154/4326223000` | 已回填 |
+| app-ads.txt | `google.com, pub-2481288993515154, DIRECT, f08c47fec0942fa0` | 已替换 publisher ID，仍需部署在开发者网站根目录 |
 
 同步命令：
 
@@ -56,7 +59,7 @@ npm run admob:sync
 npm run admob:sync:test
 ```
 
-`npm run verify:platform:release` 会阻止 sample id 或 placeholder 被用于正式发布。
+`npm run verify:platform:release` 会阻止 sample id、placeholder 或未同步的原生 app id 被用于正式发布。
 
 ## Meta / Facebook 数据
 

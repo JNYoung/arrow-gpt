@@ -111,6 +111,8 @@ Release pages and platform data live in `docs/release-data/platform-data.md`.
 ASO, retention, feedback, and closed-test notes live in
 `docs/release-data/aso-retention-feedback-plan.md`.
 AdMob app/unit creation and sync steps live in `docs/admob-setup.md`.
+Ad platform account, ID, and debug ad demo steps live in
+`docs/ad-platform-setup.md`.
 Native packaging status and local machine blockers live in
 `docs/release-data/native-build-report.md`.
 The deployable static review pages are copied from:
@@ -121,12 +123,11 @@ The deployable static review pages are copied from:
 - `public/support.html`
 - `public/app-ads.txt`
 
-Before submission, replace every `TODO_*`, `REPLACE_WITH_*`, and placeholder
-`ca-app-pub-000...` / `pub-000...` value in `platform-manifest.json`,
-Android/iOS native config, and the public policy pages.
+Before submission, replace every remaining `TODO_*` and `REPLACE_WITH_*` value
+in `platform-manifest.json` and the public policy pages. AdMob production IDs
+and `public/app-ads.txt` already use the live publisher values.
 
-After creating AdMob Android/iOS apps and rewarded units, fill
-`platform-manifest.json` and sync native app IDs with:
+After changing AdMob Android/iOS app IDs, sync native app IDs with:
 
 ```bash
 npm run admob:sync

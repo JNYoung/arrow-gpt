@@ -1,3 +1,2 @@
-# Replace the publisher ID before production release.
-# The final file must be hosted at the root of the verified developer website.
-google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+# Host this file at the root of the verified developer website before release.
+google.com, pub-2481288993515154, DIRECT, f08c47fec0942fa0
