@@ -45,11 +45,11 @@
       "versionName": "1.0.0",
       "bundleCommand": "npm run google:aab",
       "nativeBridge": "window.NativeGameHost",
-      "adMobAppId": "ca-app-pub-0000000000000000~0000000000",
+      "adMobAppId": "ca-app-pub-2481288993515154~1565848203",
       "rewardedPlacements": {
-        "hint": "TODO_ADMOB_HINT_UNIT",
-        "revive": "TODO_ADMOB_REVIVE_UNIT",
-        "double-reward": "TODO_ADMOB_DOUBLE_REWARD_UNIT"
+        "hint": "ca-app-pub-2481288993515154/7636736455",
+        "revive": "ca-app-pub-2481288993515154/9949250626",
+        "double-reward": "ca-app-pub-2481288993515154/4633344766"
       }
     },
     "iosAppStore": {
@@ -60,11 +60,11 @@
       "prepareCommand": "npm run ios:prepare",
       "workspacePath": "ios/App/App.xcworkspace",
       "scheme": "App",
-      "adMobAppId": "ca-app-pub-0000000000000000~0000000000",
+      "adMobAppId": "ca-app-pub-2481288993515154~1506138451",
       "rewardedPlacements": {
-        "hint": "TODO_ADMOB_IOS_HINT_UNIT",
-        "revive": "TODO_ADMOB_IOS_REVIVE_UNIT",
-        "double-reward": "TODO_ADMOB_IOS_DOUBLE_REWARD_UNIT"
+        "hint": "ca-app-pub-2481288993515154/5936338057",
+        "revive": "ca-app-pub-2481288993515154/2769598752",
+        "double-reward": "ca-app-pub-2481288993515154/4326223000"
       }
     }
   }
