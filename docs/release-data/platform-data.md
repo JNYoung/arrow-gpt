@@ -16,22 +16,22 @@
 | Short description | Tap the free arrows, clear every route, and solve satisfying maze puzzles. |
 | Long description | Arrow Again is a tactile arrow-maze puzzle built for quick mobile sessions. Choose the arrows with a clear path, watch them fly out, and clear denser boards as new route patterns appear. |
 | Support email | `j.n.young0209@gmail.com` |
-| App home URL | `https://jnyoung.github.io/arrow-gpt/app-home.html` |
-| Privacy policy URL | `https://jnyoung.github.io/arrow-gpt/privacy.html` |
-| Data deletion URL | `https://jnyoung.github.io/arrow-gpt/data-deletion.html` |
+| App home URL | `https://arrow-again.top/app-home.html` |
+| Privacy policy URL | `https://arrow-again.top/privacy.html` |
+| Data deletion URL | `https://arrow-again.top/data-deletion.html` |
 
 ## 已准备的网页和素材
 
 | 用途 | 仓库路径 | 上线后 URL |
 | --- | --- | --- |
-| AdMob / 平台主页 | `public/app-home.html` | `https://jnyoung.github.io/arrow-gpt/app-home.html` |
-| 隐私政策草稿 | `public/privacy.html` | `https://jnyoung.github.io/arrow-gpt/privacy.html` |
-| 数据删除说明 | `public/data-deletion.html` | `https://jnyoung.github.io/arrow-gpt/data-deletion.html` |
-| 支持页 | `public/support.html` | `https://jnyoung.github.io/arrow-gpt/support.html` |
-| app-ads.txt | `public/app-ads.txt` | `https://YOUR_DOMAIN/app-ads.txt` |
-| App icon SVG | `public/icon.svg` | `https://YOUR_DOMAIN/icon.svg` |
-| App icon 512 | `public/icon-512.png` | `https://YOUR_DOMAIN/icon-512.png` |
-| Share image | `public/social-share.png` | `https://YOUR_DOMAIN/social-share.png` |
+| AdMob / 平台主页 | `public/app-home.html` | `https://arrow-again.top/app-home.html` |
+| 隐私政策草稿 | `public/privacy.html` | `https://arrow-again.top/privacy.html` |
+| 数据删除说明 | `public/data-deletion.html` | `https://arrow-again.top/data-deletion.html` |
+| 支持页 | `public/support.html` | `https://arrow-again.top/support.html` |
+| app-ads.txt | `public/app-ads.txt` | `https://arrow-again.top/app-ads.txt` |
+| App icon SVG | `public/icon.svg` | `https://arrow-again.top/icon.svg` |
+| App icon 512 | `public/icon-512.png` | `https://arrow-again.top/icon-512.png` |
+| Share image | `public/social-share.png` | `https://arrow-again.top/social-share.png` |
 
 ## AdMob 数据
 
