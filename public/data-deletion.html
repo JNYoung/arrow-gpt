@@ -28,9 +28,22 @@
         font-weight: 650;
       }
 
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 42px;
+        font-size: 15px;
+        font-weight: 800;
+      }
+
       a {
         color: #1f2b3a;
         font-weight: 850;
+      }
+
+      nav a {
+        text-decoration: none;
       }
 
       .card {
@@ -42,7 +55,12 @@
     </style>
   </head>
   <body>
-    <a href="./app-home.html">Back to app home</a>
+    <nav aria-label="Data deletion navigation">
+      <a href="./app-home.html">App Home</a>
+      <a href="./privacy.html">Privacy</a>
+      <a href="./terms.html">Terms</a>
+      <a href="./support.html">Support</a>
+    </nav>
     <h1>Data Deletion Instructions</h1>
     <div class="card">
       <p>Arrow Again does not require a standalone account for core gameplay. Most progress data is stored locally on your device or browser.</p>
