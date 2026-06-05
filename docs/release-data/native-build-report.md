@@ -1,6 +1,6 @@
 # Native Build Report
 
-日期：2026-05-31
+日期：2026-06-05
 
 ## Android
 
@@ -9,26 +9,44 @@
 - `npm run assets:release`
 - `npm run build`
 - `npx cap sync android`
-- 直接 Gradle 释放包探测：`./gradlew bundleRelease`
+- `npm run google:aab`
+- 直接 Gradle 释放包探测：`node scripts/run-android-gradle.mjs bundleRelease`
 
-当前阻塞：
+当前状态：
 
-- 本机只有 JDK 17。
-- 当前 Capacitor Android 编译链路要求 Java source release 21，Gradle 报错：`错误: 无效的源发行版：21`。
-- `npm run google:aab` 也会被 `scripts/run-android-gradle.mjs` 提前拦截，提示安装 JDK 21。
-- 已尝试临时下载 / Homebrew 安装 JDK 21，但当前网络下载速度过慢，已中断，避免长时间阻塞。
+- 本机已安装 Homebrew `openjdk@21`，`scripts/run-android-gradle.mjs` 会优先使用独立 JDK 21，再回退到 Android Studio JBR。
+- `scripts/run-android-gradle.mjs` 默认使用一次性 Gradle user home 和 `--no-daemon`，避免旧的 `/private/tmp/arrow-gradle-cache` 损坏后阻塞发布构建。
+- `npm run google:aab` 已接入 `npm run verify:android:release`，Android 上架门禁不会被 Meta placeholder 阻断。
+- `npm run google:aab` 已成功产出本地 Android App Bundle。
+- `android/app/build.gradle` 已支持正式 upload key 环境变量；当前未提供 keystore 时产物是 release bundle 但不是 Google Play 可上传的正式签名包。
 
-解除方式：
+当前产物：
 
-1. 安装 Temurin 21 或 Homebrew `openjdk@21`。
-2. 确认 `JAVA_HOME` 指向 JDK 21。
+```text
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
+提交 Google Play 前仍需：
+
+1. 提供正式 upload key 环境变量：
+
+```bash
+export ANDROID_RELEASE_STORE_FILE=/absolute/path/to/upload-key.jks
+export ANDROID_RELEASE_STORE_PASSWORD=...
+export ANDROID_RELEASE_KEY_ALIAS=...
+export ANDROID_RELEASE_KEY_PASSWORD=...
+```
+
+2. 确认 Google Play Console 中的 application id、versionCode、versionName 与 `platform-manifest.json` 一致。
 3. 重新运行：
 
 ```bash
 npm run google:aab
 ```
 
-预期产物：
+4. 用 `jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/app-release.aab` 确认 signed AAB。
+
+预期提审产物：
 
 ```text
 android/app/build/outputs/bundle/release/app-release.aab

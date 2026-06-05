@@ -12,6 +12,7 @@
     "landingPagePath": "public/app-home.html",
     "privacyPagePath": "public/privacy.html",
     "dataDeletionPagePath": "public/data-deletion.html",
+    "appAdsTxtUrl": "https://arrow-again.top/app-ads.txt",
     "appAdsTxtPath": "public/app-ads.txt",
     "iconSvgPath": "public/icon.svg",
     "iconPng1024Path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",

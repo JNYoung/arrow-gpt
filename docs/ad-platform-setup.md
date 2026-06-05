@@ -80,10 +80,10 @@ android/app/build/outputs/apk/debug/app-debug.apk
 5. 故意点错耗尽生命，在结果页点击“看广告复活”。
 6. 完成广告后，回到当前棋盘并保留 1 条生命。
 
-发布包不能使用 sample IDs。提审前跑：
+发布包不能使用 sample IDs。Android 首发提审前跑：
 
 ```bash
-npm run verify:platform:release
+npm run verify:android:release
 ```
 
 ## Meta / Facebook 申请清单
@@ -134,11 +134,11 @@ npm run meta:zip:debug
 
 ## 发布前广告检查
 
-- `npm run verify:platform:release` 必须通过。
+- Android 首发前 `npm run verify:android:release` 必须通过；全平台提审前 `npm run verify:platform:release` 必须通过。
 - `platform-manifest.json` 不能包含 `TODO_*`、Google sample ID 或 mock 广告配置。
 - Android `android/app/src/main/res/values/strings.xml` 必须同步真实 AdMob app ID。
 - iOS `ios/App/App/Info.plist` 必须同步真实 AdMob app ID。
-- `public/app-ads.txt` 已替换真实 publisher ID，发布前必须部署在公开域名根目录。
+- `public/app-ads.txt` 已替换真实 publisher ID，发布前必须在 `https://arrow-again.top/app-ads.txt` 验证。
 - Google Play Data safety、App Store App Privacy、Meta 隐私声明必须与广告 SDK 实际数据流一致。
 
 ## 参考

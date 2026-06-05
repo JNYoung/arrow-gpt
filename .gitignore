@@ -5,3 +5,6 @@ releases
 .DS_Store
 *.log
 *.tmp
+*.jks
+*.keystore
+android/release-signing.env
