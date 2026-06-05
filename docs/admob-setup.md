@@ -54,16 +54,16 @@ Android debug 包更推荐使用不污染 release 配置的演示命令：
 npm run android:debug:ads
 ```
 
-正式发布前必须执行：
+Android 首发前必须执行：
 
 ```bash
-npm run verify:platform:release
+npm run verify:android:release
 ```
 
-这个巡检会阻止 placeholder、Google sample ID、Android/iOS 原生 app id 与 manifest 不一致等问题进入发布包。
+这个巡检会阻止 Android AdMob placeholder、Google sample ID、app-ads.txt 配置、Android 原生 app id 与 manifest 不一致等问题进入发布包；Meta placeholder 不会阻断 Android 首发。
 
 ## 仍需账号侧完成
 
-- app-ads.txt 部署到公开域名根目录。
+- 合并部署后，在 `https://arrow-again.top/app-ads.txt` 验证 app-ads.txt。
 - AdMob 隐私与同意消息配置。
 - 真机验证 `hint` / `revive` 两条 rewarded 流程。

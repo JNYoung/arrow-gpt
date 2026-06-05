@@ -1,6 +1,6 @@
 # Arrow Again 发布资料包
 
-日期：2026-05-31
+日期：2026-06-05
 
 ## 可直接填写到后台的基础资料
 
@@ -19,13 +19,14 @@
 | App home URL | `https://arrow-again.top/app-home.html` |
 | Privacy policy URL | `https://arrow-again.top/privacy.html` |
 | Data deletion URL | `https://arrow-again.top/data-deletion.html` |
+| app-ads.txt URL | `https://arrow-again.top/app-ads.txt` |
 
 ## 已准备的网页和素材
 
 | 用途 | 仓库路径 | 上线后 URL |
 | --- | --- | --- |
 | AdMob / 平台主页 | `public/app-home.html` | `https://arrow-again.top/app-home.html` |
-| 隐私政策草稿 | `public/privacy.html` | `https://arrow-again.top/privacy.html` |
+| 隐私政策 | `public/privacy.html` | `https://arrow-again.top/privacy.html` |
 | 数据删除说明 | `public/data-deletion.html` | `https://arrow-again.top/data-deletion.html` |
 | 支持页 | `public/support.html` | `https://arrow-again.top/support.html` |
 | app-ads.txt | `public/app-ads.txt` | `https://arrow-again.top/app-ads.txt` |
@@ -45,7 +46,7 @@
 | iOS hint rewarded unit | `ca-app-pub-2481288993515154/5936338057` | 已回填 |
 | iOS revive rewarded unit | `ca-app-pub-2481288993515154/2769598752` | 已回填 |
 | iOS double reward unit | `ca-app-pub-2481288993515154/4326223000` | 已回填 |
-| app-ads.txt | `google.com, pub-2481288993515154, DIRECT, f08c47fec0942fa0` | 已替换 publisher ID，仍需部署在开发者网站根目录 |
+| app-ads.txt | `google.com, pub-2481288993515154, DIRECT, f08c47fec0942fa0` | 已替换 publisher ID，合并部署后应在 `https://arrow-again.top/app-ads.txt` 验证 |
 
 同步命令：
 
@@ -59,7 +60,19 @@ npm run admob:sync
 npm run admob:sync:test
 ```
 
-`npm run verify:platform:release` 会阻止 sample id、placeholder 或未同步的原生 app id 被用于正式发布。
+Android 首发提审前运行：
+
+```bash
+npm run verify:android:release
+```
+
+全平台提审前运行：
+
+```bash
+npm run verify:platform:release
+```
+
+全平台巡检仍会阻止 Meta placeholder；Android 专用巡检不会被 Meta 待办阻断。
 
 ## Meta / Facebook 数据
 
@@ -76,8 +89,8 @@ npm run admob:sync:test
 | Share text | `我在 Arrow Again 第 X 关拿到 Y 星！` |
 | Share image | `public/social-share.png` |
 | Rewarded placements | `TODO_META_HINT_PLACEMENT`, `TODO_META_REVIVE_PLACEMENT`, `TODO_META_DOUBLE_REWARD_PLACEMENT` |
-| Privacy policy | `TODO_PRIVACY_POLICY_URL` |
-| Data deletion instructions | `TODO_DATA_DELETION_URL` |
+| Privacy policy | `https://arrow-again.top/privacy.html` |
+| Data deletion instructions | `https://arrow-again.top/data-deletion.html` |
 
 ## App Store / Google Play 商店文案
 
@@ -110,12 +123,12 @@ arrow puzzle, maze puzzle, unblock, casual puzzle, brain game, logic puzzle
 
 ## 仍需用户本人提供
 
-- 真实支持邮箱。
-- 可公开访问的域名，用于部署 `app-home.html`、`privacy.html`、`data-deletion.html`、`support.html`、`app-ads.txt`。
-- Google Play / AdMob 后台中的 Android app ID、iOS app ID、rewarded ad unit IDs。
-- Meta App ID 与 rewarded placement IDs。
+- Android upload key / keystore 或对应环境变量。
+- Google Play / AdMob 后台中的 app-ads.txt 验证、隐私/同意消息与 Data safety 配置。
 - 隐私政策最终法律文本确认。
-- Android release signing keystore 与 Apple Developer Team。
+- 商店截图和主视觉。
+- Meta App ID 与 rewarded placement IDs（Android 首发后）。
+- Apple Developer Team（iOS 后续）。
 
 ## 官方参考
 

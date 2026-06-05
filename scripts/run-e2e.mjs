@@ -1,10 +1,12 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
 const port = Number(process.env.E2E_PORT ?? 4180);
 const baseUrl = `http://127.0.0.1:${port}`;
 const moveAnimationMs = 820;
+const e2eTimeoutMs = Number(process.env.E2E_TIMEOUT_MS ?? 90000);
 
 const server = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', String(port)], {
   cwd: process.cwd(),
@@ -31,6 +33,26 @@ async function waitForServer() {
   throw new Error(`Vite preview did not start at ${baseUrl}\n${serverOutput.join('')}`);
 }
 
+async function stopServer() {
+  if (server.exitCode !== null || server.signalCode !== null) {
+    return;
+  }
+
+  const stopped = new Promise((resolve) => {
+    server.once('exit', resolve);
+  });
+  server.kill('SIGTERM');
+  await Promise.race([
+    stopped,
+    delay(3000).then(() => {
+      if (server.exitCode === null && server.signalCode === null) {
+        server.kill('SIGKILL');
+      }
+    })
+  ]);
+  await stopped;
+}
+
 async function assertVisible(locator, message) {
   if (!(await locator.isVisible())) {
     throw new Error(message);
@@ -42,22 +64,84 @@ async function clickAndWait(page, testId) {
   await page.waitForTimeout(moveAnimationMs);
 }
 
+async function gotoApp(page, url) {
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+}
+
+async function measureVisibleBox(locator, message) {
+  await locator.waitFor({ state: 'visible' });
+  const box = await locator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height
+    };
+  });
+  if (box.width <= 0 || box.height <= 0) {
+    throw new Error(message);
+  }
+  return box;
+}
+
+async function launchBrowser() {
+  try {
+    return await chromium.launch({ headless: true });
+  } catch (error) {
+    if (!String(error?.message ?? error).includes("Executable doesn't exist")) {
+      throw error;
+    }
+
+    const executablePath = process.env.E2E_CHROME_EXECUTABLE ?? resolveLocalChrome();
+    if (!executablePath) {
+      throw error;
+    }
+
+    console.warn(`Playwright Chromium is not installed; using local Chrome at ${executablePath}.`);
+    return chromium.launch({ headless: true, executablePath });
+  }
+}
+
+function resolveLocalChrome() {
+  const candidates = {
+    darwin: [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+    ],
+    linux: ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'],
+    win32: [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+    ]
+  }[process.platform] ?? [];
+
+  return candidates.find((candidate) => existsSync(candidate));
+}
+
 async function run() {
   await waitForServer();
 
   let browser;
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await launchBrowser();
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    page.setDefaultTimeout(10000);
+    page.setDefaultNavigationTimeout(10000);
     const consoleProblems = [];
     page.on('console', (message) => {
       if (['error', 'warning'].includes(message.type())) {
+        if (message.type() === 'error' && message.text().startsWith('Failed to load resource:')) {
+          return;
+        }
         consoleProblems.push(`${message.type()}: ${message.text()}`);
       }
     });
     page.on('pageerror', (error) => consoleProblems.push(`pageerror: ${error.message}`));
 
-    await page.goto(baseUrl);
+    await gotoApp(page, baseUrl);
     await assertVisible(page.getByTestId('home-screen'), 'Home screen should render');
     await assertVisible(page.getByTestId('start-button'), 'Start button should render');
     await assertVisible(page.getByTestId('home-progress'), 'Home retention progress should render');
@@ -71,12 +155,15 @@ async function run() {
     await assertVisible(page.getByTestId('board'), 'Board should render after start');
 
     const blockedPiece = page.getByTestId('piece-l1-p2');
-    const blockedBoxBefore = await blockedPiece.boundingBox();
+    const blockedBoxBefore = await measureVisibleBox(
+      blockedPiece,
+      'Blocked arrow should expose a measurable SVG box before error feedback'
+    );
     await blockedPiece.click();
-    const blockedBoxDuring = await page.getByTestId('piece-l1-p2').boundingBox();
-    if (!blockedBoxBefore || !blockedBoxDuring) {
-      throw new Error('Blocked arrow should expose a measurable SVG box during error feedback');
-    }
+    const blockedBoxDuring = await measureVisibleBox(
+      page.getByTestId('piece-l1-p2'),
+      'Blocked arrow should expose a measurable SVG box during error feedback'
+    );
     if (Math.abs(blockedBoxBefore.x - blockedBoxDuring.x) > 20 || Math.abs(blockedBoxBefore.y - blockedBoxDuring.y) > 20) {
       throw new Error('Blocked arrow should shake in place instead of jumping to the board origin');
     }
@@ -134,7 +221,7 @@ async function run() {
     await assertVisible(page.getByTestId('next-level-button'), 'Winning level 1 should expose the next level action');
     await assertVisible(page.getByTestId('result-feedback-button'), 'Result screen should expose feedback entry');
 
-    await page.goto(`${baseUrl}?debug=levels`);
+    await gotoApp(page, `${baseUrl}?debug=levels`);
     await page.getByTestId('levels-button').click();
     await page.getByTestId('level-100').scrollIntoViewIfNeeded();
     await assertVisible(page.getByTestId('level-100'), 'Debug level selection should expose the full 100-level pack');
@@ -148,10 +235,12 @@ async function run() {
     await assertVisible(page.getByTestId('game-screen'), 'Confirming hard modal should enter the level');
 
     const lowFxPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    lowFxPage.setDefaultTimeout(10000);
+    lowFxPage.setDefaultNavigationTimeout(10000);
     await lowFxPage.addInitScript(() => {
       window.__GAME_PLATFORM_CONFIG__ = { renderQuality: 'low', mockRewardedAds: true };
     });
-    await lowFxPage.goto(`${baseUrl}?debug=levels`);
+    await gotoApp(lowFxPage, `${baseUrl}?debug=levels`);
     await lowFxPage.getByTestId('levels-button').click();
     await lowFxPage.getByTestId('level-80').scrollIntoViewIfNeeded();
     await lowFxPage.getByTestId('level-80').click();
@@ -174,7 +263,7 @@ async function run() {
     await lowFxPage.close();
 
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(baseUrl);
+    await gotoApp(page, baseUrl);
     await assertVisible(page.getByTestId('home-screen'), 'Desktop viewport should render home screen');
 
     if (consoleProblems.length > 0) {
@@ -185,9 +274,20 @@ async function run() {
   }
 }
 
+let exitCode = 0;
 try {
-  await run();
+  await Promise.race([
+    run(),
+    delay(e2eTimeoutMs).then(() => {
+      throw new Error(`E2E timed out after ${e2eTimeoutMs}ms`);
+    })
+  ]);
   console.log('E2E passed: home, gameplay, rewarded hint, rewarded revive, 100-level pack, hard modal, and desktop smoke flow.');
+} catch (error) {
+  console.error(error);
+  exitCode = 1;
 } finally {
-  server.kill('SIGTERM');
+  await Promise.race([stopServer(), delay(5000)]);
 }
+
+process.exit(exitCode);

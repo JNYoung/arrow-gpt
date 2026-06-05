@@ -1,5 +1,6 @@
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -13,6 +14,9 @@ if (args.length === 0) {
 const root = process.cwd();
 const androidDir = path.join(root, 'android');
 const javaHome = resolveJdk21();
+const gradleUserHome = process.env.GRADLE_USER_HOME ?? mkdtempSync(path.join(tmpdir(), 'arrow-gradle-cache-'));
+const shouldCleanGradleUserHome = !process.env.GRADLE_USER_HOME;
+const gradleArgs = args.some((arg) => arg === '--daemon' || arg === '--no-daemon') ? args : [...args, '--no-daemon'];
 
 if (!javaHome) {
   console.error('JDK 21 is required for Android release/debug builds.');
@@ -21,17 +25,30 @@ if (!javaHome) {
   process.exit(1);
 }
 
-const child = spawn('./gradlew', args, {
+const child = spawn('./gradlew', gradleArgs, {
   cwd: androidDir,
   stdio: 'inherit',
   env: {
     ...process.env,
     JAVA_HOME: javaHome,
-    GRADLE_USER_HOME: process.env.GRADLE_USER_HOME ?? '/private/tmp/arrow-gradle-cache'
+    GRADLE_USER_HOME: gradleUserHome
   }
 });
 
+function cleanTemporaryGradleUserHome() {
+  if (shouldCleanGradleUserHome) {
+    rmSync(gradleUserHome, { recursive: true, force: true });
+  }
+}
+
+child.on('error', (error) => {
+  cleanTemporaryGradleUserHome();
+  console.error(error);
+  process.exit(1);
+});
+
 child.on('exit', (code) => {
+  cleanTemporaryGradleUserHome();
   process.exit(code ?? 1);
 });
 
@@ -40,9 +57,9 @@ function resolveJdk21() {
     process.env.JAVA_HOME,
     javaHomeFromMac('21'),
     '/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home',
-    '/Applications/Android Studio.app/Contents/jbr/Contents/Home',
     '/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home',
-    '/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home'
+    '/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home',
+    '/Applications/Android Studio.app/Contents/jbr/Contents/Home'
   ].filter(Boolean);
 
   return candidates.find((candidate) => candidate && existsSync(candidate) && javaMajor(candidate) === 21);

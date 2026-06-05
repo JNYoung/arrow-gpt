@@ -4,6 +4,12 @@ import process from 'node:process';
 
 const manifestPath = path.join(process.cwd(), 'platform-manifest.json');
 const releaseMode = process.argv.includes('--release');
+const releaseTarget = process.argv.find((arg) => arg.startsWith('--target='))?.split('=')[1] ?? 'full';
+const releaseTargets = ['full', 'android', 'ios', 'meta', 'web'];
+const allReleaseTargets = [...releaseTargets];
+const androidReleaseTargets = ['full', 'android'];
+const iosReleaseTargets = ['full', 'ios'];
+const metaReleaseTargets = ['full', 'meta'];
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const failures = [];
 const releaseBlockers = [];
@@ -12,8 +18,8 @@ function fail(message) {
   failures.push(message);
 }
 
-function blockRelease(message) {
-  releaseBlockers.push(message);
+function blockRelease(message, targets = allReleaseTargets) {
+  releaseBlockers.push({ message, targets });
 }
 
 function isObject(value) {
@@ -67,16 +73,16 @@ function looksLikeGoogleSampleAdMob(value) {
   return typeof value === 'string' && value.includes('ca-app-pub-3940256099942544');
 }
 
-function requireReleaseValue(pathExpression) {
+function requireReleaseValue(pathExpression, targets = allReleaseTargets) {
   const value = requireString(pathExpression);
   if (value && looksLikePlaceholder(value)) {
-    blockRelease(`${pathExpression} is still a placeholder`);
+    blockRelease(`${pathExpression} is still a placeholder`, targets);
   }
   return value;
 }
 
-function requireUrl(pathExpression) {
-  const value = requireReleaseValue(pathExpression);
+function requireUrl(pathExpression, targets = allReleaseTargets) {
+  const value = requireReleaseValue(pathExpression, targets);
   if (!value || looksLikePlaceholder(value)) {
     return;
   }
@@ -84,34 +90,36 @@ function requireUrl(pathExpression) {
   try {
     const url = new URL(value);
     if (url.protocol !== 'https:') {
-      blockRelease(`${pathExpression} should use https`);
+      blockRelease(`${pathExpression} should use https`, targets);
     }
   } catch {
-    blockRelease(`${pathExpression} must be a valid URL`);
+    blockRelease(`${pathExpression} must be a valid URL`, targets);
   }
+
+  return value;
 }
 
-function requireAndroidApplicationId(pathExpression) {
-  const value = requireReleaseValue(pathExpression);
+function requireAndroidApplicationId(pathExpression, targets = allReleaseTargets) {
+  const value = requireReleaseValue(pathExpression, targets);
   if (value && !/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(value)) {
     fail(`${pathExpression} must be a valid Android application id`);
   }
 }
 
-function requireEmail(pathExpression) {
-  const value = requireReleaseValue(pathExpression);
+function requireEmail(pathExpression, targets = allReleaseTargets) {
+  const value = requireReleaseValue(pathExpression, targets);
   if (value && !looksLikePlaceholder(value) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-    blockRelease(`${pathExpression} must be a valid support email`);
+    blockRelease(`${pathExpression} must be a valid support email`, targets);
   }
 }
 
-function requireAdMobAppId(pathExpression) {
-  const value = requireReleaseValue(pathExpression);
+function requireAdMobAppId(pathExpression, targets = allReleaseTargets) {
+  const value = requireReleaseValue(pathExpression, targets);
   if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}~\d{10}$/.test(value)) {
-    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000~0000000000`);
+    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000~0000000000`, targets);
   }
   if (value && looksLikeGoogleSampleAdMob(value)) {
-    blockRelease(`${pathExpression} is still a Google sample AdMob app id`);
+    blockRelease(`${pathExpression} is still a Google sample AdMob app id`, targets);
   }
 }
 
@@ -138,6 +146,36 @@ async function requireFile(pathExpression) {
   return value;
 }
 
+async function requireReleasePage(pathExpression, label, targets = allReleaseTargets) {
+  const value = await requireFile(pathExpression);
+  if (!value) {
+    return;
+  }
+
+  const contents = await readFile(path.join(process.cwd(), value), 'utf8');
+  if (
+    /TODO_|REPLACE_WITH_|TODO\b|REPLACE\b|Privacy Policy Draft|release readiness|before store submission/i.test(contents)
+  ) {
+    blockRelease(`${label} page still contains draft or placeholder copy (${value})`, targets);
+  }
+}
+
+function requireAppAdsTxtUrl(pathExpression) {
+  const value = requireUrl(pathExpression, androidReleaseTargets);
+  if (!value || looksLikePlaceholder(value)) {
+    return;
+  }
+
+  try {
+    const url = new URL(value);
+    if (!url.pathname.endsWith('/app-ads.txt')) {
+      blockRelease(`${pathExpression} should point to an app-ads.txt file at the developer website root`, androidReleaseTargets);
+    }
+  } catch {
+    // requireUrl already recorded the malformed URL.
+  }
+}
+
 async function requireAppAdsTxt(pathExpression) {
   const value = await requireFile(pathExpression);
   if (!value) {
@@ -146,31 +184,31 @@ async function requireAppAdsTxt(pathExpression) {
 
   const contents = await readFile(path.join(process.cwd(), value), 'utf8');
   if (/pub-0{8,}/.test(contents) || contents.includes('REPLACE')) {
-    blockRelease(`${pathExpression} still contains placeholder app-ads.txt publisher data`);
+    blockRelease(`${pathExpression} still contains placeholder app-ads.txt publisher data`, androidReleaseTargets);
   }
 }
 
 const requiredPlacements = ['hint', 'revive', 'double-reward'];
 
-function requirePlacements(prefix) {
+function requirePlacements(prefix, targets = allReleaseTargets) {
   for (const placement of requiredPlacements) {
-    requireReleaseValue(`${prefix}.rewardedPlacements.${placement}`);
+    requireReleaseValue(`${prefix}.rewardedPlacements.${placement}`, targets);
   }
 }
 
-function requireAdMobAdUnit(pathExpression) {
-  const value = requireReleaseValue(pathExpression);
+function requireAdMobAdUnit(pathExpression, targets = allReleaseTargets) {
+  const value = requireReleaseValue(pathExpression, targets);
   if (value && !looksLikePlaceholder(value) && !/^ca-app-pub-\d{16}\/\d{10}$/.test(value)) {
-    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000/0000000000`);
+    blockRelease(`${pathExpression} should look like ca-app-pub-0000000000000000/0000000000`, targets);
   }
   if (value && looksLikeGoogleSampleAdMob(value)) {
-    blockRelease(`${pathExpression} is still a Google sample AdMob ad unit`);
+    blockRelease(`${pathExpression} is still a Google sample AdMob ad unit`, targets);
   }
 }
 
-function requireAdMobPlacements(prefix) {
+function requireAdMobPlacements(prefix, targets = allReleaseTargets) {
   for (const placement of requiredPlacements) {
-    requireAdMobAdUnit(`${prefix}.rewardedPlacements.${placement}`);
+    requireAdMobAdUnit(`${prefix}.rewardedPlacements.${placement}`, targets);
   }
 }
 
@@ -194,7 +232,7 @@ async function readIosAdMobAppId() {
   }
 }
 
-function verifyNativeAdMobAppId(pathExpression, nativeLabel, nativeValue) {
+function verifyNativeAdMobAppId(pathExpression, nativeLabel, nativeValue, targets = allReleaseTargets) {
   const manifestValue = get(pathExpression);
   if (!nativeValue) {
     fail(`${nativeLabel} is missing AdMob app id`);
@@ -205,7 +243,7 @@ function verifyNativeAdMobAppId(pathExpression, nativeLabel, nativeValue) {
     return;
   }
   if (looksLikePlaceholder(nativeValue) || looksLikeGoogleSampleAdMob(nativeValue)) {
-    blockRelease(`${nativeLabel} is not a production AdMob app id`);
+    blockRelease(`${nativeLabel} is not a production AdMob app id`, targets);
   }
   if (
     typeof manifestValue === 'string' &&
@@ -213,12 +251,16 @@ function verifyNativeAdMobAppId(pathExpression, nativeLabel, nativeValue) {
     !looksLikeGoogleSampleAdMob(manifestValue) &&
     nativeValue !== manifestValue
   ) {
-    blockRelease(`${nativeLabel} does not match ${pathExpression}; run npm run admob:sync`);
+    blockRelease(`${nativeLabel} does not match ${pathExpression}; run npm run admob:sync`, targets);
   }
 }
 
 if (!isObject(manifest)) {
   fail('platform-manifest.json must contain a JSON object');
+}
+
+if (!releaseTargets.includes(releaseTarget)) {
+  fail(`--target must be one of ${releaseTargets.join(', ')}`);
 }
 
 requireReleaseValue('gameId');
@@ -230,7 +272,7 @@ requireUrl('dataDeletionUrl');
 requireEmail('supportEmail');
 
 if (get('releaseStatus') !== 'ready') {
-  blockRelease('releaseStatus must be "ready" before store submission');
+  blockRelease('releaseStatus must be "ready" before full multi-platform store submission', ['full']);
 }
 
 if (!isObject(get('releaseAssets'))) {
@@ -239,9 +281,10 @@ if (!isObject(get('releaseAssets'))) {
 
 requireUrl('releaseAssets.appHomeUrl');
 requireUrl('releaseAssets.supportUrl');
-await requireFile('releaseAssets.landingPagePath');
-await requireFile('releaseAssets.privacyPagePath');
-await requireFile('releaseAssets.dataDeletionPagePath');
+requireAppAdsTxtUrl('releaseAssets.appAdsTxtUrl');
+await requireReleasePage('releaseAssets.landingPagePath', 'App home');
+await requireReleasePage('releaseAssets.privacyPagePath', 'Privacy policy');
+await requireReleasePage('releaseAssets.dataDeletionPagePath', 'Data deletion');
 await requireAppAdsTxt('releaseAssets.appAdsTxtPath');
 await requireFile('releaseAssets.iconSvgPath');
 await requireFile('releaseAssets.iconPng1024Path');
@@ -256,41 +299,50 @@ requireBoolean('platforms.webH5.enabled');
 requireReleaseValue('platforms.webH5.buildCommand');
 
 requireBoolean('platforms.metaInstant.enabled');
-requireReleaseValue('platforms.metaInstant.appId');
-requireReleaseValue('platforms.metaInstant.packageCommand');
+requireReleaseValue('platforms.metaInstant.appId', metaReleaseTargets);
+requireReleaseValue('platforms.metaInstant.packageCommand', metaReleaseTargets);
 await requireFile('platforms.metaInstant.fbappConfigPath');
 await requireFile('platforms.metaInstant.shareImagePath');
 requireStringArray('platforms.metaInstant.loginPermissions');
-requirePlacements('platforms.metaInstant');
+requirePlacements('platforms.metaInstant', metaReleaseTargets);
 
 requireBoolean('platforms.googlePlayAndroid.enabled');
-requireAndroidApplicationId('platforms.googlePlayAndroid.applicationId');
+requireAndroidApplicationId('platforms.googlePlayAndroid.applicationId', androidReleaseTargets);
 requirePositiveInteger('platforms.googlePlayAndroid.versionCode');
-requireReleaseValue('platforms.googlePlayAndroid.versionName');
-requireReleaseValue('platforms.googlePlayAndroid.bundleCommand');
-requireReleaseValue('platforms.googlePlayAndroid.nativeBridge');
-requireAdMobAppId('platforms.googlePlayAndroid.adMobAppId');
-requireAdMobPlacements('platforms.googlePlayAndroid');
+requireReleaseValue('platforms.googlePlayAndroid.versionName', androidReleaseTargets);
+requireReleaseValue('platforms.googlePlayAndroid.bundleCommand', androidReleaseTargets);
+requireReleaseValue('platforms.googlePlayAndroid.nativeBridge', androidReleaseTargets);
+requireAdMobAppId('platforms.googlePlayAndroid.adMobAppId', androidReleaseTargets);
+requireAdMobPlacements('platforms.googlePlayAndroid', androidReleaseTargets);
 
 requireBoolean('platforms.iosAppStore.enabled');
-requireAndroidApplicationId('platforms.iosAppStore.bundleId');
+requireAndroidApplicationId('platforms.iosAppStore.bundleId', iosReleaseTargets);
 requirePositiveInteger('platforms.iosAppStore.versionCode');
-requireReleaseValue('platforms.iosAppStore.versionName');
-requireReleaseValue('platforms.iosAppStore.prepareCommand');
+requireReleaseValue('platforms.iosAppStore.versionName', iosReleaseTargets);
+requireReleaseValue('platforms.iosAppStore.prepareCommand', iosReleaseTargets);
 await requireFile('platforms.iosAppStore.workspacePath');
-requireReleaseValue('platforms.iosAppStore.scheme');
-requireAdMobAppId('platforms.iosAppStore.adMobAppId');
-requireAdMobPlacements('platforms.iosAppStore');
+requireReleaseValue('platforms.iosAppStore.scheme', iosReleaseTargets);
+requireAdMobAppId('platforms.iosAppStore.adMobAppId', iosReleaseTargets);
+requireAdMobPlacements('platforms.iosAppStore', iosReleaseTargets);
 
 verifyNativeAdMobAppId(
   'platforms.googlePlayAndroid.adMobAppId',
   'android/app/src/main/res/values/strings.xml admob_app_id',
-  await readAndroidAdMobAppId()
+  await readAndroidAdMobAppId(),
+  androidReleaseTargets
 );
-verifyNativeAdMobAppId('platforms.iosAppStore.adMobAppId', 'ios/App/App/Info.plist GADApplicationIdentifier', await readIosAdMobAppId());
+verifyNativeAdMobAppId(
+  'platforms.iosAppStore.adMobAppId',
+  'ios/App/App/Info.plist GADApplicationIdentifier',
+  await readIosAdMobAppId(),
+  iosReleaseTargets
+);
 
-if (releaseMode && releaseBlockers.length > 0) {
-  failures.push(...releaseBlockers);
+const activeReleaseBlockers = releaseBlockers.filter((blocker) => blocker.targets.includes(releaseTarget));
+const activeReleaseBlockerMessages = activeReleaseBlockers.map((blocker) => blocker.message);
+
+if (releaseMode && activeReleaseBlockerMessages.length > 0) {
+  failures.push(...activeReleaseBlockerMessages);
 }
 
 if (failures.length > 0) {
@@ -299,12 +351,12 @@ if (failures.length > 0) {
 
 console.log('Platform manifest verified: required structure and files are present.');
 
-if (releaseBlockers.length > 0) {
-  console.log('Release blockers remaining:');
-  for (const blocker of releaseBlockers) {
+if (activeReleaseBlockerMessages.length > 0) {
+  console.log(`Release blockers remaining for ${releaseTarget}:`);
+  for (const blocker of activeReleaseBlockerMessages) {
     console.log(`- ${blocker}`);
   }
-  console.log('Run with --release to fail on these blockers before store submission.');
+  console.log(`Run with --release --target=${releaseTarget} to fail on these blockers before store submission.`);
 } else {
-  console.log('Release readiness verified: no placeholder platform values remain.');
+  console.log(`Release readiness verified for ${releaseTarget}: no blocking placeholder platform values remain.`);
 }

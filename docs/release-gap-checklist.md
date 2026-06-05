@@ -1,6 +1,6 @@
 # Arrow Again 上线缺口清单
 
-日期：2026-06-02
+日期：2026-06-05
 
 ## 结论先行
 
@@ -16,12 +16,24 @@
 - AdMob / Meta / App Store / Google Play 的发布资料模板。
 - 留存首页模块、反馈入口和最小上线埋点闭环。
 
+2026-06-05 已推进：
+
+- `scripts/verify-platform-manifest.mjs` 已新增公开审核页面内容扫描，`--release` 会阻止 Draft/TODO/REPLACE 文案进入提审状态。
+- `public/privacy.html` 已从草稿页改成可公开访问的隐私政策版本。
+- 新增 `.github/workflows/ci.yml`，PR / main push / 手动触发会安装 Playwright Chromium 并运行 `npm run verify:all`。
+- 本地已确认 `typecheck`、关卡结构、关卡平衡、普通平台 manifest 校验通过。
+- `npm run google:aab` 已成功产出 `android/app/build/outputs/bundle/release/app-release.aab`；提交 Google Play 前仍需配置正式 upload key / signing config。
+- Android 上架优先级已提升：新增 `npm run verify:android:release`，Android release 校验不再被 Meta placeholder 阻断。
+- `platform-manifest.json` 已补 `releaseAssets.appAdsTxtUrl = https://arrow-again.top/app-ads.txt`，配合 `public/CNAME` 部署到开发者网站根目录。
+- Android Gradle 已支持通过环境变量读取正式 upload key，避免把 keystore 或密码提交进仓库。
+- 当前本机 `curl https://arrow-again.top/app-ads.txt` 仍显示 DNS 未解析；AdMob 验证前需要先完成域名 DNS 到 GitHub Pages 的配置。
+
 距离真正上线，仍差 4 类工作：
 
-1. 平台配置落库并可校验。
-2. 真实 AdMob 后台 ID 创建、同步和真机验证。
-3. 商店与审核物料补齐。
-4. 真机和目标平台 smoke test。
+1. Android 签名、Google Play 后台和 app-ads.txt 验证。
+2. Android 真机 smoke test 与 AdMob rewarded 真机验证。
+3. Google Play 商店与审核物料补齐。
+4. Meta / iOS 后续平台配置与 smoke test。
 
 ## 按优先级拆分
 
@@ -60,11 +72,13 @@ manifest 至少要包含：
 当前状态：
 
 - 结构校验已落地。
-- manifest 仍是 `draft`。
-- Meta app id、Meta rewarded placement、AdMob app id / ad unit 仍是占位值。
+- manifest 仍是 `draft`，应在对应平台后台 ID、物料和 smoke test 完成后改为 `ready`。
+- Meta app id、Meta rewarded placement 仍是占位值；AdMob Android / iOS app id 与 rewarded ad unit 已回填为当前生产值。
 - 隐私政策 URL、数据删除 URL、支持邮箱已有当前值，但提审前仍需最终法律文本确认。
 - `npm run verify:platform` 会通过并列出 release blockers。
 - `npm run verify:platform:release` 会在占位值未替换前失败，适合提审前使用。
+- `npm run verify:platform:release` 也会检查公开审核页面是否残留 Draft/TODO/REPLACE 文案。
+- `npm run verify:android:release` 是 Android 专用提审门禁；Meta App ID / placement 缺失不会阻断 Android AAB。
 
 #### 2. AdMob rewarded / 原生分享接入
 
@@ -91,19 +105,19 @@ manifest 至少要包含：
 - 代码桥已接入。
 - Android debug 包已用 Google sample rewarded ad unit 验证提示广告：广告展示、reward granted、返回游戏高亮提示均通过。
 - AdMob Android / iOS app id 与 3 个 rewarded ad unit 已创建并回填；`npm run admob:sync` 已同步原生配置。
-- `public/app-ads.txt` 已替换 Google publisher id，仍需部署到公开域名根目录。
-- Meta 包已注入 FBInstant SDK 和 runtime placement 配置；真实 Meta 广告展示仍需要后台 App ID / placement ID。
-- `npm run verify:platform` 会列出这些 release blockers；`npm run verify:platform:release` 会阻断提审。
+- `public/app-ads.txt` 已替换 Google publisher id，并将随 `public/CNAME` 部署到 `https://arrow-again.top/app-ads.txt`。
+- Meta 包已注入 FBInstant SDK 和 runtime placement 配置；真实 Meta 广告展示仍需要后台 App ID / placement ID，但已降为 Android 首发后的后置项。
+- `npm run verify:android:release` 会阻断 Android AdMob、app-ads.txt 和公开页面的 Android 提审问题。
+- `npm run verify:platform:release` 仍会阻断全平台提审，包含 Meta placeholder。
 
 #### 3. 上架物料与合规
 
 当前 repo 已明确缺这些：
 
-- 隐私政策最终法律文本确认
-- Android 签名
+- 隐私政策最终法律文本确认（页面已不再是 Draft，但仍建议提交前由开发者/法务确认）
+- Android 正式 upload key / signing env
 - 最终包名 / 版本号
-- `app-ads.txt` 公开域名根目录部署与 AdMob 隐私/同意消息配置
-- Meta App ID / placement IDs
+- `app-ads.txt` 公开域名根目录上线后的 AdMob 验证与隐私/同意消息配置
 - 商店截图
 - 商店最终文案审核
 - Google Play Data safety
@@ -127,16 +141,21 @@ manifest 至少要包含：
 - Meta zip 可产出
 - 每个平台都有可提交的文案和截图
 
+当前状态：
+
+- Android AAB 已可产出。
+- Android signed AAB 需要提供 `ANDROID_RELEASE_STORE_FILE`、`ANDROID_RELEASE_STORE_PASSWORD`、`ANDROID_RELEASE_KEY_ALIAS`、`ANDROID_RELEASE_KEY_PASSWORD` 后重新运行 `npm run google:aab`。
+- Meta debug zip 已可产出；正式 Meta zip 降为 Android 首发后事项，仍等待真实 Meta App ID / placement IDs。
+
 ### P1：建议在提交审核前完成
 
-#### 4. 目标平台 smoke test
+#### 4. Android 目标平台 smoke test
 
 当前 E2E 只证明 Web 路径可跑，还不等于目标发布环境可跑。
 
 至少补：
 
 - Android WebView / Capacitor smoke test
-- Meta Instant Games smoke test
 - 低端机触控与首屏加载体验验证
 
 建议覆盖：
@@ -194,22 +213,22 @@ manifest 至少要包含：
 
 ## 建议的执行顺序
 
-1. `platform-manifest.json` + `verify-platform-manifest`
-2. Android/iOS 真机 smoke test
-3. Meta app / placement 配置 + Meta smoke test
-4. `app-ads.txt` 公开部署与 AdMob 隐私/同意消息配置
-5. 商店文案 / 截图 / 隐私政策 / Data safety
-6. 出 Android AAB 和 Meta zip 作为首批上线包
+1. 配置 Android upload key 环境变量并运行 `npm run google:aab`，产出 signed AAB。
+2. 合并并部署 Pages，配置 `arrow-again.top` DNS，确认 `https://arrow-again.top/app-ads.txt` 可访问，再到 AdMob 完成 app-ads.txt 验证和隐私/同意消息配置。
+3. Android 真机 smoke test，覆盖首屏、第 1 关、hint、revive、Hard 弹窗、分享、返回前台。
+4. Google Play 商店文案 / 截图 / Data safety / 隐私政策最终确认。
+5. 上传 AAB 到 closed testing 或 production draft。
+6. Meta app id / rewarded placement id 放到 Android 首发后推进。
 
 ## 需要你本人推进或提供
 
+- Android upload key / keystore 或对应环境变量
+- Google Play 后台权限、Data safety 选择、商店截图和主视觉取舍
+- `arrow-again.top` DNS / GitHub Pages 自定义域名解析
+- AdMob app-ads.txt 验证、隐私/同意消息配置确认
 - 最终包名、展示名、版本策略
-- Meta app id 和广告位 id
-- 隐私政策 URL
-- 可部署 `app-home.html` / `privacy.html` / `data-deletion.html` / `app-ads.txt` 的公开域名
-- Google Play / Apple / Meta 开发者后台权限
-- 商店截图和主视觉取舍
+- Apple / Meta 开发者后台权限（Android 首发后）
 
 ## 一句话判断
 
-如果只按“能提第一版 Android/Meta 包”算，当前最缺的不是玩法，而是平台后台 ID、上架物料和真机 smoke test。
+如果只按“Android 首发可上架”算，当前最缺的是正式 upload key、Google Play 后台物料 / Data safety、AdMob app-ads.txt 验证和 Android 真机 smoke test；Meta 已降为后续平台。
