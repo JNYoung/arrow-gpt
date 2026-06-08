@@ -140,15 +140,51 @@ async function run() {
       }
     });
     page.on('pageerror', (error) => consoleProblems.push(`pageerror: ${error.message}`));
+    await page.addInitScript(() => window.localStorage.clear());
 
     await gotoApp(page, baseUrl);
     await assertVisible(page.getByTestId('home-screen'), 'Home screen should render');
     await assertVisible(page.getByTestId('start-button'), 'Start button should render');
+    await assertVisible(page.getByTestId('settings-button'), 'Settings button should render');
     await assertVisible(page.getByTestId('home-progress'), 'Home retention progress should render');
     await assertVisible(page.getByTestId('home-feedback-button'), 'Home feedback entry should render');
+    if ((await page.getByTestId('levels-button').count()) > 0) {
+      throw new Error('Store-ready home screen should not expose level selection');
+    }
     if ((await page.getByText('设计中').count()) > 0) {
       throw new Error('Store-ready home screen should not expose unfinished-feature copy');
     }
+
+    await page.getByTestId('settings-button').click();
+    await assertVisible(page.getByTestId('settings-panel'), 'Settings panel should render from home');
+    const musicToggle = page.getByTestId('music-toggle');
+    const effectsToggle = page.getByTestId('effects-toggle');
+    if ((await musicToggle.getAttribute('aria-pressed')) !== 'true') {
+      throw new Error('Music should default to enabled');
+    }
+    if ((await effectsToggle.getAttribute('aria-pressed')) !== 'true') {
+      throw new Error('Effects should default to enabled');
+    }
+    await musicToggle.click();
+    if ((await musicToggle.getAttribute('aria-pressed')) !== 'false') {
+      throw new Error('Music toggle should switch off');
+    }
+    await effectsToggle.click();
+    if ((await effectsToggle.getAttribute('aria-pressed')) !== 'false') {
+      throw new Error('Effects toggle should switch off');
+    }
+    await page.getByTestId('language-en').click();
+    const englishStartCopy = await page.getByTestId('start-button').innerText();
+    if (!englishStartCopy.includes('Start Level')) {
+      throw new Error(`English language setting should update home copy, got: ${englishStartCopy}`);
+    }
+    await page.getByTestId('language-zh').click();
+    const chineseStartCopy = await page.getByTestId('start-button').innerText();
+    if (!chineseStartCopy.includes('开始第')) {
+      throw new Error(`Chinese language setting should update home copy, got: ${chineseStartCopy}`);
+    }
+    await musicToggle.click();
+    await effectsToggle.click();
 
     await page.getByTestId('start-button').click();
     await assertVisible(page.getByTestId('game-screen'), 'Game screen should render after start');
@@ -232,7 +268,7 @@ async function run() {
     await page.getByTestId('level-15').scrollIntoViewIfNeeded();
     await page.getByTestId('level-15').click();
     await assertVisible(page.getByTestId('hard-modal'), 'Hard levels should show a warning modal before play');
-    await page.getByRole('button', { name: '进入' }).click();
+    await page.getByTestId('confirm-hard-button').click();
     await assertVisible(page.getByTestId('game-screen'), 'Confirming hard modal should enter the level');
     await page.waitForFunction(() => document.querySelectorAll('.maze-core').length > 0);
     const freeRouteState = await page.getByTestId('board').evaluate(() => ({
@@ -257,13 +293,14 @@ async function run() {
     lowFxPage.setDefaultTimeout(10000);
     lowFxPage.setDefaultNavigationTimeout(10000);
     await lowFxPage.addInitScript(() => {
+      window.localStorage.clear();
       window.__GAME_PLATFORM_CONFIG__ = { renderQuality: 'low', mockRewardedAds: true };
     });
     await gotoApp(lowFxPage, `${baseUrl}?debug=levels`);
     await lowFxPage.getByTestId('levels-button').click();
     await lowFxPage.getByTestId('level-80').scrollIntoViewIfNeeded();
     await lowFxPage.getByTestId('level-80').click();
-    await lowFxPage.getByRole('button', { name: '进入' }).click();
+    await lowFxPage.getByTestId('confirm-hard-button').click();
     await assertVisible(lowFxPage.getByTestId('game-screen'), 'Low-FX runtime config should still enter level 80');
     await lowFxPage.getByTestId('hint-button').click();
     await lowFxPage.waitForTimeout(260);
