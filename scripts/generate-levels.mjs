@@ -101,7 +101,7 @@ function makeSpec(id) {
 
 function makeSubtitle(difficulty, id) {
   if (difficulty === 'boss') {
-    return 'Boss：先看出口门，再拆中心箭阵';
+    return 'Boss：观察出口方向，再拆中心箭阵';
   }
   if (difficulty === 'hard') {
     return 'Hard：可走箭头更少，注意路径阻塞';
@@ -168,7 +168,7 @@ function createCandidate(spec, seedOffset) {
     targetMoves: spec.count,
     hardWarning:
       spec.difficulty === 'hard' || spec.difficulty === 'boss'
-        ? `${spec.difficulty === 'boss' ? 'Boss' : 'Hard'} 关路线更密，先找边缘出口门和发光路径。`
+        ? `${spec.difficulty === 'boss' ? 'Boss' : 'Hard'} 关路线更密，先观察方向和阻挡关系。`
         : undefined,
     achievement:
       spec.difficulty === 'hard' || spec.difficulty === 'boss'

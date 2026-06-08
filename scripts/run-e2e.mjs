@@ -153,6 +153,7 @@ async function run() {
     await page.getByTestId('start-button').click();
     await assertVisible(page.getByTestId('game-screen'), 'Game screen should render after start');
     await assertVisible(page.getByTestId('board'), 'Board should render after start');
+    await page.waitForFunction(() => document.querySelectorAll('.maze-flow').length > 0);
 
     const blockedPiece = page.getByTestId('piece-l1-p2');
     const blockedBoxBefore = await measureVisibleBox(
@@ -233,6 +234,24 @@ async function run() {
     await assertVisible(page.getByTestId('hard-modal'), 'Hard levels should show a warning modal before play');
     await page.getByRole('button', { name: '进入' }).click();
     await assertVisible(page.getByTestId('game-screen'), 'Confirming hard modal should enter the level');
+    await page.waitForFunction(() => document.querySelectorAll('.maze-core').length > 0);
+    const freeRouteState = await page.getByTestId('board').evaluate(() => ({
+      flowCount: document.querySelectorAll('.maze-flow').length,
+      gateCount: document.querySelectorAll('.exit-gate').length
+    }));
+    if (freeRouteState.flowCount !== 0 || freeRouteState.gateCount !== 0) {
+      throw new Error(`Level 15 should hide free trajectory hints, got: ${JSON.stringify(freeRouteState)}`);
+    }
+    await page.getByTestId('hint-button').click();
+    await page.waitForTimeout(260);
+    const rewardedRouteState = await page.getByTestId('board').evaluate(() => ({
+      flowCount: document.querySelectorAll('.maze-flow').length,
+      gateCount: document.querySelectorAll('.exit-gate').length,
+      hintedCount: document.querySelectorAll('.arrow-piece.hinted').length
+    }));
+    if (rewardedRouteState.flowCount === 0 || rewardedRouteState.gateCount === 0 || rewardedRouteState.hintedCount === 0) {
+      throw new Error(`Rewarded hint should restore trajectory cues, got: ${JSON.stringify(rewardedRouteState)}`);
+    }
 
     const lowFxPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
     lowFxPage.setDefaultTimeout(10000);
@@ -246,6 +265,8 @@ async function run() {
     await lowFxPage.getByTestId('level-80').click();
     await lowFxPage.getByRole('button', { name: '进入' }).click();
     await assertVisible(lowFxPage.getByTestId('game-screen'), 'Low-FX runtime config should still enter level 80');
+    await lowFxPage.getByTestId('hint-button').click();
+    await lowFxPage.waitForTimeout(260);
     const lowFxState = await lowFxPage.getByTestId('board').evaluate((board) => ({
       lowFx: board.classList.contains('low-fx-board'),
       dense: board.classList.contains('dense-board'),
