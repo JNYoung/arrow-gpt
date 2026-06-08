@@ -172,7 +172,7 @@
     "cols": 6,
     "lives": 3,
     "targetMoves": 11,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -428,13 +428,13 @@
   {
     "id": 10,
     "name": "风车 Boss 10",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 7,
     "cols": 7,
     "lives": 3,
     "targetMoves": 16,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "风车拆解者",
     "pieces": [
       {
@@ -736,7 +736,7 @@
     "cols": 7,
     "lives": 3,
     "targetMoves": 14,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -1057,13 +1057,13 @@
   {
     "id": 20,
     "name": "箭阵 Boss 20",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 7,
     "cols": 8,
     "lives": 3,
     "targetMoves": 19,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "箭阵拆解者",
     "pieces": [
       {
@@ -1450,7 +1450,7 @@
     "cols": 7,
     "lives": 3,
     "targetMoves": 18,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -1871,13 +1871,13 @@
   {
     "id": 30,
     "name": "环流 Boss 30",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 8,
     "cols": 9,
     "lives": 3,
     "targetMoves": 22,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "环流拆解者",
     "pieces": [
       {
@@ -2359,7 +2359,7 @@
     "cols": 8,
     "lives": 3,
     "targetMoves": 22,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -2875,13 +2875,13 @@
   {
     "id": 40,
     "name": "迷城 Boss 40",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 8,
     "cols": 9,
     "lives": 3,
     "targetMoves": 26,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "迷城拆解者",
     "pieces": [
       {
@@ -3453,7 +3453,7 @@
     "cols": 9,
     "lives": 3,
     "targetMoves": 26,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -4064,13 +4064,13 @@
   {
     "id": 50,
     "name": "枢纽 Boss 50",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 9,
     "cols": 10,
     "lives": 3,
     "targetMoves": 30,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "枢纽拆解者",
     "pieces": [
       {
@@ -4742,7 +4742,7 @@
     "cols": 9,
     "lives": 3,
     "targetMoves": 29,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -4901,7 +4901,7 @@
     "cols": 9,
     "lives": 3,
     "targetMoves": 25,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "逆流拆解者",
     "pieces": [
       {
@@ -5040,7 +5040,7 @@
     "cols": 9,
     "lives": 3,
     "targetMoves": 25,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "缠绕拆解者",
     "pieces": [
       {
@@ -5179,7 +5179,7 @@
     "cols": 9,
     "lives": 3,
     "targetMoves": 25,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "断点拆解者",
     "pieces": [
       {
@@ -5318,7 +5318,7 @@
     "cols": 9,
     "lives": 3,
     "targetMoves": 26,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "重锁拆解者",
     "pieces": [
       {
@@ -5456,13 +5456,13 @@
   {
     "id": 60,
     "name": "回环 Boss 60",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 9,
     "cols": 11,
     "lives": 3,
     "targetMoves": 34,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "回环拆解者",
     "pieces": [
       {
@@ -5778,7 +5778,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 27,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "回声拆解者",
     "pieces": [
       {
@@ -5927,7 +5927,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 28,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "窄桥拆解者",
     "pieces": [
       {
@@ -6081,7 +6081,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 28,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "终盘拆解者",
     "pieces": [
       {
@@ -6235,7 +6235,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 33,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -6414,7 +6414,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 28,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "逆流拆解者",
     "pieces": [
       {
@@ -6568,7 +6568,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 29,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "缠绕拆解者",
     "pieces": [
       {
@@ -6727,7 +6727,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 29,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "断点拆解者",
     "pieces": [
       {
@@ -6886,7 +6886,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 29,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "重锁拆解者",
     "pieces": [
       {
@@ -7039,13 +7039,13 @@
   {
     "id": 70,
     "name": "四门 Boss 70",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 10,
     "cols": 11,
     "lives": 3,
     "targetMoves": 38,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "四门拆解者",
     "pieces": [
       {
@@ -7249,7 +7249,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 28,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "密室拆解者",
     "pieces": [
       {
@@ -7403,7 +7403,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 31,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "回声拆解者",
     "pieces": [
       {
@@ -7572,7 +7572,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 31,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "窄桥拆解者",
     "pieces": [
       {
@@ -7741,7 +7741,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 32,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "终盘拆解者",
     "pieces": [
       {
@@ -7915,7 +7915,7 @@
     "cols": 10,
     "lives": 3,
     "targetMoves": 37,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -8114,7 +8114,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 32,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "逆流拆解者",
     "pieces": [
       {
@@ -8288,7 +8288,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 33,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "缠绕拆解者",
     "pieces": [
       {
@@ -8467,7 +8467,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 33,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "断点拆解者",
     "pieces": [
       {
@@ -8646,7 +8646,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 33,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "重锁拆解者",
     "pieces": [
       {
@@ -8819,13 +8819,13 @@
   {
     "id": 80,
     "name": "核心 Boss 80",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 10,
     "cols": 11,
     "lives": 3,
     "targetMoves": 41,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "核心拆解者",
     "pieces": [
       {
@@ -9044,7 +9044,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 32,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "密室拆解者",
     "pieces": [
       {
@@ -9218,7 +9218,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 35,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "回声拆解者",
     "pieces": [
       {
@@ -9407,7 +9407,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 35,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "窄桥拆解者",
     "pieces": [
       {
@@ -9596,7 +9596,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 36,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "终盘拆解者",
     "pieces": [
       {
@@ -9790,7 +9790,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 41,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -10009,7 +10009,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 36,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "逆流拆解者",
     "pieces": [
       {
@@ -10203,7 +10203,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 36,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "缠绕拆解者",
     "pieces": [
       {
@@ -10397,7 +10397,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 37,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "断点拆解者",
     "pieces": [
       {
@@ -10596,7 +10596,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 37,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "重锁拆解者",
     "pieces": [
       {
@@ -10789,13 +10789,13 @@
   {
     "id": 90,
     "name": "终局 Boss 90",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 11,
     "cols": 11,
     "lives": 3,
     "targetMoves": 44,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "终局拆解者",
     "pieces": [
       {
@@ -11029,7 +11029,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 35,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "密室拆解者",
     "pieces": [
       {
@@ -11218,7 +11218,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 39,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "回声拆解者",
     "pieces": [
       {
@@ -11427,7 +11427,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 39,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "窄桥拆解者",
     "pieces": [
       {
@@ -11636,7 +11636,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 39,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "终盘拆解者",
     "pieces": [
       {
@@ -11845,7 +11845,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 44,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "暗门拆解者",
     "pieces": [
       {
@@ -12079,7 +12079,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 40,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "逆流拆解者",
     "pieces": [
       {
@@ -12293,7 +12293,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 40,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "缠绕拆解者",
     "pieces": [
       {
@@ -12507,7 +12507,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 40,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "断点拆解者",
     "pieces": [
       {
@@ -12721,7 +12721,7 @@
     "cols": 11,
     "lives": 3,
     "targetMoves": 41,
-    "hardWarning": "Hard 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Hard 关路线更密，先观察方向和阻挡关系。",
     "achievement": "重锁拆解者",
     "pieces": [
       {
@@ -12934,13 +12934,13 @@
   {
     "id": 100,
     "name": "百关 Boss 100",
-    "subtitle": "Boss：先看出口门，再拆中心箭阵",
+    "subtitle": "Boss：观察出口方向，再拆中心箭阵",
     "difficulty": "boss",
     "rows": 11,
     "cols": 11,
     "lives": 3,
     "targetMoves": 44,
-    "hardWarning": "Boss 关路线更密，先找边缘出口门和发光路径。",
+    "hardWarning": "Boss 关路线更密，先观察方向和阻挡关系。",
     "achievement": "百关拆解者",
     "pieces": [
       {

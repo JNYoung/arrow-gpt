@@ -728,6 +728,13 @@ button {
   pointer-events: none;
 }
 
+.arrow-piece .piece-fallback {
+  pointer-events: none;
+  filter:
+    drop-shadow(0 3px 4px rgba(31, 41, 51, 0.18))
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.38));
+}
+
 .arrow-piece.available .piece-ring {
   stroke: rgba(255, 255, 255, 0.86);
   filter:

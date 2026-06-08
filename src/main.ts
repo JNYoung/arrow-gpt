@@ -56,6 +56,7 @@ const debugAllLevels = new URLSearchParams(window.location.search).get('debug');
 const supportEmail = platformManifest.supportEmail;
 const supportUrl = platformManifest.releaseAssets.supportUrl;
 const retentionGoalLevels = 3;
+const freeTrajectoryHintLevelLimit = 5;
 
 declare global {
   interface Window {
@@ -917,24 +918,30 @@ class ArrowAgainApp {
     flowGroup.setAttribute('class', 'maze-flow-group');
     this.mazeSvg.append(ambientGroup, railGroup, highlightGroup, coreGroup, flowGroup, gateGroup);
     this.appendAmbientMaze(ambientGroup, metrics);
+    const showFreeTrajectoryHints = this.shouldShowFreeTrajectoryHints();
 
     for (const piece of activePieces) {
       const path = this.createMazePath(piece, metrics);
       const color = this.getRouteColor(piece);
       const isAvailable = availableIds.has(piece.id);
+      const isRouteHighlighted = (showFreeTrajectoryHints && isAvailable) || this.hintIds.has(piece.id);
 
-      this.appendMazePath(railGroup, path, 'maze-rail', color, isAvailable);
-      this.appendMazePath(highlightGroup, path, 'maze-highlight', color, isAvailable);
-      this.appendMazePath(coreGroup, path, 'maze-core', color, isAvailable);
+      this.appendMazePath(railGroup, path, 'maze-rail', color, isRouteHighlighted);
+      this.appendMazePath(highlightGroup, path, 'maze-highlight', color, isRouteHighlighted);
+      this.appendMazePath(coreGroup, path, 'maze-core', color, isRouteHighlighted);
 
-      if (isAvailable || this.hintIds.has(piece.id)) {
+      if (isRouteHighlighted) {
         this.appendMazePath(flowGroup, path, 'maze-flow', color, true, this.getFlowStyle(piece));
       }
 
-      if (isAvailable) {
+      if (isRouteHighlighted) {
         this.appendExitGate(gateGroup, piece, metrics, color);
       }
     }
+  }
+
+  private shouldShowFreeTrajectoryHints(): boolean {
+    return this.currentLevel.id <= freeTrajectoryHintLevelLimit;
   }
 
   private appendAmbientMaze(group: SVGGElement, metrics: BoardMetrics): void {
@@ -1020,18 +1027,28 @@ class ArrowAgainApp {
       hitbox.setAttribute('height', `${size + 8}`);
       hitbox.setAttribute('rx', `${radius}`);
 
+      const fallbackPiece = this.createFallbackPiece(piece, size, radius);
       const tileImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      const assetPath = this.getPieceAsset(piece.dir);
       tileImage.setAttribute('class', 'piece-image');
-      tileImage.setAttribute('href', this.getPieceAsset(piece.dir));
+      tileImage.addEventListener('load', () => {
+        fallbackPiece.style.display = 'none';
+      });
+      tileImage.addEventListener('error', () => {
+        tileImage.style.display = 'none';
+        fallbackPiece.style.display = '';
+      });
       tileImage.setAttribute('x', `${-size / 2}`);
       tileImage.setAttribute('y', `${-size / 2}`);
       tileImage.setAttribute('width', `${size}`);
       tileImage.setAttribute('height', `${size}`);
       tileImage.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      tileImage.setAttribute('href', assetPath);
+      tileImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
 
       const body = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       body.setAttribute('class', 'piece-body');
-      body.append(hitbox, ring, tileImage);
+      body.append(hitbox, fallbackPiece, ring, tileImage);
       group.append(body);
       group.addEventListener('click', () => this.tryShoot(piece.id, group, metrics));
       group.addEventListener('keydown', (event) => {
@@ -1044,9 +1061,9 @@ class ArrowAgainApp {
     }
   }
 
-  private appendMazePath(group: SVGGElement, path: string, className: string, color: string, isAvailable: boolean, extraStyle = ''): void {
+  private appendMazePath(group: SVGGElement, path: string, className: string, color: string, isHighlighted: boolean, extraStyle = ''): void {
     const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    route.setAttribute('class', `${className}${isAvailable ? ' available' : ''}`);
+    route.setAttribute('class', `${className}${isHighlighted ? ' available' : ''}`);
     route.setAttribute('d', path);
     route.setAttribute('style', `--route-color: ${color}; ${extraStyle}`);
     group.append(route);
@@ -1054,6 +1071,49 @@ class ArrowAgainApp {
 
   private getPieceAsset(direction: ArrowPiece['dir']): string {
     return `/assets/arrow-${direction}.png`;
+  }
+
+  private createFallbackPiece(piece: ArrowPiece, size: number, radius: number): SVGGElement {
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const color = this.getRouteColor(piece);
+    group.setAttribute('class', 'piece-fallback');
+    group.setAttribute('aria-hidden', 'true');
+
+    const base = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    base.setAttribute('x', `${-size / 2}`);
+    base.setAttribute('y', `${-size / 2}`);
+    base.setAttribute('width', `${size}`);
+    base.setAttribute('height', `${size}`);
+    base.setAttribute('rx', `${radius}`);
+    base.setAttribute('fill', color);
+    base.setAttribute('stroke', 'rgba(255, 255, 255, 0.72)');
+    base.setAttribute('stroke-width', `${Math.max(2, size * 0.045)}`);
+
+    const shine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    shine.setAttribute('x', `${-size * 0.32}`);
+    shine.setAttribute('y', `${-size * 0.34}`);
+    shine.setAttribute('width', `${size * 0.42}`);
+    shine.setAttribute('height', `${size * 0.16}`);
+    shine.setAttribute('rx', `${size * 0.08}`);
+    shine.setAttribute('fill', 'rgba(255, 255, 255, 0.32)');
+
+    const arrowGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    arrowGroup.setAttribute('transform', `rotate(${DIRECTION_ANGLE[piece.dir]})`);
+
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    arrow.setAttribute(
+      'd',
+      `M ${-size * 0.22} 0 H ${size * 0.18} M ${size * 0.04} ${-size * 0.14} L ${size * 0.2} 0 L ${size * 0.04} ${size * 0.14}`
+    );
+    arrow.setAttribute('fill', 'none');
+    arrow.setAttribute('stroke', '#ffffff');
+    arrow.setAttribute('stroke-width', `${Math.max(4, size * 0.13)}`);
+    arrow.setAttribute('stroke-linecap', 'round');
+    arrow.setAttribute('stroke-linejoin', 'round');
+
+    arrowGroup.append(arrow);
+    group.append(base, shine, arrowGroup);
+    return group;
   }
 
   private getFlowStyle(piece: ArrowPiece): string {
