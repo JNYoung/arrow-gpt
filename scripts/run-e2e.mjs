@@ -146,8 +146,14 @@ async function run() {
     await assertVisible(page.getByTestId('home-screen'), 'Home screen should render');
     await assertVisible(page.getByTestId('start-button'), 'Start button should render');
     await assertVisible(page.getByTestId('settings-button'), 'Settings button should render');
-    await assertVisible(page.getByTestId('home-progress'), 'Home retention progress should render');
     await assertVisible(page.getByTestId('home-feedback-button'), 'Home feedback entry should render');
+    if ((await page.getByTestId('home-progress').count()) > 0) {
+      throw new Error('Store-ready home screen should not expose progress statistic cards');
+    }
+    const homeCopy = await page.getByTestId('home-screen').innerText();
+    if (homeCopy.includes('/100')) {
+      throw new Error(`Store-ready home screen should not expose level-count totals, got: ${homeCopy}`);
+    }
     if ((await page.getByTestId('levels-button').count()) > 0) {
       throw new Error('Store-ready home screen should not expose level selection');
     }
