@@ -2,7 +2,7 @@ import './styles.css';
 import { GameAudio } from './audio';
 import { LEVELS } from './game/levels';
 import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
-import type { ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
+import type { AppLanguage, ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
 import {
   createPlatformBridge,
   normalizeRenderQuality,
@@ -58,6 +58,157 @@ const supportUrl = platformManifest.releaseAssets.supportUrl;
 const retentionGoalLevels = 3;
 const freeTrajectoryHintLevelLimit = 5;
 
+const COPY = {
+  zh: {
+    brandSubtitle: '点击无遮挡箭头，让它们飞出棋盘。',
+    settingsAria: '打开设置',
+    settingsTitle: '设置',
+    language: '语言',
+    music: '背景音乐',
+    effects: '音效',
+    on: '开',
+    off: '关',
+    streak: '连续',
+    completed: '已过',
+    stars: '星星',
+    dayUnit: '天',
+    startLevel: (id: number) => `开始第 ${id} 关`,
+    levelSelect: '关卡选择',
+    feedbackSupport: '反馈与支持',
+    dailyGoal: `今日目标：通关 ${retentionGoalLevels} 关，保持连续游玩节奏。`,
+    retentionFirst: '先完成前三关，熟悉从边缘清场的节奏。',
+    retentionStreak: (days: number, id: number) => `连续 ${days} 天回到棋盘，第 ${id} 关正在等你。`,
+    retentionResume: (id: number) => `上次停在第 ${id} 关，今天再推进 ${retentionGoalLevels} 关。`,
+    backHome: '返回首页',
+    levelSelectTitle: '关卡选择',
+    debugLevelsCopy: 'Debug：已显示全部 100 关，不写入存档。',
+    levelPrefix: (id: number) => `第 ${id} 关`,
+    locked: 'LOCK',
+    livesAria: (lives: number, total: number) => `生命 ${lives}/${total}`,
+    moves: '步数',
+    available: '可用',
+    tutorialBubble: '点这里',
+    defaultBoardMessage: '从边缘可飞出的箭头开始清除。',
+    hint: '提示',
+    hintUnavailable: '提示暂不可用',
+    adPlaying: '广告中',
+    undo: '撤销',
+    restart: '重开',
+    hardTitle: (difficulty: LevelData['difficulty']) => (difficulty === 'boss' ? 'Boss 关' : '困难关'),
+    hardWarning: (level: LevelData) => level.hardWarning ?? '',
+    viewLevels: '先看关卡',
+    enter: '进入',
+    resultWon: '关卡完成！',
+    resultLost: '再试一次？',
+    resultLevel: (level: LevelData) => `第 ${level.id} 关 · ${level.name}`,
+    resultStarsAria: (stars: number) => `${stars} 星`,
+    resultStats: (lives: number, maxLives: number, moves: number) =>
+      `剩余生命：${'♥'.repeat(lives)}${'♡'.repeat(Math.max(0, maxLives - lives))} · 步数：${moves}`,
+    achievement: (achievement: string) => `成就解锁：${achievement}`,
+    retry: '再试一次',
+    nextLevel: '下一关 →',
+    share: '分享成绩',
+    report: '反馈问题',
+    reviveLoading: '广告加载中',
+    revive: '看广告复活',
+    reviveUnavailable: '复活暂不可用',
+    perfect: '完美通关！',
+    great: '太棒了！',
+    closeWin: '险过关！',
+    lostComment: (remaining: number) => `生命值已耗尽，还剩 ${remaining} 枚箭头。`,
+    tutorialMessage: '点击高亮箭头，观察它飞出棋盘。',
+    blockedMessage: '这枚箭头前方被挡住了。',
+    moveMessage: '漂亮，箭头飞出去了。',
+    undoMessage: '已撤销上一步。',
+    hintUnavailableMessage: '当前平台暂未接入提示广告，先用重开或继续观察可飞出的边缘箭头。',
+    adPlayingMessage: '正在播放提示广告...',
+    hintFailMessage: '广告未完成，暂时无法获得提示。',
+    hintCompleteMessage: '广告完成，已高亮当前可以飞出的箭头。',
+    noHintMessage: '当前没有可飞出的箭头，可以重开。',
+    reviveUnavailableMessage: '当前平台暂未接入复活广告，请先重开这一关。',
+    reviveSuccessMessage: '复活成功，保留当前棋盘继续挑战。',
+    shareTitle: 'Arrow Again 箭了又箭',
+    shareWon: (levelId: number, stars: number, moves: number) =>
+      `我在 Arrow Again 第 ${levelId} 关拿到 ${stars} 星，用 ${moves} 步清场！`,
+    shareLost: (levelId: number) => `我在 Arrow Again 第 ${levelId} 关差一点通关，来试试你的路线判断。`
+  },
+  en: {
+    brandSubtitle: 'Tap clear arrows and send them off the board.',
+    settingsAria: 'Open settings',
+    settingsTitle: 'Settings',
+    language: 'Language',
+    music: 'Music',
+    effects: 'SFX',
+    on: 'On',
+    off: 'Off',
+    streak: 'Streak',
+    completed: 'Cleared',
+    stars: 'Stars',
+    dayUnit: 'd',
+    startLevel: (id: number) => `Start Level ${id}`,
+    levelSelect: 'Level Select',
+    feedbackSupport: 'Feedback & Support',
+    dailyGoal: `Today: clear ${retentionGoalLevels} levels and keep the streak alive.`,
+    retentionFirst: 'Clear the first three levels to learn the edge-clearing rhythm.',
+    retentionStreak: (days: number, id: number) => `${days} day streak. Level ${id} is waiting.`,
+    retentionResume: (id: number) => `You stopped at Level ${id}. Push ${retentionGoalLevels} more today.`,
+    backHome: 'Back home',
+    levelSelectTitle: 'Level Select',
+    debugLevelsCopy: 'Debug: all 100 levels are visible and progress is not changed.',
+    levelPrefix: (id: number) => `Level ${id}`,
+    locked: 'LOCK',
+    livesAria: (lives: number, total: number) => `Lives ${lives}/${total}`,
+    moves: 'Moves',
+    available: 'Open',
+    tutorialBubble: 'Tap',
+    defaultBoardMessage: 'Start with arrows that can leave from the edge.',
+    hint: 'Hint',
+    hintUnavailable: 'No hint',
+    adPlaying: 'Ad',
+    undo: 'Undo',
+    restart: 'Restart',
+    hardTitle: (difficulty: LevelData['difficulty']) => (difficulty === 'boss' ? 'Boss Level' : 'Hard Level'),
+    hardWarning: () => 'Routes are denser. Watch arrow direction and blockers before tapping.',
+    viewLevels: 'View levels',
+    enter: 'Enter',
+    resultWon: 'Level Complete!',
+    resultLost: 'Try Again?',
+    resultLevel: (level: LevelData) => `Level ${level.id} · ${level.name}`,
+    resultStarsAria: (stars: number) => `${stars} stars`,
+    resultStats: (lives: number, maxLives: number, moves: number) =>
+      `Lives left: ${'♥'.repeat(lives)}${'♡'.repeat(Math.max(0, maxLives - lives))} · Moves: ${moves}`,
+    achievement: (achievement: string) => `Achievement unlocked: ${achievement}`,
+    retry: 'Try Again',
+    nextLevel: 'Next Level →',
+    share: 'Share Result',
+    report: 'Report Issue',
+    reviveLoading: 'Loading ad',
+    revive: 'Revive with ad',
+    reviveUnavailable: 'No revive',
+    perfect: 'Perfect clear!',
+    great: 'Nice work!',
+    closeWin: 'Close one!',
+    lostComment: (remaining: number) => `No lives left. ${remaining} arrows remain.`,
+    tutorialMessage: 'Tap the highlighted arrow and watch it leave the board.',
+    blockedMessage: 'That arrow is blocked.',
+    moveMessage: 'Nice, the arrow flew out.',
+    undoMessage: 'Last move undone.',
+    hintUnavailableMessage: 'Rewarded hints are not available on this platform. Restart or keep scanning edge arrows.',
+    adPlayingMessage: 'Playing hint ad...',
+    hintFailMessage: 'The ad was not completed, so no hint is available.',
+    hintCompleteMessage: 'Ad complete. Current open arrows are highlighted.',
+    noHintMessage: 'No arrows can leave right now. Try restarting.',
+    reviveUnavailableMessage: 'Revive ads are not available on this platform. Restart this level.',
+    reviveSuccessMessage: 'Revived. Keep the current board and continue.',
+    shareTitle: 'Arrow Again',
+    shareWon: (levelId: number, stars: number, moves: number) =>
+      `I cleared Level ${levelId} in Arrow Again with ${stars} stars and ${moves} moves!`,
+    shareLost: (levelId: number) => `I almost cleared Level ${levelId} in Arrow Again. Try your route sense.`
+  }
+} as const;
+
+type Copy = (typeof COPY)[AppLanguage];
+
 declare global {
   interface Window {
     ArrowAgainRuntime?: {
@@ -89,6 +240,7 @@ class ArrowAgainApp {
   private exitingPieceIds = new Set<string>();
   private history: PlaySnapshot[] = [];
   private rewardBusy = false;
+  private settingsOpen = false;
   private hintsUsed = 0;
   private revivesUsed = 0;
   private result?: ResultState;
@@ -103,9 +255,10 @@ class ArrowAgainApp {
   private renderQuality: RenderQuality;
 
   constructor(private root: HTMLDivElement) {
-    this.audio = new GameAudio(this.save.soundEnabled);
+    this.audio = new GameAudio(this.save.musicEnabled, this.save.effectsEnabled);
     this.platform = createPlatformBridge();
     this.renderQuality = this.platform.renderQuality;
+    this.applyLanguage();
     this.applyRenderQuality();
     this.installRuntimeBridge();
     window.addEventListener('resize', () => this.paintPlayingBoard());
@@ -169,6 +322,14 @@ class ArrowAgainApp {
     }
   }
 
+  private copy(): Copy {
+    return COPY[this.save.language];
+  }
+
+  private applyLanguage(): void {
+    document.documentElement.lang = this.save.language === 'en' ? 'en' : 'zh-CN';
+  }
+
   private render(): void {
     this.resizeObserver?.disconnect();
     this.root.innerHTML = `<main class="app-shell" data-testid="app-shell">${this.renderScreen()}</main>`;
@@ -177,7 +338,7 @@ class ArrowAgainApp {
 
   private renderScreen(): string {
     if (this.screen === 'levels') {
-      return this.renderLevels();
+      return this.debugAllLevels ? this.renderLevels() : this.renderHome();
     }
 
     if (this.screen === 'playing') {
@@ -192,8 +353,8 @@ class ArrowAgainApp {
   }
 
   private renderHome(): string {
+    const c = this.copy();
     const nextLevel = LEVELS[Math.min(this.save.unlockedLevel - 1, LEVELS.length - 1)];
-    const soundLabel = this.save.soundEnabled ? 'Sound on' : 'Sound off';
     const completedLevels = this.getCompletedLevelCount();
     const totalStars = this.getTotalStars();
     return `
@@ -203,11 +364,11 @@ class ArrowAgainApp {
             <div class="brand-mark" aria-hidden="true">→</div>
             <div>
               <h1>Arrow Again 箭了又箭</h1>
-              <p>点击无遮挡箭头，让它们飞出棋盘。</p>
+              <p>${c.brandSubtitle}</p>
             </div>
           </div>
-          <button class="icon-button" type="button" data-action="toggle-sound" aria-label="${soundLabel}" aria-pressed="${this.save.soundEnabled}">
-            ${this.save.soundEnabled ? '♪' : '×'}
+          <button class="icon-button" type="button" data-action="toggle-settings" data-testid="settings-button" aria-label="${c.settingsAria}" aria-expanded="${this.settingsOpen}">
+            ⚙
           </button>
         </header>
         <div class="home-board">
@@ -216,40 +377,80 @@ class ArrowAgainApp {
           </div>
           <div class="home-progress" data-testid="home-progress">
             <div>
-              <span>连续</span>
-              <strong>${Math.max(1, this.save.streakDays)} 天</strong>
+              <span>${c.streak}</span>
+              <strong>${Math.max(1, this.save.streakDays)} ${c.dayUnit}</strong>
             </div>
             <div>
-              <span>已过</span>
+              <span>${c.completed}</span>
               <strong>${completedLevels}/${LEVELS.length}</strong>
             </div>
             <div>
-              <span>星星</span>
+              <span>${c.stars}</span>
               <strong>${totalStars}</strong>
             </div>
           </div>
+          ${this.settingsOpen ? this.renderSettingsPanel() : ''}
           <p class="retention-line">${this.getHomeRetentionCopy(nextLevel)}</p>
           <div class="home-actions">
-            <button class="primary-button" type="button" data-action="start" data-testid="start-button">开始第 ${nextLevel.id} 关</button>
-            <button class="secondary-button" type="button" data-action="levels" data-testid="levels-button">关卡选择</button>
-            <button class="secondary-button" type="button" data-action="feedback" data-testid="home-feedback-button">反馈与支持</button>
+            <button class="primary-button" type="button" data-action="start" data-testid="start-button">${c.startLevel(nextLevel.id)}</button>
+            ${this.debugAllLevels ? `<button class="secondary-button" type="button" data-action="levels" data-testid="levels-button">${c.levelSelect}</button>` : ''}
+            <button class="secondary-button" type="button" data-action="feedback" data-testid="home-feedback-button">${c.feedbackSupport}</button>
           </div>
         </div>
-        <p class="board-message">今日目标：通关 ${retentionGoalLevels} 关，保持连续游玩节奏。</p>
+        <p class="board-message">${c.dailyGoal}</p>
       </section>
     `;
   }
 
+  private renderSettingsPanel(): string {
+    const c = this.copy();
+    return `
+      <div class="settings-panel" data-testid="settings-panel">
+        <div class="settings-row">
+          <span>${c.language}</span>
+          <div class="segmented-control" role="group" aria-label="${c.language}">
+            ${this.renderLanguageButton('zh', '中文')}
+            ${this.renderLanguageButton('en', 'English')}
+          </div>
+        </div>
+        <div class="settings-row">
+          <span>${c.music}</span>
+          ${this.renderToggleButton('toggle-music', 'music-toggle', this.save.musicEnabled)}
+        </div>
+        <div class="settings-row">
+          <span>${c.effects}</span>
+          ${this.renderToggleButton('toggle-effects', 'effects-toggle', this.save.effectsEnabled)}
+        </div>
+      </div>
+    `;
+  }
+
+  private renderLanguageButton(language: AppLanguage, label: string): string {
+    const active = this.save.language === language;
+    return `<button class="segment-button" type="button" data-action="set-language" data-language="${language}" data-testid="language-${language}" aria-pressed="${active}">${label}</button>`;
+  }
+
+  private renderToggleButton(action: string, testId: string, enabled: boolean): string {
+    const c = this.copy();
+    return `
+      <button class="toggle-button" type="button" data-action="${action}" data-testid="${testId}" aria-pressed="${enabled}">
+        <span class="toggle-track" aria-hidden="true"><span></span></span>
+        <strong>${enabled ? c.on : c.off}</strong>
+      </button>
+    `;
+  }
+
   private getHomeRetentionCopy(nextLevel: LevelData): string {
+    const c = this.copy();
     if (this.save.totalSessions <= 1) {
-      return '先完成前三关，熟悉从边缘清场的节奏。';
+      return c.retentionFirst;
     }
 
     if (this.save.streakDays >= 2) {
-      return `连续 ${this.save.streakDays} 天回到棋盘，第 ${nextLevel.id} 关正在等你。`;
+      return c.retentionStreak(this.save.streakDays, nextLevel.id);
     }
 
-    return `上次停在第 ${nextLevel.id} 关，今天再推进 ${retentionGoalLevels} 关。`;
+    return c.retentionResume(nextLevel.id);
   }
 
   private getCompletedLevelCount(): number {
@@ -266,17 +467,16 @@ class ArrowAgainApp {
   }
 
   private renderLevels(): string {
+    const c = this.copy();
     return `
       <section class="screen level-screen" data-testid="level-screen">
         <header class="top-row">
-          <button class="icon-button" type="button" data-action="home" aria-label="返回首页">‹</button>
+          <button class="icon-button" type="button" data-action="home" aria-label="${c.backHome}">‹</button>
           <div class="level-title">
-            <h1>关卡选择</h1>
-            <p>${this.debugAllLevels ? 'Debug：已显示全部 100 关，不写入存档。' : 'Hard 后面有缓冲关，节奏按产品方案排布。'}</p>
+            <h1>${c.levelSelectTitle}</h1>
+            <p>${c.debugLevelsCopy}</p>
           </div>
-          <button class="icon-button" type="button" data-action="toggle-sound" aria-label="切换音效" aria-pressed="${this.save.soundEnabled}">
-            ${this.save.soundEnabled ? '♪' : '×'}
-          </button>
+          <span class="header-spacer" aria-hidden="true"></span>
         </header>
         <div class="level-grid">
           ${LEVELS.map((level) => this.renderLevelButton(level)).join('')}
@@ -286,16 +486,17 @@ class ArrowAgainApp {
   }
 
   private renderLevelButton(level: LevelData): string {
+    const c = this.copy();
     const locked = this.isLevelLocked(level);
     const stars = this.save.starsByLevel[String(level.id)] ?? 0;
     const difficultyLabel = this.getDifficultyLabel(level);
     return `
       <button class="level-button" type="button" data-action="play-level" data-level="${level.id}" data-testid="level-${level.id}" ${locked ? 'disabled' : ''}>
-        <span class="level-number">第 ${level.id} 关</span>
+        <span class="level-number">${c.levelPrefix(level.id)}</span>
         <span class="level-name">${level.name}</span>
         <span class="level-meta">
           <span class="difficulty-${level.difficulty}">${difficultyLabel}</span>
-          <span>${locked ? 'LOCK' : this.renderStars(stars)}</span>
+          <span>${locked ? c.locked : this.renderStars(stars)}</span>
         </span>
       </button>
     `;
@@ -343,48 +544,53 @@ class ArrowAgainApp {
   }
 
   private getHintActionLabel(): string {
+    const c = this.copy();
     if (this.rewardBusy) {
-      return '广告中';
+      return c.adPlaying;
     }
 
-    return this.platform.capabilities.rewardedAd ? '提示' : '提示暂不可用';
+    return this.platform.capabilities.rewardedAd ? c.hint : c.hintUnavailable;
   }
 
   private getReviveActionLabel(): string {
+    const c = this.copy();
     if (this.rewardBusy) {
-      return '广告加载中';
+      return c.reviveLoading;
     }
 
-    return this.platform.capabilities.rewardedAd ? '看广告复活' : '复活暂不可用';
+    return this.platform.capabilities.rewardedAd ? c.revive : c.reviveUnavailable;
   }
 
   private renderPlaying(): string {
+    const c = this.copy();
     const available = this.getAvailableActivePieces().length;
+    const backAction = this.debugAllLevels ? 'levels' : 'home';
+    const backLabel = this.debugAllLevels ? c.levelSelect : c.backHome;
     return `
       <section class="screen game-screen" data-testid="game-screen">
         <header class="game-hud" aria-label="关卡状态">
-          <button class="nav-back" type="button" data-action="levels" aria-label="返回关卡">‹</button>
+          <button class="nav-back" type="button" data-action="${backAction}" aria-label="${backLabel}">‹</button>
           <div class="level-stack">
-            <h1>第 ${this.currentLevel.id} 关</h1>
+            <h1>${c.levelPrefix(this.currentLevel.id)}</h1>
             <div class="level-dots" aria-hidden="true">
               <span class="active"></span>
               <span></span>
               <span></span>
             </div>
           </div>
-          <button class="restart-orb" type="button" data-action="restart" aria-label="重开">
+          <button class="restart-orb" type="button" data-action="restart" aria-label="${c.restart}">
             <img src="/assets/action-restart.png" alt="" aria-hidden="true" />
           </button>
-          <div class="life-pill" data-testid="lives" aria-label="生命 ${this.lives}/${this.currentLevel.lives}">
+          <div class="life-pill" data-testid="lives" aria-label="${c.livesAria(this.lives, this.currentLevel.lives)}">
             <img src="/assets/hud-heart.png" alt="" aria-hidden="true" />
             <strong>${this.lives}/${this.currentLevel.lives}</strong>
           </div>
           <div class="move-card" data-testid="moves">
-            <span>步数</span>
+            <span>${c.moves}</span>
             <strong>${this.moves}/${this.currentLevel.targetMoves}</strong>
           </div>
           <div class="available-pill" data-testid="available-count">
-            <span>可用</span>
+            <span>${c.available}</span>
             <strong>${available}</strong>
           </div>
         </header>
@@ -392,10 +598,10 @@ class ArrowAgainApp {
           <canvas class="board-canvas" aria-hidden="true"></canvas>
           <svg class="maze-layer" aria-hidden="true"></svg>
           <svg class="arrow-layer" role="group" aria-label="箭头棋盘"></svg>
-          ${this.currentLevel.tutorial && this.moves === 0 ? '<div class="tutorial-bubble">点这里</div><div class="tutorial-hand" aria-hidden="true"></div>' : ''}
+          ${this.currentLevel.tutorial && this.moves === 0 ? `<div class="tutorial-bubble">${c.tutorialBubble}</div><div class="tutorial-hand" aria-hidden="true"></div>` : ''}
         </div>
         <div class="play-footer">
-          <p class="board-message" data-testid="board-message">${this.message || '从边缘可飞出的箭头开始清除。'}</p>
+          <p class="board-message" data-testid="board-message">${this.message || c.defaultBoardMessage}</p>
           <div class="game-actions">
             <button class="action-button" type="button" data-action="hint" data-testid="hint-button" ${this.rewardBusy ? 'disabled' : ''}>
               <span class="action-icon"><img src="/assets/action-hint.png" alt="" aria-hidden="true" /></span>
@@ -404,12 +610,12 @@ class ArrowAgainApp {
             </button>
             <button class="action-button" type="button" data-action="undo" data-testid="undo-button" ${this.history.length === 0 || this.rewardBusy ? 'disabled' : ''}>
               <span class="action-icon undo-icon"><img src="/assets/action-restart.png" alt="" aria-hidden="true" /></span>
-              <span>撤销</span>
+              <span>${c.undo}</span>
               <span class="tool-badge" data-testid="undo-count" ${this.history.length === 0 ? 'hidden' : ''}>${Math.min(this.history.length, 9)}</span>
             </button>
             <button class="action-button" type="button" data-action="restart" data-testid="restart-button">
               <span class="action-icon"><img src="/assets/action-restart.png" alt="" aria-hidden="true" /></span>
-              <span>重开</span>
+              <span>${c.restart}</span>
             </button>
           </div>
         </div>
@@ -419,14 +625,17 @@ class ArrowAgainApp {
   }
 
   private renderHardModal(level: LevelData): string {
+    const c = this.copy();
+    const secondaryAction = this.debugAllLevels ? 'levels' : 'home';
+    const secondaryLabel = this.debugAllLevels ? c.viewLevels : c.backHome;
     return `
       <div class="modal-scrim" role="dialog" aria-modal="true" aria-labelledby="hard-title" data-testid="hard-modal">
         <div class="modal">
-          <h2 id="hard-title">${level.difficulty === 'boss' ? 'Boss 关' : '困难关'}</h2>
-          <p>${level.hardWarning}</p>
+          <h2 id="hard-title">${c.hardTitle(level.difficulty)}</h2>
+          <p>${c.hardWarning(level)}</p>
           <div class="modal-actions">
-            <button class="secondary-button" type="button" data-action="levels">先看关卡</button>
-            <button class="primary-button" type="button" data-action="confirm-hard">进入</button>
+            <button class="secondary-button" type="button" data-action="${secondaryAction}">${secondaryLabel}</button>
+            <button class="primary-button" type="button" data-action="confirm-hard" data-testid="confirm-hard-button">${c.enter}</button>
           </div>
         </div>
       </div>
@@ -434,32 +643,36 @@ class ArrowAgainApp {
   }
 
   private renderResult(result: ResultState): string {
+    const c = this.copy();
     const next = LEVELS.find((level) => level.id === result.level.id + 1);
-    const title = result.won ? '关卡完成！' : '再试一次？';
-    const comment = result.won ? this.getResultComment(result.lives) : this.message || `生命值已耗尽，还剩 ${this.pieces.length} 枚箭头。`;
+    const title = result.won ? c.resultWon : c.resultLost;
+    const comment = result.won ? this.getResultComment(result.lives) : this.message || c.lostComment(this.pieces.length);
+    const finalWonAction = this.debugAllLevels
+      ? `<button class="primary-button" type="button" data-action="levels" data-testid="result-levels-button">${c.levelSelect}</button>`
+      : `<button class="primary-button" type="button" data-action="home" data-testid="result-home-button">${c.backHome}</button>`;
     return `
       <section class="screen result-screen">
         <div class="result-panel" data-testid="result-screen">
           <div class="brand-mark" style="margin:0 auto 18px" aria-hidden="true">${result.won ? '→' : '↺'}</div>
           <h1>${title}</h1>
-          <p>第 ${result.level.id} 关 · ${result.level.name}</p>
-          <div class="stars" aria-label="${result.stars} 星">${this.renderStars(result.stars)}</div>
+          <p>${c.resultLevel(result.level)}</p>
+          <div class="stars" aria-label="${c.resultStarsAria(result.stars)}">${this.renderStars(result.stars)}</div>
           <p class="result-stat-line">${comment}</p>
-          <p class="result-stat-line">剩余生命：${'♥'.repeat(result.lives)}${'♡'.repeat(Math.max(0, result.level.lives - result.lives))} · 步数：${result.moves}</p>
-          ${result.won && result.level.achievement ? `<p class="result-stat-line">成就解锁：${result.level.achievement}</p>` : ''}
+          <p class="result-stat-line">${c.resultStats(result.lives, result.level.lives, result.moves)}</p>
+          ${result.won && result.level.achievement ? `<p class="result-stat-line">${c.achievement(result.level.achievement)}</p>` : ''}
           <div class="result-actions">
-            <button class="secondary-button" type="button" data-action="retry-result" data-testid="retry-button">再试一次</button>
+            <button class="secondary-button" type="button" data-action="retry-result" data-testid="retry-button">${c.retry}</button>
             ${
               result.won && next
-                ? '<button class="primary-button" type="button" data-action="next-level" data-testid="next-level-button">下一关 →</button>'
+                ? `<button class="primary-button" type="button" data-action="next-level" data-testid="next-level-button">${c.nextLevel}</button>`
                 : result.won
-                  ? '<button class="primary-button" type="button" data-action="levels" data-testid="result-levels-button">关卡选择</button>'
+                  ? finalWonAction
                   : `<button class="primary-button" type="button" data-action="revive-result" data-testid="revive-button" ${this.rewardBusy ? 'disabled' : ''}>${this.getReviveActionLabel()}</button>`
             }
           </div>
           <div class="result-secondary-actions">
-            <button class="secondary-button" type="button" data-action="share" data-testid="share-button">分享成绩</button>
-            <button class="secondary-button" type="button" data-action="feedback" data-testid="result-feedback-button">反馈问题</button>
+            <button class="secondary-button" type="button" data-action="share" data-testid="share-button">${c.share}</button>
+            <button class="secondary-button" type="button" data-action="feedback" data-testid="result-feedback-button">${c.report}</button>
           </div>
         </div>
       </section>
@@ -488,6 +701,7 @@ class ArrowAgainApp {
   }
 
   private handleAction(action: string, dataset: DOMStringMap): void {
+    this.audio.startMusic();
     this.audio.play('tap');
 
     if (action === 'home') {
@@ -498,6 +712,14 @@ class ArrowAgainApp {
     }
 
     if (action === 'levels') {
+      if (!this.debugAllLevels) {
+        this.track('screen_levels_blocked', { from_screen: this.screen, screen: 'home' });
+        this.pendingHardLevel = undefined;
+        this.screen = 'home';
+        this.render();
+        return;
+      }
+
       this.track('screen_levels_open', { from_screen: this.screen, screen: 'levels' });
       this.pendingHardLevel = undefined;
       this.screen = 'levels';
@@ -518,11 +740,40 @@ class ArrowAgainApp {
       return;
     }
 
-    if (action === 'toggle-sound') {
-      this.save.soundEnabled = !this.save.soundEnabled;
-      this.audio.setEnabled(this.save.soundEnabled);
+    if (action === 'toggle-settings') {
+      this.settingsOpen = !this.settingsOpen;
+      this.track('settings_panel_toggle', { open: this.settingsOpen });
+      this.render();
+      return;
+    }
+
+    if (action === 'set-language') {
+      const language = dataset.language === 'en' ? 'en' : 'zh';
+      this.save.language = language;
+      this.applyLanguage();
       saveGame(this.save);
-      this.track('settings_sound_toggle', { enabled: this.save.soundEnabled });
+      this.track('settings_language_change', { language });
+      this.render();
+      return;
+    }
+
+    if (action === 'toggle-music') {
+      this.save.musicEnabled = !this.save.musicEnabled;
+      this.audio.setMusicEnabled(this.save.musicEnabled);
+      if (this.save.musicEnabled) {
+        this.audio.startMusic();
+      }
+      saveGame(this.save);
+      this.track('settings_music_toggle', { enabled: this.save.musicEnabled });
+      this.render();
+      return;
+    }
+
+    if (action === 'toggle-effects') {
+      this.save.effectsEnabled = !this.save.effectsEnabled;
+      this.audio.setEffectsEnabled(this.save.effectsEnabled);
+      saveGame(this.save);
+      this.track('settings_effects_toggle', { enabled: this.save.effectsEnabled });
       this.render();
       return;
     }
@@ -574,12 +825,11 @@ class ArrowAgainApp {
   }
 
   private createResultSharePayload(result: ResultState): SharePayload {
-    const title = 'Arrow Again 箭了又箭';
+    const c = this.copy();
+    const title = c.shareTitle;
     const url = window.location.origin && window.location.origin !== 'null' ? window.location.origin : undefined;
     const assetBase = url ?? window.location.href.replace(/\/[^/]*$/, '');
-    const text = result.won
-      ? `我在 Arrow Again 第 ${result.level.id} 关拿到 ${result.stars} 星，用 ${result.moves} 步清场！`
-      : `我在 Arrow Again 第 ${result.level.id} 关差一点通关，来试试你的路线判断。`;
+    const text = result.won ? c.shareWon(result.level.id, result.stars, result.moves) : c.shareLost(result.level.id);
 
     return {
       title,
@@ -690,7 +940,7 @@ class ArrowAgainApp {
     this.pieces = level.pieces.map((piece) => ({ ...piece }));
     this.lives = level.lives;
     this.moves = 0;
-    this.message = level.tutorial ? '点击高亮箭头，观察它飞出棋盘。' : '';
+    this.message = level.tutorial ? this.copy().tutorialMessage : '';
     this.errorPieceId = undefined;
     this.hintIds.clear();
     this.exitingPieceIds.clear();
@@ -1455,7 +1705,7 @@ class ArrowAgainApp {
     if (!isPathClear(piece, this.getActivePieces(), this.currentLevel)) {
       this.lives -= 1;
       this.errorPieceId = piece.id;
-      this.message = '这枚箭头前方被挡住了。';
+      this.message = this.copy().blockedMessage;
       this.audio.play('blocked');
       this.platform.haptic([30, 40, 30]);
       this.track('level_blocked_move', {
@@ -1477,7 +1727,7 @@ class ArrowAgainApp {
     }
 
     this.exitingPieceIds.add(piece.id);
-    this.message = '漂亮，箭头飞出去了。';
+    this.message = this.copy().moveMessage;
     this.audio.play('move');
     this.platform.haptic(18);
     this.refreshPlayingUi();
@@ -1523,7 +1773,7 @@ class ArrowAgainApp {
     this.pieces = snapshot.pieces.map((piece) => ({ ...piece }));
     this.lives = snapshot.lives;
     this.moves = snapshot.moves;
-    this.message = '已撤销上一步。';
+    this.message = this.copy().undoMessage;
     this.errorPieceId = undefined;
     this.hintIds.clear();
     this.track('level_undo', {
@@ -1545,7 +1795,7 @@ class ArrowAgainApp {
 
     const lives = this.root.querySelector<HTMLElement>('[data-testid="lives"]');
     if (lives) {
-      lives.setAttribute('aria-label', `生命 ${this.lives}/${this.currentLevel.lives}`);
+      lives.setAttribute('aria-label', this.copy().livesAria(this.lives, this.currentLevel.lives));
       const count = lives.querySelector('strong');
       if (count) {
         count.textContent = `${this.lives}/${this.currentLevel.lives}`;
@@ -1570,7 +1820,7 @@ class ArrowAgainApp {
 
     const message = this.root.querySelector<HTMLElement>('[data-testid="board-message"]');
     if (message) {
-      message.textContent = this.message || '从边缘可飞出的箭头开始清除。';
+      message.textContent = this.message || this.copy().defaultBoardMessage;
     }
 
     const undoButton = this.root.querySelector<HTMLButtonElement>('[data-testid="undo-button"]');
@@ -1787,14 +2037,14 @@ class ArrowAgainApp {
     }
 
     if (!this.platform.capabilities.rewardedAd) {
-      this.message = '当前平台暂未接入提示广告，先用重开或继续观察可飞出的边缘箭头。';
+      this.message = this.copy().hintUnavailableMessage;
       this.track('rewarded_fail', { placement: 'hint', reason: 'unavailable' });
       this.render();
       return;
     }
 
     this.rewardBusy = true;
-    this.message = '正在播放提示广告...';
+    this.message = this.copy().adPlayingMessage;
     this.render();
     this.track('rewarded_request', {
       placement: 'hint',
@@ -1805,7 +2055,7 @@ class ArrowAgainApp {
     this.rewardBusy = false;
 
     if (!rewarded || this.screen !== 'playing') {
-      this.message = '广告未完成，暂时无法获得提示。';
+      this.message = this.copy().hintFailMessage;
       this.track('rewarded_fail', {
         placement: 'hint',
         reason: this.screen === 'playing' ? 'not_completed' : 'screen_changed'
@@ -1826,7 +2076,7 @@ class ArrowAgainApp {
   private showHint(): void {
     const available = this.getAvailableActivePieces().slice(0, 3);
     this.hintIds = new Set(available.map((piece) => piece.id));
-    this.message = available.length > 0 ? '广告完成，已高亮当前可以飞出的箭头。' : '当前没有可飞出的箭头，可以重开。';
+    this.message = available.length > 0 ? this.copy().hintCompleteMessage : this.copy().noHintMessage;
     this.render();
   }
 
@@ -1837,7 +2087,7 @@ class ArrowAgainApp {
     }
 
     if (!this.platform.capabilities.rewardedAd) {
-      this.message = '当前平台暂未接入复活广告，请先重开这一关。';
+      this.message = this.copy().reviveUnavailableMessage;
       this.track('rewarded_fail', { placement: 'revive', reason: 'unavailable' });
       this.render();
       return;
@@ -1866,7 +2116,7 @@ class ArrowAgainApp {
       lives: result.lives
     });
     this.lives = 1;
-    this.message = '复活成功，保留当前棋盘继续挑战。';
+    this.message = this.copy().reviveSuccessMessage;
     this.errorPieceId = undefined;
     this.hintIds.clear();
     this.exitingPieceIds.clear();
@@ -1926,12 +2176,12 @@ class ArrowAgainApp {
 
   private getResultComment(lives: number): string {
     if (lives >= 3) {
-      return '完美通关！';
+      return this.copy().perfect;
     }
     if (lives >= 2) {
-      return '太棒了！';
+      return this.copy().great;
     }
-    return '险过关！';
+    return this.copy().closeWin;
   }
 
   private renderStars(count: number): string {
@@ -1939,13 +2189,22 @@ class ArrowAgainApp {
   }
 
   private getDifficultyLabel(level: LevelData): string {
-    const labels: Record<LevelData['difficulty'], string> = {
-      tutorial: '引导',
-      easy: '简单',
-      medium: '中等',
-      hard: 'Hard',
-      boss: 'Boss'
-    };
+    const labels: Record<LevelData['difficulty'], string> =
+      this.save.language === 'en'
+        ? {
+            tutorial: 'Guide',
+            easy: 'Easy',
+            medium: 'Medium',
+            hard: 'Hard',
+            boss: 'Boss'
+          }
+        : {
+            tutorial: '引导',
+            easy: '简单',
+            medium: '中等',
+            hard: 'Hard',
+            boss: 'Boss'
+          };
     return labels[level.difficulty];
   }
 

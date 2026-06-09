@@ -2,6 +2,8 @@ export type Direction = 'up' | 'right' | 'down' | 'left';
 
 export type Difficulty = 'tutorial' | 'easy' | 'medium' | 'hard' | 'boss';
 
+export type AppLanguage = 'zh' | 'en';
+
 export interface ArrowPiece {
   id: string;
   row: number;
@@ -27,7 +29,10 @@ export interface LevelData {
 export interface SaveData {
   unlockedLevel: number;
   starsByLevel: Record<string, number>;
-  soundEnabled: boolean;
+  language: AppLanguage;
+  musicEnabled: boolean;
+  effectsEnabled: boolean;
+  soundEnabled?: boolean;
   firstPlayedAt: string;
   lastPlayedDate: string;
   streakDays: number;
