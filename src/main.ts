@@ -55,7 +55,6 @@ const appRoot = document.querySelector<HTMLDivElement>('#app');
 const debugAllLevels = new URLSearchParams(window.location.search).get('debug');
 const supportEmail = platformManifest.supportEmail;
 const supportUrl = platformManifest.releaseAssets.supportUrl;
-const retentionGoalLevels = 3;
 const freeTrajectoryHintLevelLimit = 5;
 
 const COPY = {
@@ -68,17 +67,12 @@ const COPY = {
     effects: '音效',
     on: '开',
     off: '关',
-    streak: '连续',
-    completed: '已过',
-    stars: '星星',
-    dayUnit: '天',
     startLevel: (id: number) => `开始第 ${id} 关`,
     levelSelect: '关卡选择',
     feedbackSupport: '反馈与支持',
-    dailyGoal: `今日目标：通关 ${retentionGoalLevels} 关，保持连续游玩节奏。`,
-    retentionFirst: '先完成前三关，熟悉从边缘清场的节奏。',
-    retentionStreak: (days: number, id: number) => `连续 ${days} 天回到棋盘，第 ${id} 关正在等你。`,
-    retentionResume: (id: number) => `上次停在第 ${id} 关，今天再推进 ${retentionGoalLevels} 关。`,
+    retentionFirst: '从边缘可飞出的箭头开始，先找最顺的一步。',
+    retentionStreak: () => '保持手感，先看出口再清场。',
+    retentionResume: () => '继续清场，观察方向和阻挡关系。',
     backHome: '返回首页',
     levelSelectTitle: '关卡选择',
     debugLevelsCopy: 'Debug：已显示全部 100 关，不写入存档。',
@@ -141,17 +135,12 @@ const COPY = {
     effects: 'SFX',
     on: 'On',
     off: 'Off',
-    streak: 'Streak',
-    completed: 'Cleared',
-    stars: 'Stars',
-    dayUnit: 'd',
     startLevel: (id: number) => `Start Level ${id}`,
     levelSelect: 'Level Select',
     feedbackSupport: 'Feedback & Support',
-    dailyGoal: `Today: clear ${retentionGoalLevels} levels and keep the streak alive.`,
-    retentionFirst: 'Clear the first three levels to learn the edge-clearing rhythm.',
-    retentionStreak: (days: number, id: number) => `${days} day streak. Level ${id} is waiting.`,
-    retentionResume: (id: number) => `You stopped at Level ${id}. Push ${retentionGoalLevels} more today.`,
+    retentionFirst: 'Start with an arrow that can leave from the edge.',
+    retentionStreak: () => 'Keep the rhythm: check exits before tapping.',
+    retentionResume: () => 'Keep clearing by reading direction and blockers.',
     backHome: 'Back home',
     levelSelectTitle: 'Level Select',
     debugLevelsCopy: 'Debug: all 100 levels are visible and progress is not changed.',
@@ -355,8 +344,6 @@ class ArrowAgainApp {
   private renderHome(): string {
     const c = this.copy();
     const nextLevel = LEVELS[Math.min(this.save.unlockedLevel - 1, LEVELS.length - 1)];
-    const completedLevels = this.getCompletedLevelCount();
-    const totalStars = this.getTotalStars();
     return `
       <section class="screen home-screen" data-testid="home-screen">
         <header class="top-row">
@@ -375,29 +362,14 @@ class ArrowAgainApp {
           <div class="hero-board" aria-hidden="true">
             ${this.renderHeroCells()}
           </div>
-          <div class="home-progress" data-testid="home-progress">
-            <div>
-              <span>${c.streak}</span>
-              <strong>${Math.max(1, this.save.streakDays)} ${c.dayUnit}</strong>
-            </div>
-            <div>
-              <span>${c.completed}</span>
-              <strong>${completedLevels}/${LEVELS.length}</strong>
-            </div>
-            <div>
-              <span>${c.stars}</span>
-              <strong>${totalStars}</strong>
-            </div>
-          </div>
           ${this.settingsOpen ? this.renderSettingsPanel() : ''}
-          <p class="retention-line">${this.getHomeRetentionCopy(nextLevel)}</p>
           <div class="home-actions">
             <button class="primary-button" type="button" data-action="start" data-testid="start-button">${c.startLevel(nextLevel.id)}</button>
             ${this.debugAllLevels ? `<button class="secondary-button" type="button" data-action="levels" data-testid="levels-button">${c.levelSelect}</button>` : ''}
             <button class="secondary-button" type="button" data-action="feedback" data-testid="home-feedback-button">${c.feedbackSupport}</button>
           </div>
+          <p class="retention-line">${this.getHomeRetentionCopy()}</p>
         </div>
-        <p class="board-message">${c.dailyGoal}</p>
       </section>
     `;
   }
@@ -440,17 +412,17 @@ class ArrowAgainApp {
     `;
   }
 
-  private getHomeRetentionCopy(nextLevel: LevelData): string {
+  private getHomeRetentionCopy(): string {
     const c = this.copy();
     if (this.save.totalSessions <= 1) {
       return c.retentionFirst;
     }
 
     if (this.save.streakDays >= 2) {
-      return c.retentionStreak(this.save.streakDays, nextLevel.id);
+      return c.retentionStreak();
     }
 
-    return c.retentionResume(nextLevel.id);
+    return c.retentionResume();
   }
 
   private getCompletedLevelCount(): number {
