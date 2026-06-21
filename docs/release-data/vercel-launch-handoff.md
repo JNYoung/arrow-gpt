@@ -9,6 +9,8 @@ Date: 2026-06-21
 - Production domain: `https://arrow-again.top`
 - Current Vercel production URL: `https://arrow-again-aqexlc7yv-bittap-tech.vercel.app`
 - Stable Vercel alias: `https://arrow-again.vercel.app`
+- Connected Git repository: `github.com/JNYoung/arrow-gpt`
+- Production branch: `main`
 - Deployment ID: `dpl_FUcbji6y2yrx8WzrtUmbU4cLdj6C`
 - Deployment status: `READY`
 - Build command: `npm run build`
@@ -72,7 +74,8 @@ Signing status: signed with the local Android upload key from android/release-si
 - `arrow-again.top` and `www.arrow-again.top` were added to the Vercel project.
 - Vercel project-domain API returns `verified: true` for both custom domains.
 - Vercel domain config API still returns `misconfigured: true` because Aliyun DNS has not been pointed at Vercel yet.
-- `vercel git connect git@github.com:JNYoung/arrow-gpt.git --scope bittap-tech` failed with a repository access message. The likely account-side follow-up is granting the Vercel GitHub App access to `JNYoung/arrow-gpt`.
+- The Vercel GitHub App now has selected-repository access to `JNYoung/arrow-gpt`, and `vercel git connect https://github.com/JNYoung/arrow-gpt --scope bittap-tech --yes` returned `Connected`.
+- Vercel project API confirms `arrow-again` is linked to GitHub repository `JNYoung/arrow-gpt` with production branch `main`.
 - Chrome automation could open the Aliyun domain console, but DOM/screenshot/control reads timed out repeatedly on that page. DNS still needs account-side console action or Aliyun OpenAPI credentials.
 
 ## Required Aliyun DNS action
