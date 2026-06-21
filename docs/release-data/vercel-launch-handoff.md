@@ -53,8 +53,8 @@ Current local Android bundle:
 
 ```text
 Path: android/app/build/outputs/bundle/release/app-release.aab
-SHA-256: 0153cc4e23f76e687c0b9719bd0a30b1aa58957328208b333194a3258b88c0a2
-Signing status: unsigned because ANDROID_RELEASE_* upload-key environment variables are not set on this machine.
+SHA-256: 025ada338d618700bd17ea9e8e3cf37a7a868fc58dd009e072756f16c0c6d861
+Signing status: signed with the local Android upload key from android/release-signing.env.
 ```
 
 ## Vercel repository prep completed
