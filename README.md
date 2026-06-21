@@ -78,6 +78,9 @@ Vercel serves the `dist` output directory. The project contract is recorded in
 `vercel.json`; `.vercelignore` keeps native projects, local screenshots, release
 artifacts, and docs out of Vercel source uploads.
 
+The Vercel project `bittap-tech/arrow-again` is connected to
+`github.com/JNYoung/arrow-gpt` with production branch `main`.
+
 Custom domain:
 
 ```text
