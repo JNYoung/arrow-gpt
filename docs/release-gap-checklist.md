@@ -22,7 +22,7 @@
 - `public/privacy.html` 已从草稿页改成可公开访问的隐私政策版本。
 - 新增 `.github/workflows/ci.yml`，PR / main push / 手动触发会安装 Playwright Chromium 并运行 `npm run verify:all`。
 - 本地已确认 `typecheck`、关卡结构、关卡平衡、普通平台 manifest 校验通过。
-- `npm run google:aab` 已成功产出 `android/app/build/outputs/bundle/release/app-release.aab`；提交 Google Play 前仍需配置正式 upload key / signing config。
+- 已使用本地 Android upload key 配置成功产出 signed AAB：`android/app/build/outputs/bundle/release/app-release.aab`。
 - Android 上架优先级已提升：新增 `npm run verify:android:release`，Android release 校验不再被 Meta placeholder 阻断。
 - `platform-manifest.json` 已补 `releaseAssets.appAdsTxtUrl = https://arrow-again.top/app-ads.txt`，配合 `public/CNAME` 部署到开发者网站根目录。
 - Android Gradle 已支持通过环境变量读取正式 upload key，避免把 keystore 或密码提交进仓库。
@@ -215,16 +215,14 @@ manifest 至少要包含：
 
 ## 建议的执行顺序
 
-1. 配置 Android upload key 环境变量并运行 `npm run google:aab`，产出 signed AAB。
-2. 配置 `arrow-again.top` Aliyun DNS，确认 `https://arrow-again.top/app-ads.txt` 可访问，再到 AdMob 完成 app-ads.txt 验证和隐私/同意消息配置。
-3. Android 真机 smoke test，覆盖首屏、第 1 关、hint、revive、Hard 弹窗、分享、返回前台。
-4. Google Play 商店文案 / 截图 / Data safety / 隐私政策最终确认。
-5. 上传 AAB 到 closed testing 或 production draft。
-6. Meta app id / rewarded placement id 放到 Android 首发后推进。
+1. 配置 `arrow-again.top` Aliyun DNS，确认 `https://arrow-again.top/app-ads.txt` 可访问，再到 AdMob 完成 app-ads.txt 验证和隐私/同意消息配置。
+2. Android 真机 smoke test，覆盖首屏、第 1 关、hint、revive、Hard 弹窗、分享、返回前台。
+3. Google Play 商店文案 / 截图 / Data safety / 隐私政策最终确认。
+4. 上传 signed AAB 到 closed testing 或 production draft。
+5. Meta app id / rewarded placement id 放到 Android 首发后推进。
 
 ## 需要你本人推进或提供
 
-- Android upload key / keystore 或对应环境变量
 - Google Play 后台权限、Data safety 选择、商店截图和主视觉取舍
 - `arrow-again.top` DNS / Vercel 自定义域名解析
 - AdMob app-ads.txt 验证、隐私/同意消息配置确认
