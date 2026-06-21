@@ -65,6 +65,43 @@ npm run meta:zip
 
 The packaged files are generated under `releases/meta-instant-game/`.
 
+## Vercel Production Deploy
+
+The production web build uses Vercel with:
+
+```bash
+npm ci
+npm run build
+```
+
+Vercel serves the `dist` output directory. The project contract is recorded in
+`vercel.json`; `.vercelignore` keeps native projects, local screenshots, release
+artifacts, and docs out of Vercel source uploads.
+
+Custom domain:
+
+```text
+arrow-again.top
+```
+
+For external DNS on Aliyun, the expected Vercel records are:
+
+```text
+Type   Host  Value
+A      @     76.76.21.21
+CNAME  www   cname.vercel-dns-0.com
+```
+
+After deployment, verify:
+
+```bash
+curl -I https://arrow-again.top/app-home.html
+curl -I https://arrow-again.top/privacy.html
+curl -I https://arrow-again.top/terms.html
+curl -I https://arrow-again.top/support.html
+curl -I https://arrow-again.top/app-ads.txt
+```
+
 ## Unified Platform Spec
 
 Games call a single runtime bridge from `src/platform` for lifecycle, loading

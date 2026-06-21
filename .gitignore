@@ -8,3 +8,4 @@ releases
 *.jks
 *.keystore
 android/release-signing.env
+.vercel
