@@ -27,6 +27,7 @@
 - `platform-manifest.json` 已补 `releaseAssets.appAdsTxtUrl = https://arrow-again.top/app-ads.txt`，配合 `public/CNAME` 部署到开发者网站根目录。
 - Android Gradle 已支持通过环境变量读取正式 upload key，避免把 keystore 或密码提交进仓库。
 - Vercel 项目 `bittap-tech/arrow-again` 已完成生产部署，`https://arrow-again.vercel.app/app-ads.txt` 可访问。
+- 游戏内 Settings 已补 Privacy Policy、Terms、Data Deletion、Support 入口，降低 Google Play 审核路径风险。
 - 当前本机 `curl https://arrow-again.top/app-ads.txt` 仍不可访问；AdMob 验证前还需要完成 Aliyun DNS 配置。
 
 距离真正上线，仍差 4 类工作：
