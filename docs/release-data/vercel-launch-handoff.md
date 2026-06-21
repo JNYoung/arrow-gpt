@@ -7,11 +7,11 @@ Date: 2026-06-21
 - Vercel project: `arrow-again`
 - Vercel scope: `bittap-tech`
 - Production domain: `https://arrow-again.top`
-- Current Vercel production URL: `https://arrow-again-5hgxhry22-bittap-tech.vercel.app`
+- Last inspected Vercel production URL: `https://arrow-again-7qt90ba2z-bittap-tech.vercel.app`
 - Stable Vercel alias: `https://arrow-again.vercel.app`
 - Connected Git repository: `github.com/JNYoung/arrow-gpt`
 - Production branch: `main`
-- Deployment ID: `dpl_GPpsRWiRrbAgr96EPzZTtYLU9vas`
+- Last inspected deployment ID: `dpl_AonGbLMd82zjVngVdqSrcHtSfNDo`
 - Deployment status: `READY`
 - Build command: `npm run build`
 - Output directory: `dist`
