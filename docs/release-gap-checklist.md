@@ -26,7 +26,7 @@
 - Android 上架优先级已提升：新增 `npm run verify:android:release`，Android release 校验不再被 Meta placeholder 阻断。
 - `platform-manifest.json` 已补 `releaseAssets.appAdsTxtUrl = https://arrow-again.top/app-ads.txt`，配合 `public/CNAME` 部署到开发者网站根目录。
 - Android Gradle 已支持通过环境变量读取正式 upload key，避免把 keystore 或密码提交进仓库。
-- 当前本机 `curl https://arrow-again.top/app-ads.txt` 仍显示 DNS 未解析；AdMob 验证前需要先完成域名 DNS 到 GitHub Pages 的配置。
+- 当前本机 `curl https://arrow-again.top/app-ads.txt` 仍不可访问；AdMob 验证前需要先完成 Vercel 项目部署和 Aliyun DNS 配置。
 
 距离真正上线，仍差 4 类工作：
 
@@ -214,7 +214,7 @@ manifest 至少要包含：
 ## 建议的执行顺序
 
 1. 配置 Android upload key 环境变量并运行 `npm run google:aab`，产出 signed AAB。
-2. 合并并部署 Pages，配置 `arrow-again.top` DNS，确认 `https://arrow-again.top/app-ads.txt` 可访问，再到 AdMob 完成 app-ads.txt 验证和隐私/同意消息配置。
+2. 部署 Vercel，配置 `arrow-again.top` Aliyun DNS，确认 `https://arrow-again.top/app-ads.txt` 可访问，再到 AdMob 完成 app-ads.txt 验证和隐私/同意消息配置。
 3. Android 真机 smoke test，覆盖首屏、第 1 关、hint、revive、Hard 弹窗、分享、返回前台。
 4. Google Play 商店文案 / 截图 / Data safety / 隐私政策最终确认。
 5. 上传 AAB 到 closed testing 或 production draft。
@@ -224,7 +224,7 @@ manifest 至少要包含：
 
 - Android upload key / keystore 或对应环境变量
 - Google Play 后台权限、Data safety 选择、商店截图和主视觉取舍
-- `arrow-again.top` DNS / GitHub Pages 自定义域名解析
+- `arrow-again.top` DNS / Vercel 自定义域名解析
 - AdMob app-ads.txt 验证、隐私/同意消息配置确认
 - 最终包名、展示名、版本策略
 - Apple / Meta 开发者后台权限（Android 首发后）
