@@ -5,7 +5,12 @@ Date: 2026-06-21
 ## Production target
 
 - Vercel project: `arrow-again`
+- Vercel scope: `bittap-tech`
 - Production domain: `https://arrow-again.top`
+- Current Vercel production URL: `https://arrow-again-f6rx2j7oy-bittap-tech.vercel.app`
+- Stable Vercel alias: `https://arrow-again.vercel.app`
+- Deployment ID: `dpl_BM67Su3h7arXNjAnSnhbyxwHU91f`
+- Deployment status: `READY`
 - Build command: `npm run build`
 - Output directory: `dist`
 - Public review URLs:
@@ -38,6 +43,7 @@ Results:
 - Browser E2E passed for home, gameplay, rewarded hint, rewarded revive, 100-level access, hard modal, and desktop smoke flow.
 - Local Vite preview returned `200` for `/`, `/app-home.html`, `/privacy.html`, `/terms.html`, `/data-deletion.html`, and `/support.html`.
 - Local Vite preview returned the expected AdMob publisher line from `/app-ads.txt`.
+- Vercel production returned `200` for `/`, `/app-home.html`, `/privacy.html`, `/terms.html`, `/data-deletion.html`, `/support.html`, and `/app-ads.txt` at `https://arrow-again.vercel.app`.
 - Android release bundle build passed.
 
 The full multi-platform release gate still intentionally blocks on Meta Instant Games placeholders and top-level `releaseStatus: "draft"`.
@@ -56,27 +62,28 @@ Signing status: unsigned because ANDROID_RELEASE_* upload-key environment variab
 - Added `.vercelignore` so Vercel source uploads skip native projects, release bundles, docs, and local screenshots.
 - Added `.vercel` to `.gitignore`.
 
-## Current account and network blockers
+## Vercel deployment completed
 
-- This machine has no local Vercel CLI auth state under `~/.vercel`.
-- `npx vercel whoami` and `npx vercel link --yes --project arrow-again` could not complete because Node HTTPS requests to `https://vercel.com/.well-known/openid-configuration` fail with `ECONNRESET` before TLS setup. `curl` to the same URL succeeds, so this looks like a local Node/Vercel CLI networking issue rather than a Vercel service outage.
-- The GitHub repo currently has no Vercel token secrets or variables, so GitHub Actions cannot deploy to Vercel without account-side setup.
-- Authoritative Aliyun DNS currently reports no apex `A` record and no `www` CNAME for `arrow-again.top`.
+- Vercel CLI works on this machine when Node is launched with `--use-env-proxy` and the proxy environment variables use `http://127.0.0.1:7890` instead of `socks5h://127.0.0.1:7890`.
+- `bittap-tech/arrow-again` was created and linked from a clean `origin/main` worktree.
+- Production deploy succeeded and aliased `https://arrow-again.vercel.app`.
+- `arrow-again.top` and `www.arrow-again.top` were added to the Vercel project.
+- Vercel project-domain API returns `verified: true` for both custom domains.
+- Vercel domain config API still returns `misconfigured: true` because Aliyun DNS has not been pointed at Vercel yet.
+- `vercel git connect git@github.com:JNYoung/arrow-gpt.git --scope bittap-tech` failed with a repository access message. The likely account-side follow-up is granting the Vercel GitHub App access to `JNYoung/arrow-gpt`.
 
-## Required Vercel and Aliyun actions
+## Required Aliyun DNS action
 
-In Vercel:
+Vercel currently reports these preferred records:
 
-1. Open or create the `arrow-again` project.
-2. Ensure the project uses:
-   - Framework preset: Vite
-   - Install command: `npm ci`
-   - Build command: `npm run build`
-   - Output directory: `dist`
-3. Add `arrow-again.top` to the project domains.
-4. Optional: add `www.arrow-again.top` and redirect it to the apex domain.
+```text
+Type   Host  Value
+A      @     216.198.79.1
+A      @     64.29.17.1
+CNAME  www   6992862d34f9e821.vercel-dns-017.com
+```
 
-In Aliyun DNS:
+Vercel also lists these fallback values:
 
 ```text
 Type   Host  Value
@@ -84,7 +91,7 @@ A      @     76.76.21.21
 CNAME  www   cname.vercel-dns-0.com
 ```
 
-Use a modest TTL during setup, such as 10 minutes.
+Use a modest TTL during setup, such as 10 minutes. After DNS propagation, Vercel should move the domain config from `misconfigured: true` to `misconfigured: false`.
 
 ## Verification commands
 
@@ -104,8 +111,8 @@ curl -I https://arrow-again.top/app-ads.txt
 
 Good DNS state:
 
-- `A arrow-again.top` returns `76.76.21.21`.
-- `CNAME www.arrow-again.top` returns `cname.vercel-dns-0.com`.
+- `A arrow-again.top` returns Vercel IPs.
+- `CNAME www.arrow-again.top` returns the Vercel DNS hostname, or `A www.arrow-again.top` returns Vercel IPs if configured with A records instead.
 - HTTPS policy and support pages return `200` or a Vercel redirect followed by `200`.
 - `https://arrow-again.top/app-ads.txt` returns the AdMob publisher line.
 

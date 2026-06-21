@@ -84,12 +84,14 @@ Custom domain:
 arrow-again.top
 ```
 
-For external DNS on Aliyun, the expected Vercel records are:
+For external DNS on Aliyun, use the current records shown by Vercel for this
+project. As of 2026-06-21, Vercel API recommends:
 
 ```text
 Type   Host  Value
-A      @     76.76.21.21
-CNAME  www   cname.vercel-dns-0.com
+A      @     216.198.79.1
+A      @     64.29.17.1
+CNAME  www   6992862d34f9e821.vercel-dns-017.com
 ```
 
 After deployment, verify:
