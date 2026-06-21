@@ -54,7 +54,10 @@ type Point = {
 const appRoot = document.querySelector<HTMLDivElement>('#app');
 const debugAllLevels = new URLSearchParams(window.location.search).get('debug');
 const supportEmail = platformManifest.supportEmail;
+const privacyPolicyUrl = platformManifest.privacyPolicyUrl;
+const dataDeletionUrl = platformManifest.dataDeletionUrl;
 const supportUrl = platformManifest.releaseAssets.supportUrl;
+const termsUrl = privacyPolicyUrl.replace(/privacy\.html$/, 'terms.html');
 const freeTrajectoryHintLevelLimit = 5;
 
 const COPY = {
@@ -67,6 +70,10 @@ const COPY = {
     effects: '音效',
     on: '开',
     off: '关',
+    privacyPolicy: '隐私政策',
+    termsOfUse: '使用条款',
+    dataDeletion: '数据删除',
+    support: '支持',
     startLevel: (id: number) => `开始第 ${id} 关`,
     levelSelect: '关卡选择',
     feedbackSupport: '反馈与支持',
@@ -135,6 +142,10 @@ const COPY = {
     effects: 'SFX',
     on: 'On',
     off: 'Off',
+    privacyPolicy: 'Privacy Policy',
+    termsOfUse: 'Terms of Use',
+    dataDeletion: 'Data Deletion',
+    support: 'Support',
     startLevel: (id: number) => `Start Level ${id}`,
     levelSelect: 'Level Select',
     feedbackSupport: 'Feedback & Support',
@@ -392,6 +403,12 @@ class ArrowAgainApp {
         <div class="settings-row">
           <span>${c.effects}</span>
           ${this.renderToggleButton('toggle-effects', 'effects-toggle', this.save.effectsEnabled)}
+        </div>
+        <div class="settings-links" aria-label="${c.support}">
+          <a href="${privacyPolicyUrl}" target="_blank" rel="noopener noreferrer" data-testid="settings-privacy-link">${c.privacyPolicy}</a>
+          <a href="${termsUrl}" target="_blank" rel="noopener noreferrer" data-testid="settings-terms-link">${c.termsOfUse}</a>
+          <a href="${dataDeletionUrl}" target="_blank" rel="noopener noreferrer" data-testid="settings-data-deletion-link">${c.dataDeletion}</a>
+          <a href="${supportUrl}" target="_blank" rel="noopener noreferrer" data-testid="settings-support-link">${c.support}</a>
         </div>
       </div>
     `;
