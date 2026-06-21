@@ -7,9 +7,9 @@ Date: 2026-06-21
 - Vercel project: `arrow-again`
 - Vercel scope: `bittap-tech`
 - Production domain: `https://arrow-again.top`
-- Current Vercel production URL: `https://arrow-again-f6rx2j7oy-bittap-tech.vercel.app`
+- Current Vercel production URL: `https://arrow-again-aqexlc7yv-bittap-tech.vercel.app`
 - Stable Vercel alias: `https://arrow-again.vercel.app`
-- Deployment ID: `dpl_BM67Su3h7arXNjAnSnhbyxwHU91f`
+- Deployment ID: `dpl_FUcbji6y2yrx8WzrtUmbU4cLdj6C`
 - Deployment status: `READY`
 - Build command: `npm run build`
 - Output directory: `dist`
@@ -45,6 +45,7 @@ Results:
 - Local Vite preview returned the expected AdMob publisher line from `/app-ads.txt`.
 - Vercel production returned `200` for `/`, `/app-home.html`, `/privacy.html`, `/terms.html`, `/data-deletion.html`, `/support.html`, and `/app-ads.txt` at `https://arrow-again.vercel.app`.
 - Android release bundle build passed.
+- In-app Settings now exposes Privacy Policy, Terms, Data Deletion, and Support links for Play review paths.
 
 The full multi-platform release gate still intentionally blocks on Meta Instant Games placeholders and top-level `releaseStatus: "draft"`.
 
@@ -67,10 +68,12 @@ Signing status: unsigned because ANDROID_RELEASE_* upload-key environment variab
 - Vercel CLI works on this machine when Node is launched with `--use-env-proxy` and the proxy environment variables use `http://127.0.0.1:7890` instead of `socks5h://127.0.0.1:7890`.
 - `bittap-tech/arrow-again` was created and linked from a clean `origin/main` worktree.
 - Production deploy succeeded and aliased `https://arrow-again.vercel.app`.
+- Latest production deploy also has `https://arrow-again.top` and `https://www.arrow-again.top` aliases assigned in Vercel, pending DNS propagation.
 - `arrow-again.top` and `www.arrow-again.top` were added to the Vercel project.
 - Vercel project-domain API returns `verified: true` for both custom domains.
 - Vercel domain config API still returns `misconfigured: true` because Aliyun DNS has not been pointed at Vercel yet.
 - `vercel git connect git@github.com:JNYoung/arrow-gpt.git --scope bittap-tech` failed with a repository access message. The likely account-side follow-up is granting the Vercel GitHub App access to `JNYoung/arrow-gpt`.
+- Chrome automation could open the Aliyun domain console, but DOM/screenshot/control reads timed out repeatedly on that page. DNS still needs account-side console action or Aliyun OpenAPI credentials.
 
 ## Required Aliyun DNS action
 
