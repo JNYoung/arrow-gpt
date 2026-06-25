@@ -2,6 +2,7 @@ import { AdMob, AdmobConsentStatus, MaxAdContentRating, type RewardAdOptions } f
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import platformManifest from '../../platform-manifest.json';
+import { isGoogleAnalyticsConfigured, trackGoogleAnalytics } from '../analytics';
 import {
   defaultCapabilities,
   normalizeRenderQuality,
@@ -86,7 +87,7 @@ export function createGooglePlatformBridge(): PlatformBridge | undefined {
       rewardedAd: supportsRewardedAd,
       share: true,
       haptic: Boolean(navigator.vibrate),
-      analytics: Boolean(host?.track)
+      analytics: Boolean(host?.track) || isGoogleAnalyticsConfigured()
     },
     ready: async () => {
       if (supportsRewardedAd && !host?.showRewardedAd && !mockRewardedAds) {
@@ -108,7 +109,12 @@ export function createGooglePlatformBridge(): PlatformBridge | undefined {
     },
     share: shareOnNative,
     track: (event, payload) => {
-      host?.track?.(event, payload);
+      if (host?.track) {
+        host.track(event, payload);
+        return;
+      }
+
+      trackGoogleAnalytics(event, payload);
     }
   };
 }

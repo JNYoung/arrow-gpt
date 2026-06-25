@@ -6,6 +6,7 @@ import {
   vibrate,
   type PlatformBridge
 } from './spec';
+import { isGoogleAnalyticsConfigured, trackGoogleAnalytics } from '../analytics';
 
 export function createWebPlatformBridge(): PlatformBridge {
   return {
@@ -15,13 +16,14 @@ export function createWebPlatformBridge(): PlatformBridge {
       ...defaultCapabilities,
       rewardedAd: true,
       share: Boolean(navigator.share),
-      haptic: Boolean(navigator.vibrate)
+      haptic: Boolean(navigator.vibrate),
+      analytics: isGoogleAnalyticsConfigured()
     },
     ready: async () => undefined,
     progress: () => undefined,
     haptic: vibrate,
     showRewardedAd: async () => resolveMockReward(),
     share: shareOnWeb,
-    track: () => undefined
+    track: trackGoogleAnalytics
   };
 }

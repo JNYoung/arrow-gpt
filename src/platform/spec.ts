@@ -31,6 +31,10 @@ export type PlatformRuntimeConfig = {
   rewardedPlacements?: Partial<Record<RewardedPlacement, string>>;
   renderQuality?: RenderQuality;
   shareUrl?: string;
+  gaMeasurementId?: string;
+  gaDebug?: boolean;
+  gaDisabled?: boolean;
+  appVersion?: string;
 };
 
 export interface PlatformBridge {

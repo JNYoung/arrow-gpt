@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -132,38 +133,41 @@ function arrowTile(cx, cy, size, color, direction) {
 function splashSvg(width, height) {
   const min = Math.min(width, height);
   const isPortrait = height >= width;
-  const logoSize = min * (isPortrait ? 0.32 : 0.24);
+  const logoSize = min * (isPortrait ? 0.36 : 0.26);
   const logoX = width / 2 - logoSize / 2;
-  const logoY = height * (isPortrait ? 0.33 : 0.32) - logoSize / 2;
-  const titleY = height * (isPortrait ? 0.55 : 0.59);
-  const boardOpacity = isPortrait ? 0.3 : 0.18;
+  const logoY = height * (isPortrait ? 0.3 : 0.31) - logoSize / 2;
+  const titleY = height * (isPortrait ? 0.53 : 0.58);
+  const boardOpacity = isPortrait ? 0.24 : 0.16;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <defs>
     <linearGradient id="splashBg" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#FFFDF4"/>
-      <stop offset=".54" stop-color="#F0F8EB"/>
-      <stop offset="1" stop-color="#C9EBD5"/>
+      <stop offset="0" stop-color="#FFFDF7"/>
+      <stop offset=".5" stop-color="#F6FBF1"/>
+      <stop offset="1" stop-color="#D4F0E1"/>
     </linearGradient>
     <filter id="splashShadow" x="-30%" y="-30%" width="160%" height="170%">
-      <feDropShadow dx="0" dy="${min * 0.034}" stdDeviation="${min * 0.035}" flood-color="#264057" flood-opacity=".18"/>
+      <feDropShadow dx="0" dy="${min * 0.032}" stdDeviation="${min * 0.032}" flood-color="#264057" flood-opacity=".17"/>
     </filter>
   </defs>
   <rect width="${width}" height="${height}" fill="url(#splashBg)"/>
-  <path d="M${-width * 0.08} ${height * 0.08} H${width * 0.56} L${width * 0.22} ${height} H${-width * 0.08}Z" fill="#FFFFFF" opacity=".34"/>
-  <path d="M${width} ${height * 0.14} L${width} ${height * 0.66} L${width * 0.6} ${height} H${width * 0.32}Z" fill="#D8F0DE" opacity=".48"/>
+  <path d="M${-width * 0.08} ${height * 0.07} H${width * 0.58} L${width * 0.22} ${height} H${-width * 0.08}Z" fill="#FFFFFF" opacity=".38"/>
+  <path d="M${width} ${height * 0.12} L${width} ${height * 0.65} L${width * 0.61} ${height} H${width * 0.32}Z" fill="#D8F0DE" opacity=".52"/>
+  <path d="M${width * 0.24} ${height * 0.19} H${width * 0.78}" stroke="#FFFFFF" stroke-width="${min * 0.018}" stroke-linecap="round" opacity=".58"/>
+  <path d="M${width * 0.66} ${height * 0.2} V${height * 0.34}" stroke="#F0B83E" stroke-width="${min * 0.018}" stroke-linecap="round" opacity=".72"/>
   <g opacity="${boardOpacity}">
-    <path d="M${width * 0.1} ${height * 0.8} H${width * 0.88}" stroke="#FFFFFF" stroke-width="${min * 0.083}" stroke-linecap="round" fill="none"/>
-    <path d="M${width * 0.1} ${height * 0.8} H${width * 0.88}" stroke="#5FC68E" stroke-width="${min * 0.04}" stroke-linecap="round" fill="none"/>
-    <path d="M${width * 0.18} ${height * 0.9} H${width * 0.55} V${height * 0.74} H${width * 0.78}" stroke="#FFFFFF" stroke-width="${min * 0.078}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M${width * 0.18} ${height * 0.9} H${width * 0.55} V${height * 0.74} H${width * 0.78}" stroke="#54A6E8" stroke-width="${min * 0.038}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M${width * 0.68} ${height * 0.72} V${height * 0.88}" stroke="#F0B83E" stroke-width="${min * 0.034}" stroke-linecap="round" fill="none"/>
+    <path d="M${width * 0.08} ${height * 0.78} H${width * 0.88}" stroke="#FFFFFF" stroke-width="${min * 0.078}" stroke-linecap="round" fill="none"/>
+    <path d="M${width * 0.08} ${height * 0.78} H${width * 0.88}" stroke="#5FC68E" stroke-width="${min * 0.037}" stroke-linecap="round" fill="none"/>
+    <path d="M${width * 0.18} ${height * 0.9} H${width * 0.55} V${height * 0.73} H${width * 0.8}" stroke="#FFFFFF" stroke-width="${min * 0.073}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M${width * 0.18} ${height * 0.9} H${width * 0.55} V${height * 0.73} H${width * 0.8}" stroke="#54A6E8" stroke-width="${min * 0.035}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M${width * 0.68} ${height * 0.71} V${height * 0.89}" stroke="#F0B83E" stroke-width="${min * 0.032}" stroke-linecap="round" fill="none"/>
+    <path d="M${width * 0.32} ${height * 0.83} V${height * 0.7} H${width * 0.18}" stroke="#EC625B" stroke-width="${min * 0.029}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </g>
   <g transform="translate(${logoX} ${logoY}) scale(${logoSize / 1024})" filter="url(#splashShadow)">
     ${iconSvg({ width: 1024, height: 1024 }).replace(/<svg[^>]*>|<\/svg>/g, '')}
   </g>
-  <text x="${width / 2}" y="${titleY}" text-anchor="middle" fill="#1F2B3A" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="${min * 0.067}" font-weight="850" letter-spacing="${min * 0.0015}">Arrow Again</text>
-  <text x="${width / 2}" y="${titleY + min * 0.061}" text-anchor="middle" fill="#586D7D" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="${min * 0.03}" font-weight="700">Unblock the arrows. Clear the maze.</text>
+  <text x="${width / 2}" y="${titleY}" text-anchor="middle" fill="#1F2B3A" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="${min * 0.071}" font-weight="900" letter-spacing="${min * 0.001}">Arrow Again</text>
+  <text x="${width / 2}" y="${titleY + min * 0.063}" text-anchor="middle" fill="#526879" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="${min * 0.03}" font-weight="760">Clear every arrow path.</text>
 </svg>`;
 }
 
@@ -209,7 +213,7 @@ async function renderSvg(page, svg, filePath, width, height, options = {}) {
   outputs.push(filePath);
 }
 
-const browser = await chromium.launch();
+const browser = await launchBrowser();
 const page = await browser.newPage({ deviceScaleFactor: 1 });
 
 await writeText('public/icon.svg', iconSvg());
@@ -252,4 +256,40 @@ await browser.close();
 console.log(`Generated ${outputs.length} release assets:`);
 for (const output of outputs) {
   console.log(`- ${output}`);
+}
+
+async function launchBrowser() {
+  try {
+    return await chromium.launch();
+  } catch (error) {
+    if (!String(error?.message ?? error).includes("Executable doesn't exist")) {
+      throw error;
+    }
+
+    const executablePath = resolveLocalChrome();
+    if (!executablePath) {
+      throw error;
+    }
+
+    console.warn(`Playwright Chromium is not installed; using local Chrome at ${executablePath}.`);
+    return chromium.launch({ executablePath });
+  }
+}
+
+function resolveLocalChrome() {
+  const candidates = {
+    darwin: [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+    ],
+    linux: ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'],
+    win32: [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+    ]
+  }[process.platform] ?? [];
+
+  return candidates.find((candidate) => existsSync(candidate));
 }

@@ -8,6 +8,7 @@ import {
   type PlatformEventPayload,
   type RewardedPlacement
 } from './spec';
+import { isGoogleAnalyticsConfigured, trackGoogleAnalytics } from '../analytics';
 
 interface FBInstantLike {
   initializeAsync: () => Promise<void>;
@@ -59,7 +60,7 @@ export function createMetaPlatformBridge(): PlatformBridge | undefined {
       share: Boolean(fb.shareAsync),
       haptic: Boolean(navigator.vibrate),
       player: Boolean(fb.player),
-      analytics: Boolean(fb.logEvent)
+      analytics: Boolean(fb.logEvent) || isGoogleAnalyticsConfigured()
     },
     ready: async () => {
       await fb.initializeAsync();
@@ -80,6 +81,9 @@ export function createMetaPlatformBridge(): PlatformBridge | undefined {
     },
     track: (event, payload) => {
       fb.logEvent?.(event, undefined, serializeEventPayload(payload));
+      if (!fb.logEvent) {
+        trackGoogleAnalytics(event, payload);
+      }
     }
   };
 }

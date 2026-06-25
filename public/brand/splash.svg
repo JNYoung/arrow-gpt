@@ -1,25 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
   <defs>
     <linearGradient id="splashBg" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#FFFDF4"/>
-      <stop offset=".54" stop-color="#F0F8EB"/>
-      <stop offset="1" stop-color="#C9EBD5"/>
+      <stop offset="0" stop-color="#FFFDF7"/>
+      <stop offset=".5" stop-color="#F6FBF1"/>
+      <stop offset="1" stop-color="#D4F0E1"/>
     </linearGradient>
     <filter id="splashShadow" x="-30%" y="-30%" width="160%" height="170%">
-      <feDropShadow dx="0" dy="92.888" stdDeviation="95.62" flood-color="#264057" flood-opacity=".18"/>
+      <feDropShadow dx="0" dy="87.424" stdDeviation="87.424" flood-color="#264057" flood-opacity=".17"/>
     </filter>
   </defs>
   <rect width="2732" height="2732" fill="url(#splashBg)"/>
-  <path d="M-218.56 218.56 H1529.92 L601.04 2732 H-218.56Z" fill="#FFFFFF" opacity=".34"/>
-  <path d="M2732 382.48 L2732 1803.1200000000001 L1639.2 2732 H874.24Z" fill="#D8F0DE" opacity=".48"/>
-  <g opacity="0.3">
-    <path d="M273.2 2185.6 H2404.16" stroke="#FFFFFF" stroke-width="226.756" stroke-linecap="round" fill="none"/>
-    <path d="M273.2 2185.6 H2404.16" stroke="#5FC68E" stroke-width="109.28" stroke-linecap="round" fill="none"/>
-    <path d="M491.76 2458.8 H1502.6000000000001 V2021.68 H2130.96" stroke="#FFFFFF" stroke-width="213.096" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M491.76 2458.8 H1502.6000000000001 V2021.68 H2130.96" stroke="#54A6E8" stroke-width="103.816" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M1857.7600000000002 1967.04 V2404.16" stroke="#F0B83E" stroke-width="92.888" stroke-linecap="round" fill="none"/>
+  <path d="M-218.56 191.24 H1584.56 L601.04 2732 H-218.56Z" fill="#FFFFFF" opacity=".38"/>
+  <path d="M2732 327.84 L2732 1775.8 L1666.52 2732 H874.24Z" fill="#D8F0DE" opacity=".52"/>
+  <path d="M655.68 519.08 H2130.96" stroke="#FFFFFF" stroke-width="49.175999999999995" stroke-linecap="round" opacity=".58"/>
+  <path d="M1803.1200000000001 546.4 V928.8800000000001" stroke="#F0B83E" stroke-width="49.175999999999995" stroke-linecap="round" opacity=".72"/>
+  <g opacity="0.24">
+    <path d="M218.56 2130.96 H2404.16" stroke="#FFFFFF" stroke-width="213.096" stroke-linecap="round" fill="none"/>
+    <path d="M218.56 2130.96 H2404.16" stroke="#5FC68E" stroke-width="101.08399999999999" stroke-linecap="round" fill="none"/>
+    <path d="M491.76 2458.8 H1502.6000000000001 V1994.36 H2185.6" stroke="#FFFFFF" stroke-width="199.43599999999998" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M491.76 2458.8 H1502.6000000000001 V1994.36 H2185.6" stroke="#54A6E8" stroke-width="95.62" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M1857.7600000000002 1939.7199999999998 V2431.48" stroke="#F0B83E" stroke-width="87.424" stroke-linecap="round" fill="none"/>
+    <path d="M874.24 2267.56 V1912.3999999999999 H491.76" stroke="#EC625B" stroke-width="79.22800000000001" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </g>
-  <g transform="translate(928.88 464.44000000000005) scale(0.85375)" filter="url(#splashShadow)">
+  <g transform="translate(874.24 327.84000000000003) scale(0.96046875)" filter="url(#splashShadow)">
     
   <defs>
     <linearGradient id="iconBg" x1="0" x2="1" y1="0" y2="1">
@@ -81,6 +84,6 @@
   </g>
 
   </g>
-  <text x="1366" y="1502.6000000000001" text-anchor="middle" fill="#1F2B3A" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="183.044" font-weight="850" letter-spacing="4.098">Arrow Again</text>
-  <text x="1366" y="1669.2520000000002" text-anchor="middle" fill="#586D7D" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="81.96" font-weight="700">Unblock the arrows. Clear the maze.</text>
+  <text x="1366" y="1447.96" text-anchor="middle" fill="#1F2B3A" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="193.97199999999998" font-weight="900" letter-spacing="2.732">Arrow Again</text>
+  <text x="1366" y="1620.076" text-anchor="middle" fill="#526879" font-family="Avenir Next, Nunito, Arial, sans-serif" font-size="81.96" font-weight="760">Clear every arrow path.</text>
 </svg>
