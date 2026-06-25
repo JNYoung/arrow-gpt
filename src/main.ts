@@ -1,4 +1,11 @@
 import './styles.css';
+import {
+  createAnalyticsId,
+  getCampaignAttribution,
+  startAnalyticsSession,
+  type AnalyticsSession,
+  type CampaignAttribution
+} from './analytics';
 import { GameAudio } from './audio';
 import { LEVELS } from './game/levels';
 import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
@@ -253,11 +260,18 @@ class ArrowAgainApp {
   private audio: GameAudio;
   private platform: PlatformBridge;
   private renderQuality: RenderQuality;
+  private readonly analyticsSession: AnalyticsSession;
+  private readonly campaignAttribution: CampaignAttribution;
+  private currentAttemptId?: string;
+  private currentLevelStartedAt = 0;
+  private tutorialFirstMoveTracked = false;
 
   constructor(private root: HTMLDivElement) {
     this.audio = new GameAudio(this.save.musicEnabled, this.save.effectsEnabled);
     this.platform = createPlatformBridge();
     this.renderQuality = this.platform.renderQuality;
+    this.analyticsSession = startAnalyticsSession();
+    this.campaignAttribution = getCampaignAttribution();
     this.applyLanguage();
     this.applyRenderQuality();
     this.installRuntimeBridge();
@@ -268,6 +282,13 @@ class ArrowAgainApp {
     await this.platform.ready();
     this.recordSessionStart();
     this.platform.progress(100);
+    this.track('session_start', {
+      total_sessions: this.save.totalSessions,
+      streak_days: this.save.streakDays,
+      unlocked_level: this.save.unlockedLevel,
+      completed_levels: this.getCompletedLevelCount(),
+      total_stars: this.getTotalStars()
+    });
     this.track('game_start', {
       total_sessions: this.save.totalSessions,
       streak_days: this.save.streakDays,
@@ -310,13 +331,29 @@ class ArrowAgainApp {
 
   private track(event: string, payload: PlatformEventPayload = {}): void {
     try {
-      this.platform.track(event, {
+      const eventPayload: PlatformEventPayload = {
+        app_version: platformManifest.platforms.googlePlayAndroid.versionName,
+        install_id: this.analyticsSession.installId,
+        session_id: this.analyticsSession.sessionId,
+        session_index: this.analyticsSession.sessionIndex,
+        days_since_install: this.analyticsSession.daysSinceInstall,
+        language: this.save.language,
+        render_quality: this.renderQuality,
         platform: this.platform.name,
         screen: this.screen,
         level: this.currentLevel.id,
+        level_id: this.currentLevel.id,
+        level_name: this.currentLevel.name,
         difficulty: this.currentLevel.difficulty,
+        ...this.campaignAttribution,
         ...payload
-      });
+      };
+
+      if (this.currentAttemptId) {
+        eventPayload.attempt_id = this.currentAttemptId;
+      }
+
+      this.platform.track(event, eventPayload);
     } catch {
       // Analytics must never interrupt gameplay.
     }
@@ -694,6 +731,12 @@ class ArrowAgainApp {
     this.audio.play('tap');
 
     if (action === 'home') {
+      const fromScreen = this.screen;
+      if (fromScreen === 'playing') {
+        this.trackLevelQuit('home');
+      } else if (fromScreen === 'result') {
+        this.currentAttemptId = undefined;
+      }
       this.track('screen_home_open', { from_screen: this.screen, screen: 'home' });
       this.screen = 'home';
       this.render();
@@ -701,6 +744,9 @@ class ArrowAgainApp {
     }
 
     if (action === 'levels') {
+      if (this.screen === 'playing') {
+        this.trackLevelQuit('levels');
+      }
       if (!this.debugAllLevels) {
         this.track('screen_levels_blocked', { from_screen: this.screen, screen: 'home' });
         this.pendingHardLevel = undefined;
@@ -768,6 +814,7 @@ class ArrowAgainApp {
     }
 
     if (action === 'restart' || action === 'retry-result') {
+      this.trackLevelRestart(action === 'retry-result' ? 'retry_result' : 'restart_button');
       this.startLevel(this.currentLevel, true, action === 'retry-result' ? 'retry' : 'restart');
       return;
     }
@@ -937,18 +984,63 @@ class ArrowAgainApp {
     this.rewardBusy = false;
     this.hintsUsed = 0;
     this.revivesUsed = 0;
+    this.tutorialFirstMoveTracked = false;
     this.result = undefined;
     if (clearModal) {
       this.pendingHardLevel = undefined;
+      this.currentAttemptId = createAnalyticsId('attempt');
+      this.currentLevelStartedAt = Date.now();
       this.track('level_start', {
         source,
         target_moves: level.targetMoves,
         pieces: level.pieces.length,
         lives: level.lives
       });
+      if (level.tutorial) {
+        this.track('tutorial_begin', { source });
+      }
     }
     this.screen = 'playing';
     this.render();
+  }
+
+  private trackLevelQuit(source: string): void {
+    if (this.screen !== 'playing' || !this.currentAttemptId || this.pendingHardLevel || this.result) {
+      return;
+    }
+
+    this.track('level_quit', {
+      source,
+      moves: this.moves,
+      lives: Math.max(0, this.lives),
+      target_moves: this.currentLevel.targetMoves,
+      remaining_pieces: Math.max(0, this.pieces.length - this.exitingPieceIds.size),
+      hints_used: this.hintsUsed,
+      revives_used: this.revivesUsed,
+      elapsed_ms: this.getCurrentLevelElapsedMs()
+    });
+    this.currentAttemptId = undefined;
+  }
+
+  private trackLevelRestart(source: string): void {
+    if (!this.currentAttemptId) {
+      return;
+    }
+
+    this.track('level_restart', {
+      source,
+      moves: this.moves,
+      lives: Math.max(0, this.lives),
+      target_moves: this.currentLevel.targetMoves,
+      remaining_pieces: Math.max(0, this.pieces.length - this.exitingPieceIds.size),
+      hints_used: this.hintsUsed,
+      revives_used: this.revivesUsed,
+      elapsed_ms: this.getCurrentLevelElapsedMs()
+    });
+  }
+
+  private getCurrentLevelElapsedMs(): number {
+    return this.currentLevelStartedAt > 0 ? Math.max(0, Date.now() - this.currentLevelStartedAt) : 0;
   }
 
   private paintPlayingBoard(): void {
@@ -1701,6 +1793,7 @@ class ArrowAgainApp {
         moves: this.moves,
         lives: Math.max(0, this.lives),
         remaining_pieces: this.pieces.length,
+        available_count: this.getAvailableActivePieces().length,
         piece_dir: piece.dir
       });
       this.refreshPlayingUi();
@@ -1716,6 +1809,14 @@ class ArrowAgainApp {
     }
 
     this.exitingPieceIds.add(piece.id);
+    if (this.currentLevel.tutorial && !this.tutorialFirstMoveTracked) {
+      this.tutorialFirstMoveTracked = true;
+      this.track('tutorial_step', {
+        step: 'first_valid_move',
+        moves: this.moves,
+        lives: Math.max(0, this.lives)
+      });
+    }
     this.message = this.copy().moveMessage;
     this.audio.play('move');
     this.platform.haptic(18);
@@ -2144,10 +2245,28 @@ class ArrowAgainApp {
       remaining_pieces: Math.max(0, this.pieces.length - this.exitingPieceIds.size),
       hints_used: this.hintsUsed,
       revives_used: this.revivesUsed,
+      elapsed_ms: this.getCurrentLevelElapsedMs(),
       unlocked_level: this.save.unlockedLevel,
       completed_levels: this.getCompletedLevelCount(),
       total_stars: this.getTotalStars()
     });
+    this.track('level_end', {
+      success: won,
+      stars,
+      moves: this.moves,
+      lives: Math.max(0, this.lives),
+      target_moves: this.currentLevel.targetMoves,
+      remaining_pieces: Math.max(0, this.pieces.length - this.exitingPieceIds.size),
+      hints_used: this.hintsUsed,
+      revives_used: this.revivesUsed,
+      elapsed_ms: this.getCurrentLevelElapsedMs()
+    });
+    if (won && this.currentLevel.tutorial) {
+      this.track('tutorial_complete', {
+        moves: this.moves,
+        elapsed_ms: this.getCurrentLevelElapsedMs()
+      });
+    }
 
     this.screen = 'result';
     this.render();

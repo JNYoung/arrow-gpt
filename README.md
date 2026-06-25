@@ -36,6 +36,35 @@ npm run e2e
 npm run build
 ```
 
+GA4 analytics verification uses the linked Firebase/GA4 web-stream Measurement ID from `platform-manifest.json`:
+
+```bash
+npm run verify:analytics
+npm run ga:daily
+```
+
+Firebase CLI is installed through the user-level npm prefix and available from
+`$HOME/.local/bin/firebase`. The current Firebase project alias is
+`arrow-again-game`.
+
+```bash
+npm run firebase:version
+npm run firebase:apps
+npm run firebase:config:web
+npm run firebase:config:android
+npm run firebase:config:ios
+npm run firebase:analytics:status
+```
+
+Firebase is linked to GA4 property `542265186` with Measurement ID
+`G-NYTJ43WDD5`. To re-link or replace the property:
+
+```bash
+npm run firebase:analytics:link -- --analytics-account-id=123456789
+# or
+npm run firebase:analytics:link -- --analytics-property-id=987654321
+```
+
 `assets:release` regenerates the app icon, adaptive Android icon layers, native
 splash screens, PWA icons, and the Facebook/Open Graph share card from the
 checked-in SVG generator.
@@ -113,6 +142,12 @@ Games call a single runtime bridge from `src/platform` for lifecycle, loading
 progress, rewarded ads, share, haptics, and analytics. See
 `docs/platform-unified-spec.md` for the Google Play / Meta Instant Games
 capability matrix and release profiles.
+
+GA4 setup and the event dictionary live in:
+
+- `docs/google-analytics-setup.md`
+- `docs/analytics-event-spec.md`
+- `docs/ga-daily-monitor.md`
 
 Google Play Android App Bundle:
 

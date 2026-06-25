@@ -57,6 +57,32 @@ if (args.has('share-url')) {
   config.shareUrl = manifest.releaseAssets.appHomeUrl;
 }
 
+const appVersion = resolveAppVersion();
+if (appVersion) {
+  config.appVersion = appVersion;
+}
+
+if (args.has('ga-disabled')) {
+  config.gaDisabled = true;
+} else {
+  const gaMeasurementId =
+    args.get('ga-measurement-id') ??
+    process.env.VITE_GA_MEASUREMENT_ID ??
+    process.env.GA_MEASUREMENT_ID ??
+    manifest.analytics?.googleAnalytics?.measurementId;
+
+  if (gaMeasurementId) {
+    if (!/^G-[A-Z0-9]+$/i.test(gaMeasurementId)) {
+      throw new Error('GA measurement id must look like G-XXXXXXXXXX');
+    }
+    config.gaMeasurementId = gaMeasurementId;
+  }
+}
+
+if (args.has('ga-debug') || process.env.VITE_GA_DEBUG === 'true' || process.env.GA_DEBUG === 'true') {
+  config.gaDebug = true;
+}
+
 const outPath = path.resolve(root, args.get('out') ?? defaultOutPath);
 await mkdir(path.dirname(outPath), { recursive: true });
 await writeFile(outPath, renderRuntimeConfig(config));
@@ -92,6 +118,14 @@ function stripPlaceholderValues(values) {
 
 function isPlaceholder(value) {
   return placeholderPattern.test(value);
+}
+
+function resolveAppVersion() {
+  return (
+    manifest.platforms?.googlePlayAndroid?.versionName ??
+    manifest.platforms?.iosAppStore?.versionName ??
+    undefined
+  );
 }
 
 function renderRuntimeConfig(configValue) {

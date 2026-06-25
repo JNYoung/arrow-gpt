@@ -6,6 +6,29 @@
   "privacyPolicyUrl": "https://arrow-again.top/privacy.html",
   "dataDeletionUrl": "https://arrow-again.top/data-deletion.html",
   "supportEmail": "j.n.young0209@gmail.com",
+  "analytics": {
+    "googleAnalytics": {
+      "provider": "google-analytics-4",
+      "runtime": "web-gtag",
+      "firebase": {
+        "projectId": "arrow-again-game",
+        "projectNumber": "365113945933",
+        "webAppId": "1:365113945933:web:ac305eeac306487bd11104",
+        "webAppDisplayName": "Arrow Again Web",
+        "webId": "ODY0MjVlZjQtZjRkMS00ZWM0LWFlMjktMzdmYzAzYzVkNWE1",
+        "androidAppId": "1:365113945933:android:b6b3395480c22a87d11104",
+        "androidAppDisplayName": "Arrow Again Android",
+        "androidPackageName": "com.arrowagain.game",
+        "iosAppId": "1:365113945933:ios:3eb5bed3f8dbed1dd11104",
+        "iosAppDisplayName": "Arrow Again iOS",
+        "iosBundleId": "com.arrowagain.game"
+      },
+      "measurementIdEnv": "VITE_GA_MEASUREMENT_ID",
+      "debugEnv": "VITE_GA_DEBUG",
+      "measurementId": "G-NYTJ43WDD5",
+      "analyticsPropertyId": "542265186"
+    }
+  },
   "releaseAssets": {
     "appHomeUrl": "https://arrow-again.top/app-home.html",
     "supportUrl": "https://arrow-again.top/support.html",
