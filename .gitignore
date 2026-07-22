@@ -2,6 +2,7 @@ node_modules
 dist
 build
 releases
+/reports/play-console/
 .DS_Store
 *.log
 *.tmp

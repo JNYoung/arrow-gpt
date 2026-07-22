@@ -69,6 +69,7 @@ const freeTrajectoryHintLevelLimit = 5;
 
 const COPY = {
   zh: {
+    brandName: '箭了又箭',
     brandSubtitle: '点击无遮挡箭头，让它们飞出棋盘。',
     settingsAria: '打开设置',
     settingsTitle: '设置',
@@ -93,6 +94,7 @@ const COPY = {
     levelPrefix: (id: number) => `第 ${id} 关`,
     locked: 'LOCK',
     livesAria: (lives: number, total: number) => `生命 ${lives}/${total}`,
+    lifeGuide: '♥ 被挡扣 1',
     moves: '步数',
     available: '可用',
     tutorialBubble: '点这里',
@@ -125,7 +127,7 @@ const COPY = {
     closeWin: '险过关！',
     lostComment: (remaining: number) => `生命值已耗尽，还剩 ${remaining} 枚箭头。`,
     tutorialMessage: '点击高亮箭头，观察它飞出棋盘。',
-    blockedMessage: '这枚箭头前方被挡住了。',
+    blockedMessage: '这枚箭头前方被挡住了，少 1 颗 ♥。',
     moveMessage: '漂亮，箭头飞出去了。',
     undoMessage: '已撤销上一步。',
     hintUnavailableMessage: '当前平台暂未接入提示广告，先用重开或继续观察可飞出的边缘箭头。',
@@ -135,12 +137,13 @@ const COPY = {
     noHintMessage: '当前没有可飞出的箭头，可以重开。',
     reviveUnavailableMessage: '当前平台暂未接入复活广告，请先重开这一关。',
     reviveSuccessMessage: '复活成功，保留当前棋盘继续挑战。',
-    shareTitle: 'Arrow Again 箭了又箭',
+    shareTitle: '箭了又箭',
     shareWon: (levelId: number, stars: number, moves: number) =>
-      `我在 Arrow Again 第 ${levelId} 关拿到 ${stars} 星，用 ${moves} 步清场！`,
-    shareLost: (levelId: number) => `我在 Arrow Again 第 ${levelId} 关差一点通关，来试试你的路线判断。`
+      `我在箭了又箭第 ${levelId} 关拿到 ${stars} 星，用 ${moves} 步清场！`,
+    shareLost: (levelId: number) => `我在箭了又箭第 ${levelId} 关差一点通关，来试试你的路线判断。`
   },
   en: {
+    brandName: 'Arrow Again',
     brandSubtitle: 'Tap clear arrows and send them off the board.',
     settingsAria: 'Open settings',
     settingsTitle: 'Settings',
@@ -165,6 +168,7 @@ const COPY = {
     levelPrefix: (id: number) => `Level ${id}`,
     locked: 'LOCK',
     livesAria: (lives: number, total: number) => `Lives ${lives}/${total}`,
+    lifeGuide: '♥ blocked -1',
     moves: 'Moves',
     available: 'Open',
     tutorialBubble: 'Tap',
@@ -197,7 +201,7 @@ const COPY = {
     closeWin: 'Close one!',
     lostComment: (remaining: number) => `No lives left. ${remaining} arrows remain.`,
     tutorialMessage: 'Tap the highlighted arrow and watch it leave the board.',
-    blockedMessage: 'That arrow is blocked.',
+    blockedMessage: 'That arrow is blocked. -1 ♥.',
     moveMessage: 'Nice, the arrow flew out.',
     undoMessage: 'Last move undone.',
     hintUnavailableMessage: 'Rewarded hints are not available on this platform. Restart or keep scanning edge arrows.',
@@ -365,6 +369,7 @@ class ArrowAgainApp {
 
   private applyLanguage(): void {
     document.documentElement.lang = this.save.language === 'en' ? 'en' : 'zh-CN';
+    document.title = this.copy().brandName;
   }
 
   private render(): void {
@@ -398,7 +403,7 @@ class ArrowAgainApp {
           <div class="brand">
             <div class="brand-mark" aria-hidden="true">→</div>
             <div>
-              <h1>Arrow Again 箭了又箭</h1>
+              <h1>${c.brandName}</h1>
               <p>${c.brandSubtitle}</p>
             </div>
           </div>
@@ -414,9 +419,7 @@ class ArrowAgainApp {
           <div class="home-actions">
             <button class="primary-button" type="button" data-action="start" data-testid="start-button">${c.startLevel(nextLevel.id)}</button>
             ${this.debugAllLevels ? `<button class="secondary-button" type="button" data-action="levels" data-testid="levels-button">${c.levelSelect}</button>` : ''}
-            <button class="secondary-button" type="button" data-action="feedback" data-testid="home-feedback-button">${c.feedbackSupport}</button>
           </div>
-          <p class="retention-line">${this.getHomeRetentionCopy()}</p>
         </div>
       </section>
     `;
@@ -441,6 +444,7 @@ class ArrowAgainApp {
           <span>${c.effects}</span>
           ${this.renderToggleButton('toggle-effects', 'effects-toggle', this.save.effectsEnabled)}
         </div>
+        <button class="settings-feedback-button" type="button" data-action="feedback" data-testid="settings-feedback-button">${c.feedbackSupport}</button>
         <div class="settings-links" aria-label="${c.support}">
           <a href="${privacyPolicyUrl}" target="_blank" rel="noopener noreferrer" data-testid="settings-privacy-link">${c.privacyPolicy}</a>
           <a href="${termsUrl}" target="_blank" rel="noopener noreferrer" data-testid="settings-terms-link">${c.termsOfUse}</a>
@@ -464,19 +468,6 @@ class ArrowAgainApp {
         <strong>${enabled ? c.on : c.off}</strong>
       </button>
     `;
-  }
-
-  private getHomeRetentionCopy(): string {
-    const c = this.copy();
-    if (this.save.totalSessions <= 1) {
-      return c.retentionFirst;
-    }
-
-    if (this.save.streakDays >= 2) {
-      return c.retentionStreak();
-    }
-
-    return c.retentionResume();
   }
 
   private getCompletedLevelCount(): number {
@@ -598,18 +589,16 @@ class ArrowAgainApp {
           <button class="nav-back" type="button" data-action="${backAction}" aria-label="${backLabel}">‹</button>
           <div class="level-stack">
             <h1>${c.levelPrefix(this.currentLevel.id)}</h1>
-            <div class="level-dots" aria-hidden="true">
-              <span class="active"></span>
-              <span></span>
-              <span></span>
-            </div>
           </div>
           <button class="restart-orb" type="button" data-action="restart" aria-label="${c.restart}">
             <img src="/assets/action-restart.png" alt="" aria-hidden="true" />
           </button>
           <div class="life-pill" data-testid="lives" aria-label="${c.livesAria(this.lives, this.currentLevel.lives)}">
             <img src="/assets/hud-heart.png" alt="" aria-hidden="true" />
-            <strong>${this.lives}/${this.currentLevel.lives}</strong>
+            <span class="life-pill-copy">
+              <strong>${this.lives}/${this.currentLevel.lives}</strong>
+              ${this.shouldShowLifeGuide() ? `<span class="life-guide">${c.lifeGuide}</span>` : ''}
+            </span>
           </div>
           <div class="move-card" data-testid="moves">
             <span>${c.moves}</span>
@@ -1311,15 +1300,22 @@ class ArrowAgainApp {
     const availableIds = new Set(getAvailablePieces(activePieces, this.currentLevel).map((piece) => piece.id));
     const tutorialTarget = this.currentLevel.tutorial && this.moves === 0 ? getAvailablePieces(activePieces, this.currentLevel)[0]?.id : undefined;
 
-    for (const piece of activePieces) {
+    for (const piece of this.getLayeredPieces(activePieces)) {
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       const size = Math.min(metrics.cellWidth * 0.98, metrics.cellHeight * 0.68);
       const radius = Math.max(11, size * 0.2);
       const x = metrics.centerX(piece.col);
       const y = metrics.centerY(piece.row);
       const classes = ['arrow-piece', `dir-${piece.dir}`];
-      if (availableIds.has(piece.id)) {
+      const blockingStrength = this.getBlockingStrength(piece, activePieces);
+      const isAvailable = availableIds.has(piece.id);
+      if (isAvailable) {
         classes.push('available');
+      } else {
+        classes.push('blocked');
+      }
+      if (blockingStrength > 0) {
+        classes.push('blocking');
       }
       if (piece.id === this.errorPieceId) {
         classes.push('error');
@@ -1341,6 +1337,19 @@ class ArrowAgainApp {
       group.setAttribute('tabindex', '0');
       group.setAttribute('aria-label', `第 ${piece.row + 1} 行第 ${piece.col + 1} 列，方向 ${piece.dir}`);
       group.setAttribute('transform', `translate(${x}, ${y})`);
+      group.style.setProperty('--piece-cast-offset', `${this.clamp(2 + blockingStrength * 1.35, 2, 6)}px`);
+      group.style.setProperty('--piece-cast-opacity', `${this.clamp(0.12 + blockingStrength * 0.06, 0.12, 0.32)}`);
+      group.style.setProperty('--piece-shadow-y', `${this.clamp(9 + blockingStrength * 1.8, 9, 16)}px`);
+      group.style.setProperty('--piece-shadow-blur', `${this.clamp(7 + blockingStrength * 1.3, 7, 13)}px`);
+      group.style.setProperty('--piece-shadow-opacity', `${this.clamp(0.18 + blockingStrength * 0.03, 0.18, 0.31)}`);
+
+      const castShadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      castShadow.setAttribute('class', 'piece-cast-shadow');
+      castShadow.setAttribute('x', `${-size / 2}`);
+      castShadow.setAttribute('y', `${-size / 2}`);
+      castShadow.setAttribute('width', `${size}`);
+      castShadow.setAttribute('height', `${size}`);
+      castShadow.setAttribute('rx', `${radius}`);
 
       const ring = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       ring.setAttribute('class', 'piece-ring');
@@ -1377,9 +1386,17 @@ class ArrowAgainApp {
       tileImage.setAttribute('href', assetPath);
       tileImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetPath);
 
+      const shade = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      shade.setAttribute('class', 'piece-shade');
+      shade.setAttribute('x', `${-size / 2}`);
+      shade.setAttribute('y', `${-size / 2}`);
+      shade.setAttribute('width', `${size}`);
+      shade.setAttribute('height', `${size}`);
+      shade.setAttribute('rx', `${radius}`);
+
       const body = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       body.setAttribute('class', 'piece-body');
-      body.append(hitbox, fallbackPiece, ring, tileImage);
+      body.append(castShadow, hitbox, fallbackPiece, tileImage, shade, ring);
       group.append(body);
       group.addEventListener('click', () => this.tryShoot(piece.id, group, metrics));
       group.addEventListener('keydown', (event) => {
@@ -1452,6 +1469,51 @@ class ArrowAgainApp {
     const duration = 1620 + (seed % 5) * 90;
     const delay = -((seed * 37) % duration);
     return `--flow-duration: ${duration}ms; --flow-delay: ${delay}ms;`;
+  }
+
+  private shouldShowLifeGuide(): boolean {
+    return Boolean(this.currentLevel.tutorial);
+  }
+
+  private getLayeredPieces(pieces: ArrowPiece[]): ArrowPiece[] {
+    return [...pieces].sort((a, b) => {
+      const strengthDelta = this.getBlockingStrength(a, pieces) - this.getBlockingStrength(b, pieces);
+      if (strengthDelta !== 0) {
+        return strengthDelta;
+      }
+
+      return this.getNaturalDepth(a) - this.getNaturalDepth(b);
+    });
+  }
+
+  private getNaturalDepth(piece: ArrowPiece): number {
+    return piece.row * this.currentLevel.cols + piece.col;
+  }
+
+  private getBlockingStrength(piece: ArrowPiece, pieces: ArrowPiece[]): number {
+    return pieces.reduce((total, candidate) => {
+      if (candidate.id === piece.id) {
+        return total;
+      }
+
+      return this.isForwardBlocker(piece, candidate) ? total + 1 : total;
+    }, 0);
+  }
+
+  private isForwardBlocker(blocker: ArrowPiece, movingPiece: ArrowPiece): boolean {
+    if (movingPiece.dir === 'up') {
+      return blocker.col === movingPiece.col && blocker.row < movingPiece.row;
+    }
+
+    if (movingPiece.dir === 'down') {
+      return blocker.col === movingPiece.col && blocker.row > movingPiece.row;
+    }
+
+    if (movingPiece.dir === 'left') {
+      return blocker.row === movingPiece.row && blocker.col < movingPiece.col;
+    }
+
+    return blocker.row === movingPiece.row && blocker.col > movingPiece.col;
   }
 
   private appendExitGate(group: SVGGElement, piece: ArrowPiece, metrics: BoardMetrics, color: string): void {
@@ -1933,19 +1995,27 @@ class ArrowAgainApp {
     if (metrics) {
       this.applyBoardVisualScale(metrics);
       this.drawMazeRoutes(metrics);
+      if (this.exitingPieceIds.size === 0) {
+        this.drawArrows(metrics);
+        return;
+      }
     }
     this.refreshArrowStates();
     this.positionTutorialHand(metrics);
   }
 
   private refreshArrowStates(): void {
-    const availableIds = new Set(this.getAvailableActivePieces().map((piece) => piece.id));
+    const activePieces = this.getActivePieces();
+    const availableIds = new Set(getAvailablePieces(activePieces, this.currentLevel).map((piece) => piece.id));
+    const blockingIds = new Set(activePieces.filter((piece) => this.getBlockingStrength(piece, activePieces) > 0).map((piece) => piece.id));
     const tutorialTarget = this.currentLevel.tutorial && this.moves === 0 ? this.getAvailableActivePieces()[0]?.id : undefined;
 
     this.root.querySelectorAll<SVGGElement>('.arrow-piece').forEach((element) => {
       const pieceId = element.dataset.piece;
       const isExiting = pieceId ? this.exitingPieceIds.has(pieceId) : false;
       element.classList.toggle('available', Boolean(pieceId && availableIds.has(pieceId) && !isExiting));
+      element.classList.toggle('blocked', Boolean(pieceId && !availableIds.has(pieceId) && !isExiting));
+      element.classList.toggle('blocking', Boolean(pieceId && blockingIds.has(pieceId) && !isExiting));
       element.classList.toggle('error', pieceId === this.errorPieceId);
       element.classList.toggle('tutorial-target', Boolean(pieceId && pieceId === tutorialTarget && !isExiting));
       element.classList.toggle('hinted', Boolean(pieceId && this.hintIds.has(pieceId) && !isExiting));

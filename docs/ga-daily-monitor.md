@@ -35,7 +35,7 @@ npm run ga:daily -- --no-live
 The script reads the GA4 property from `platform-manifest.json` unless overridden:
 
 ```bash
-export GA4_PROPERTY_ID=542265186
+export GA4_PROPERTY_ID=542507123
 ```
 
 For live GA4 reads, provide one of:

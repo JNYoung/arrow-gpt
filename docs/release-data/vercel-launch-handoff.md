@@ -1,17 +1,17 @@
 # Arrow Again Vercel launch handoff
 
-Date: 2026-06-21
+Date: 2026-07-22
 
 ## Production target
 
 - Vercel project: `arrow-again`
 - Vercel scope: `bittap-tech`
 - Production domain: `https://arrow-again.top`
-- Last inspected Vercel production URL: `https://arrow-again-7qt90ba2z-bittap-tech.vercel.app`
+- Last inspected Vercel production URL: `https://arrow-again-b8j44nh44-bittap-tech.vercel.app`
 - Stable Vercel alias: `https://arrow-again.vercel.app`
 - Connected Git repository: `github.com/JNYoung/arrow-gpt`
 - Production branch: `main`
-- Last inspected deployment ID: `dpl_AonGbLMd82zjVngVdqSrcHtSfNDo`
+- Last inspected deployment ID: `dpl_5HNKu9iKRiRow2spBMnJiHDJqNiC`
 - Deployment status: `READY`
 - Build command: `npm run build`
 - Output directory: `dist`
@@ -55,8 +55,9 @@ Current local Android bundle:
 
 ```text
 Path: android/app/build/outputs/bundle/release/app-release.aab
-SHA-256: 025ada338d618700bd17ea9e8e3cf37a7a868fc58dd009e072756f16c0c6d861
+SHA-256: 76fd94a7a1b02453e76e76d3ce5ff9275967697e94cf63750bc2e450695f5c5c
 Signing status: signed with the local Android upload key from android/release-signing.env.
+Google Play production: 1.0.4 (6), target API 36, completed.
 ```
 
 ## Vercel repository prep completed
@@ -70,41 +71,40 @@ Signing status: signed with the local Android upload key from android/release-si
 - Vercel CLI works on this machine when Node is launched with `--use-env-proxy` and the proxy environment variables use `http://127.0.0.1:7890` instead of `socks5h://127.0.0.1:7890`.
 - `bittap-tech/arrow-again` was created and linked from a clean `origin/main` worktree.
 - Production deploy succeeded and aliased `https://arrow-again.vercel.app`.
-- Latest production deploy also has `https://arrow-again.top` and `https://www.arrow-again.top` aliases assigned in Vercel, pending DNS propagation.
+- Latest production deploy has `https://arrow-again.top` and `https://www.arrow-again.top` aliases assigned in Vercel.
 - `arrow-again.top` and `www.arrow-again.top` were added to the Vercel project.
 - Vercel project-domain API returns `verified: true` for both custom domains.
-- Vercel domain config API still returns `misconfigured: true` because Aliyun DNS has not been pointed at Vercel yet.
+- On 2026-07-14, Vercel domain config returned `configuredBy: A`, `misconfigured: false`, and accepted the `http-01` certificate challenge.
 - The Vercel GitHub App now has selected-repository access to `JNYoung/arrow-gpt`, and `vercel git connect https://github.com/JNYoung/arrow-gpt --scope bittap-tech --yes` returned `Connected`.
 - Vercel project API confirms `arrow-again` is linked to GitHub repository `JNYoung/arrow-gpt` with production branch `main`.
-- Chrome automation could open the Aliyun domain console, but DOM/screenshot/control reads timed out repeatedly on that page. DNS still needs account-side console action or Aliyun OpenAPI credentials.
+- Aliyun OpenAPI credentials on this machine were used to configure and verify the required DNS records.
 
-## Required Aliyun DNS action
+## Aliyun DNS completed
 
-Vercel currently reports these preferred records:
-
-```text
-Type   Host  Value
-A      @     216.198.79.1
-A      @     64.29.17.1
-CNAME  www   6992862d34f9e821.vercel-dns-017.com
-```
-
-Vercel also lists these fallback values:
+The following records were created on 2026-07-14 with TTL 600 seconds:
 
 ```text
 Type   Host  Value
 A      @     76.76.21.21
-CNAME  www   cname.vercel-dns-0.com
+A      www   76.76.21.21
 ```
 
-Use a modest TTL during setup, such as 10 minutes. After DNS propagation, Vercel should move the domain config from `misconfigured: true` to `misconfigured: false`.
+Verification state immediately after the change:
+
+- Aliyun authoritative DNS returned `76.76.21.21` for both names.
+- Public DNS returned `76.76.21.21` for both names.
+- `http://arrow-again.top/` returned HTTP 200.
+- Vercel no longer reports a domain configuration warning.
+- A Vercel certificate for `arrow-again.top` and `www.arrow-again.top` was issued successfully and is configured for automatic renewal.
+- HTTPS returned 200 for `/`, `/app-home.html`, `/privacy.html`, `/terms.html`, `/support.html`, `/data-deletion.html`, and `/app-ads.txt`.
+- `app-ads.txt` returned `google.com, pub-2481288993515154, DIRECT, f08c47fec0942fa0`.
 
 ## Verification commands
 
 ```bash
 dig +short NS arrow-again.top
 dig +short A arrow-again.top
-dig +short CNAME www.arrow-again.top
+dig +short A www.arrow-again.top
 curl -I http://arrow-again.top/
 curl -I https://arrow-again.top/
 curl -I https://arrow-again.top/app-home.html
@@ -124,4 +124,4 @@ Good DNS state:
 
 ## Google Play follow-up
 
-After `app-ads.txt` is publicly reachable, complete AdMob app-ads.txt verification and then continue the Play Console closed-test submission checklist in `docs/release-data/google-play-submission.md`.
+Complete AdMob app-ads.txt verification in the AdMob console and submit the Play Console production-access application in `docs/release-data/google-play-submission.md`.

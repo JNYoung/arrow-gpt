@@ -17,6 +17,7 @@
     "verify:analytics": "node scripts/verify-analytics-config.mjs",
     "growth:verify": "node scripts/verify-growth-framework.mjs",
     "ga:daily": "node scripts/run-ga-daily-monitor.mjs",
+    "play:reports": "node scripts/fetch-google-play-reports.mjs",
     "verify:all": "npm run typecheck && npm run verify:levels && npm run verify:balance && npm run verify:platform && npm run e2e",
     "admob:sync": "node scripts/sync-admob-config.mjs",
     "admob:sync:test": "node scripts/sync-admob-config.mjs --test",

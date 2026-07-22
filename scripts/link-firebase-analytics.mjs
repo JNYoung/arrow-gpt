@@ -267,12 +267,17 @@ function collectMeasurementIds(value, ids = new Set()) {
 }
 
 function extractAnalyticsPropertyId(details) {
+  const explicitPropertyId = details?.analyticsProperty?.id;
+  if (typeof explicitPropertyId === 'string' && /^\d+$/.test(explicitPropertyId)) {
+    return explicitPropertyId;
+  }
+
   const values = collectStrings(details);
   const propertyName = values.find((value) => /^properties\/\d+$/.test(value));
   if (propertyName) {
     return propertyName.replace('properties/', '');
   }
-  return values.find((value) => /^\d{6,}$/.test(value));
+  return undefined;
 }
 
 function collectStrings(value, values = []) {

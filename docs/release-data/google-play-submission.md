@@ -1,52 +1,105 @@
 # Arrow Again Google Play submission kit
 
-Date: 2026-06-10
+Date: 2026-07-22
 
 ## Current status
 
-Local Google Play preparation is ready for a closed-test submission with the current signed AAB.
+Google Play production has been updated with the current signed AAB.
 
 - Package name: `com.arrowagain.game`
-- App name: `Arrow Again`
-- Version name: `1.0.0`
-- Version code: `1`
+- App name: `Arrow Again: Tap Away Puzzle`
+- Version name: `1.0.4`
+- Version code: `6`
+- Target SDK: Android 16 / API 36
 - Current local release AAB: `android/app/build/outputs/bundle/release/app-release.aab`
-- Current local AAB SHA-256: `025ada338d618700bd17ea9e8e3cf37a7a868fc58dd009e072756f16c0c6d861`
+- Current local AAB SHA-256: `76fd94a7a1b02453e76e76d3ce5ff9275967697e94cf63750bc2e450695f5c5c`
 - Current local AAB signing status: signed with the local Android upload key.
+- Google Play track: `production`
+- Google Play release: `1.0.4 (6)`
+- Google Play AAB SHA-256: `76fd94a7a1b02453e76e76d3ce5ff9275967697e94cf63750bc2e450695f5c5c`
+- Google Play release status: `completed`
+- Google Play en-US store listing: production ASO copy committed and read back through Android Publisher API on 2026-07-14.
+- Google Play zh-CN store listing: production ASO copy committed and read back through Android Publisher API on 2026-07-14.
+- Android Publisher ASO edit: `04056638423396962896`, validated and committed with HTTP 200.
+- Production access: granted; Android Publisher API readback confirmed the completed production release on 2026-07-22.
+- Production-access answers: submission reference saved in `docs/release-data/google-play-production-access-2026-07-14.md`, using confirmed voluntary Google Group / mutual-testing recruitment, no paid testing, and the reported difficulty / interface / US-market feedback themes. The final wording saved by Play Console is authoritative.
+- Developer website: `arrow-again.top` DNS, Vercel certificate, HTTPS policy/support pages, and `app-ads.txt` verified on 2026-07-14.
+- Google Play en-US phone screenshots: replaced with the ASO screenshot set below on 2026-07-05.
 - App icon: `releases/google-play/assets/icon-512.png`
 - Feature graphic: `releases/google-play/assets/feature-graphic-1024x500.png`
 - Phone screenshots:
-  - `releases/google-play/screenshots/phone-01-home.png`
-  - `releases/google-play/screenshots/phone-02-level-1.png`
-  - `releases/google-play/screenshots/phone-03-level-36.png`
+  - `docs/assets/aso/en-us/phone-01-home.png`
+  - `docs/assets/aso/en-us/phone-02-tutorial.png`
+  - `docs/assets/aso/en-us/phone-03-level-36.png`
+  - `docs/assets/aso/en-us/phone-04-result.png`
 
 ## Store listing
 
 App name:
 
 ```text
-Arrow Again
+Arrow Again: Tap Away Puzzle
 ```
 
 Short description:
 
 ```text
-Tap free arrows, clear every route, and solve satisfying maze puzzles.
+Clear 100 arrow mazes at your pace—plan every tap and protect your hearts.
 ```
 
 Full description:
 
 ```text
-Arrow Again is a tactile arrow-maze puzzle for quick mobile sessions.
+Arrow Again: Tap Away Puzzle turns every board into a quick route-planning challenge.
 
-Tap arrows that have a clear route out of the board, watch the maze open up, and solve increasingly dense layouts. Each level is short, readable, and satisfying, but later boards ask you to plan the order carefully.
+Find an arrow with a clear path, tap it away, and open the route for the next move. Clear the entire arrow maze in the right order while protecting your hearts. There is no timer, so you can study each board and solve at your own pace.
 
-Features:
-- 100 levels with a smooth difficulty curve
-- Clean arrow-maze visuals designed for portrait play
-- Optional rewarded hints and revive flow
-- Local progress, lives, stars, and undo support
-- Lightweight rendering mode for dense boards and lower-end devices
+HOW TO PLAY
+- Find an arrow whose route is open
+- Tap to send it off the board
+- Avoid blocked moves that cost a heart
+- Clear every arrow to complete the level
+
+WHY PLAY
+- 100 portrait levels for short breaks
+- Simple one-tap controls with clear path feedback
+- Gradual challenge with denser routes and boss boards
+- Hints, undo, restart, and revive options
+- Three-star results and local progress
+- Clean, readable boards designed for phone screens
+
+Whether you enjoy arrow puzzles, tap away games, maze puzzles, unblock challenges, or calm logic games, Arrow Again offers focused board-clearing puzzles without countdown pressure.
+```
+
+zh-CN localized listing:
+
+```text
+App name:
+箭了又箭：箭头迷宫解谜
+
+Short description:
+规划点击顺序，清空100个箭头迷宫；无倒计时，轻松挑战逻辑与路线。
+
+Full description:
+《箭了又箭：箭头迷宫解谜》是一款讲究路线与顺序的竖屏点击解谜游戏。
+
+找到前方路线畅通的箭头，轻点让它飞出棋盘，为下一步打开出口。按正确顺序清空整个箭头迷宫，同时保护有限生命。游戏没有倒计时，你可以慢慢观察、按自己的节奏思考。
+
+玩法说明：
+- 找到路线没有被遮挡的箭头
+- 点击箭头，让它沿指向飞出棋盘
+- 避免误点被遮挡的路线，保护生命
+- 清空全部箭头即可通关
+
+游戏特色：
+- 100 个竖屏关卡，适合碎片时间
+- 单手点击操作，规则简单
+- 难度逐步提升，包含密集路线和 Boss 关
+- 提示、撤销、重开与复活功能
+- 三星通关评价与本地进度保存
+- 画面清晰，箭头路线适合手机屏幕查看
+
+如果你喜欢箭头解谜、迷宫解谜、点击消除、路线规划、休闲益智或烧脑小游戏，《箭了又箭》会带来没有倒计时压力的清场挑战。
 ```
 
 Category:
@@ -192,6 +245,14 @@ Disclose Google AdMob as an advertising partner. Optional support email is user-
 
 ## Closed testing
 
+Confirmed production-access evidence:
+
+```text
+Testing is complete. Testers were recruited voluntarily through the Arrow Again Google Group and developer mutual-testing communities. No paid testing service was used. Main feedback themes were game difficulty, interface design, and a visual direction better suited to the US market.
+```
+
+Do not use the inspected GA4 active-user count in the production-access application because that property contains events from other apps. Use the qualitative tester evidence above and the paste-ready answers in `docs/release-data/google-play-production-access-2026-07-14.md`.
+
 Recommended tester group:
 
 ```text
@@ -224,12 +285,11 @@ Do not send the leave-testing link as the join link.
 Release notes:
 
 ```text
-Initial closed test for Arrow Again.
+en-US:
+Updated the target API to Android 16 (API 36), with compatibility, stability, and edge-to-edge display improvements.
 
-- 100 arrow-maze puzzle levels
-- Optional rewarded hint and revive flows
-- Local progress, stars, lives, undo, and restart support
-- Feedback entry for closed-test reports
+zh-CN:
+升级目标 API 至 Android 16（API 36），并完成新系统兼容性、稳定性与全屏显示优化。
 ```
 
 Tester invitation:
@@ -261,40 +321,42 @@ New personal developer accounts should plan for at least 12 opted-in testers for
 4. Create the Google Group `arrow-again-testers` and set joining/search visibility according to the desired recruitment model.
 5. In Closed testing, create or open the Alpha track.
 6. Add `arrow-again-testers@googlegroups.com` as the tester group.
-7. Create a release and upload `android/app/build/outputs/bundle/release/app-release.aab`.
-8. Use the release notes above.
-9. Review warnings. Missing native debug symbols can be accepted for the first closed test unless crash-symbol upload is required now.
-10. Submit all pending changes from Publishing overview.
+7. Current production release is uploaded through Android Publisher API as `1.0.4 (6)`.
+8. Current release notes are the notes above.
+9. Review warnings. Missing native debug symbols can be accepted for the closed test unless crash-symbol upload is required now.
+10. Check Publishing overview for any pending review state after Play processing.
 
 ## Remaining external checks
 
-- Create or reuse the GA4 web stream, set `VITE_GA_MEASUREMENT_ID`, and validate DebugView with `npm run verify:analytics`.
-- Confirm `https://arrow-again.top/app-ads.txt` is live and verified in AdMob.
-- Confirm the hosted privacy/support/data-deletion pages are publicly reachable after the latest deployment.
+- GA4 measurement ID is configured; validate the production events in DebugView with `npm run verify:analytics`.
+- `https://arrow-again.top/app-ads.txt` is live; complete its verification in the AdMob console.
+- Hosted privacy, terms, support, and data-deletion pages return HTTPS 200.
 - Final-review the privacy policy and Data safety answers.
 - Complete any CAPTCHA, payment profile, identity, or developer account checks directly in Google.
-- After Play review approves the closed test, ask testers to join the group, opt in, install from Google Play, and open the app once per day during the 14-day window.
+- Monitor Play vitals and policy status for the completed production release `1.0.4 (6)`.
 
 Current DNS check:
 
 ```text
-arrow-again.top uses Aliyun nameservers but currently has no authoritative A
-record for the apex domain and no www CNAME from this machine as of 2026-06-21.
+2026-07-14: Aliyun authoritative DNS and public DNS return 76.76.21.21 for
+arrow-again.top and www.arrow-again.top. Vercel reports verified: true and
+misconfigured: false. The Vercel certificate is active, all policy/support URLs
+return HTTPS 200, and app-ads.txt returns the expected AdMob publisher line.
 ```
 
-For the Vercel production launch, add these DNS records in Aliyun DNS:
+Active Aliyun DNS records:
 
 ```text
 Type   Host  Value
 A      @     76.76.21.21
-CNAME  www   cname.vercel-dns-0.com
+A      www   76.76.21.21
 ```
 
 Then verify:
 
 ```text
 dig +short A arrow-again.top
-dig +short CNAME www.arrow-again.top
+dig +short A www.arrow-again.top
 curl -I https://arrow-again.top/app-ads.txt
 curl -I https://arrow-again.top/privacy.html
 ```

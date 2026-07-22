@@ -26,7 +26,7 @@
       "measurementIdEnv": "VITE_GA_MEASUREMENT_ID",
       "debugEnv": "VITE_GA_DEBUG",
       "measurementId": "G-NYTJ43WDD5",
-      "analyticsPropertyId": "542265186"
+      "analyticsPropertyId": "542507123"
     }
   },
   "releaseAssets": {
@@ -65,10 +65,17 @@
     "googlePlayAndroid": {
       "enabled": true,
       "applicationId": "com.arrowagain.game",
-      "versionCode": 2,
-      "versionName": "1.0.0",
+      "versionCode": 6,
+      "versionName": "1.0.4",
       "bundleCommand": "npm run google:aab",
       "nativeBridge": "window.NativeGameHost",
+      "reporting": {
+        "provider": "google-play-cloud-storage",
+        "bucketEnv": "GOOGLE_PLAY_REPORT_BUCKET",
+        "credentialsEnv": "GOOGLE_PLAY_REPORT_CREDENTIALS",
+        "configPath": "$HOME/.config/google-play/arrow-again-reports.json",
+        "outputDir": "reports/play-console"
+      },
       "adMobAppId": "ca-app-pub-2481288993515154~1565848203",
       "rewardedPlacements": {
         "hint": "ca-app-pub-2481288993515154/7636736455",

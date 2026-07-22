@@ -1,20 +1,21 @@
 # Arrow Again 发布资料包
 
-日期：2026-06-05
+日期：2026-07-22
 
 ## 可直接填写到后台的基础资料
 
 | 字段 | 建议值 |
 | --- | --- |
-| App name | Arrow Again |
+| Google Play app name | Arrow Again: Tap Away Puzzle |
+| In-app brand name | Arrow Again |
 | 中文名 | 箭了又箭 |
 | Bundle / package ID | `com.arrowagain.game` |
-| Version | `1.0.0` |
-| Version code / build | `1` |
+| Version | `1.0.4` |
+| Version code / build | `6` |
 | Category | Games / Puzzle / Casual |
 | Orientation | Portrait |
-| Short description | Tap the free arrows, clear every route, and solve satisfying maze puzzles. |
-| Long description | Arrow Again is a tactile arrow-maze puzzle built for quick mobile sessions. Choose the arrows with a clear path, watch them fly out, and clear denser boards as new route patterns appear. |
+| Short description | Clear 100 arrow mazes at your pace—plan every tap and protect your hearts. |
+| Long description | Arrow Again: Tap Away Puzzle turns every board into a quick route-planning challenge. Find an arrow with a clear path, tap it away, and open the route for the next move. Clear the entire arrow maze in the right order while protecting your hearts. |
 | Support email | `j.n.young0209@gmail.com` |
 | App home URL | `https://arrow-again.top/app-home.html` |
 | Privacy policy URL | `https://arrow-again.top/privacy.html` |
@@ -97,36 +98,45 @@ npm run verify:platform:release
 短描述：
 
 ```text
-Tap free arrows, clear every route, and solve satisfying maze puzzles.
+Clear 100 arrow mazes at your pace—plan every tap and protect your hearts.
 ```
 
 长描述：
 
 ```text
-Arrow Again is a tactile arrow-maze puzzle for quick mobile sessions.
+Arrow Again: Tap Away Puzzle turns every board into a quick route-planning challenge.
 
-Tap arrows that have a clear route out of the board, watch the maze open up, and solve increasingly dense layouts. Each level is short, readable, and satisfying, but later boards ask you to plan the order carefully.
+Find an arrow with a clear path, tap it away, and open the route for the next move. Clear the entire arrow maze in the right order while protecting your hearts. There is no timer, so you can study each board and solve at your own pace.
 
-Features:
-- 100 handcrafted/generated levels with a smooth difficulty curve
-- Clean arrow-maze visuals designed for portrait play
-- Optional rewarded hints and revive flow
-- Local progress, lives, stars, and undo support
-- Lightweight rendering mode for dense boards and lower-end devices
+HOW TO PLAY
+- Find an arrow whose route is open
+- Tap to send it off the board
+- Avoid blocked moves that cost a heart
+- Clear every arrow to complete the level
+
+WHY PLAY
+- 100 portrait levels for short breaks
+- Simple one-tap controls with clear path feedback
+- Gradual challenge with denser routes and boss boards
+- Hints, undo, restart, and revive options
+- Three-star results and local progress
+- Clean, readable boards designed for phone screens
+
+Whether you enjoy arrow puzzles, tap away games, maze puzzles, unblock challenges, or calm logic games, Arrow Again offers focused board-clearing puzzles without countdown pressure.
 ```
 
 关键词：
 
 ```text
-arrow puzzle, maze puzzle, unblock, casual puzzle, brain game, logic puzzle
+arrow puzzle, tap puzzle, tap away, puzzle escape, maze puzzle, logic puzzle, brain puzzle, unblock puzzle
 ```
 
 ## 仍需用户本人提供
 
-- Android upload key / keystore 或对应环境变量。
+- Google Play 生产访问申请中的真实测试者与反馈细节。
 - Google Play / AdMob 后台中的 app-ads.txt 验证、隐私/同意消息与 Data safety 配置。
 - 隐私政策最终法律文本确认。
-- 商店截图和主视觉。
+- 已有商店截图的最终主视觉确认。
 - Meta App ID 与 rewarded placement IDs（Android 首发后）。
 - Apple Developer Team（iOS 后续）。
 
