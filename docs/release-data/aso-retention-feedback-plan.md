@@ -1,6 +1,6 @@
 # Arrow Again ASO / 留存 / 反馈推进单
 
-日期：2026-06-02
+日期：2026-07-22
 
 ## 今日已落地
 
@@ -14,44 +14,55 @@
 
 | 方向 | 结论 | 对 Arrow Again 的动作 |
 | --- | --- | --- |
-| Google Play target API | 2025-08-31 起，新应用和更新需要 target Android 15 / API 35 或更高。 | `android/variables.gradle` 已是 `targetSdkVersion = 35`，继续保持。 |
+| Google Play target API | 2026-08-31 起，手机/平板新应用和更新需要 target Android 16 / API 36 或更高。 | `android/variables.gradle` 已升至 `targetSdkVersion = 36`；`1.0.4 (6)` 已于 2026-07-22 发布到 production。 |
 | Google 新个人开发者账号 | 2023-11-13 后创建的个人账号，生产发布前需要至少 12 名测试者连续 14 天 closed test。 | 开发者账号准备期先发 closed test，用新增反馈入口收集问题。 |
 | Google Data safety | 需要准确披露收集、共享和安全实践；隐私政策与 Data safety 不能互相矛盾。 | 隐私政策已声明本地进度、广告、分享、埋点；上线前需按真实 AdMob/Meta 数据流复核。 |
-| Google Store Listing | 短描述限制 80 字符，完整描述在 Play Console 内有计数器。 | 当前短描述 75 字符内，可直接用于首版。 |
+| Google Store Listing | App name 限制 30 字符，短描述限制 80 字符，完整描述限制 4000 字符。 | 当前 ASO 版标题 `Arrow Again: Tap Away Puzzle` 为 28 字符，短描述为 74 字符；2026-07-14 已通过 Android Publisher API 提交并回读。 |
 | Apple App 信息 | App name 和 subtitle 都限制 30 字符；Privacy Policy URL 对 iOS 必填。 | `Arrow Again`、`Tap Free Arrows` 都在限制内；隐私政策 URL 已入 manifest。 |
 | Apple 审核完整性 | 提审版本需要完整元数据、可用 URL，不能留下 placeholder、空网页或临时内容。 | 首屏已去掉“设计中”；`verify:platform:release` 继续阻断 placeholder ID。 |
 | Apple App Privacy | 需要在 App Store Connect 提供隐私实践，包括第三方伙伴代码的数据处理。 | 需要把 AdMob/Meta 广告与 analytics 的数据项映射到 App Privacy。 |
 | Meta Instant Games | 继续使用 `fbapp-config.json`、`FBInstant.shareAsync`、`FBInstant.logEvent` 和 rewarded placements；上线前需要真实 App ID、placement ID、隐私和删除入口。 | 代码桥已具备；账号侧 ID 未就绪前保持 mock/Web 验证。 |
 
-## ASO 首版文案
+## ASO 当前文案
+
+完整 ASO 包：`docs/release-data/google-play-aso-2026-07-14.md`
 
 ### Google Play
 
 App name:
 
 ```text
-Arrow Again
+Arrow Again: Tap Away Puzzle
 ```
 
 Short description:
 
 ```text
-Tap free arrows, clear every route, and solve satisfying maze puzzles.
+Clear 100 arrow mazes at your pace—plan every tap and protect your hearts.
 ```
 
 Full description:
 
 ```text
-Arrow Again is a tactile arrow-maze puzzle for quick mobile sessions.
+Arrow Again: Tap Away Puzzle turns every board into a quick route-planning challenge.
 
-Tap arrows that have a clear route out of the board, watch the maze open up, and solve increasingly dense layouts. Each level is short, readable, and satisfying, but later boards ask you to plan the order carefully.
+Find an arrow with a clear path, tap it away, and open the route for the next move. Clear the entire arrow maze in the right order while protecting your hearts. There is no timer, so you can study each board and solve at your own pace.
 
-Features:
-- 100 levels with a smooth difficulty curve
-- Clean arrow-maze visuals designed for portrait play
-- Optional rewarded hints and revive flow
-- Local progress, lives, stars, and undo support
-- Lightweight rendering mode for dense boards and lower-end devices
+HOW TO PLAY
+- Find an arrow whose route is open
+- Tap to send it off the board
+- Avoid blocked moves that cost a heart
+- Clear every arrow to complete the level
+
+WHY PLAY
+- 100 portrait levels for short breaks
+- Simple one-tap controls with clear path feedback
+- Gradual challenge with denser routes and boss boards
+- Hints, undo, restart, and revive options
+- Three-star results and local progress
+- Clean, readable boards designed for phone screens
+
+Whether you enjoy arrow puzzles, tap away games, maze puzzles, unblock challenges, or calm logic games, Arrow Again offers focused board-clearing puzzles without countdown pressure.
 ```
 
 ### App Store
@@ -59,25 +70,25 @@ Features:
 Name:
 
 ```text
-Arrow Again
+Arrow Again: Tap Puzzle
 ```
 
 Subtitle:
 
 ```text
-Tap Free Arrows
+Arrow Maze Logic Puzzle
 ```
 
 Promotional text:
 
 ```text
-Clear the arrows in the right order, protect your lives, and chase three-star clears across 100 quick puzzle levels.
+Plan each tap, protect your hearts, and chase three-star clears across quick arrow maze levels.
 ```
 
 Keywords:
 
 ```text
-arrow,maze,puzzle,logic,brain,unblock,casual,clear,route
+away,escape,brain,unblock,casual,route,grid,blocks,relax,spatial,clear,level,order
 ```
 
 ### Meta Instant Games
@@ -104,11 +115,16 @@ I cleared level {level} in Arrow Again with {stars} stars.
 
 | 截图 | 画面 | 目的 |
 | --- | --- | --- |
-| 1 | 首页 + 连续天数/星数 | 展示可回访进度。 |
-| 2 | 第 1 关高亮可飞出箭头 | 解释核心玩法。 |
-| 3 | 中后期密集关卡 | 展示路线规划深度。 |
-| 4 | 结果页三星 + 下一关 | 展示成就和继续游玩。 |
-| 5 | 失败页 + rewarded revive | 展示广告使用是可选帮助。 |
+| 1 | `docs/assets/aso/en-us/phone-01-home.png` | 展示品牌和一屏玩法承诺。 |
+| 2 | `docs/assets/aso/en-us/phone-02-tutorial.png` | 解释点击可通行箭头的核心玩法。 |
+| 3 | `docs/assets/aso/en-us/phone-03-level-36.png` | 展示中后期路线规划深度。 |
+| 4 | `docs/assets/aso/en-us/phone-04-result.png` | 展示三星通关和下一关循环。 |
+
+下一轮素材补充：
+
+1. 重截 zh-CN 本地化四张截图。
+2. 增加失败/遮挡状态图，标题方向为 `Think before you tap`。
+3. 若做广告投放，再做带短标题叠字版本，商店默认图继续保持低文字密度。
 
 ## Closed Test 反馈闭环
 

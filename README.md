@@ -56,7 +56,7 @@ npm run firebase:config:ios
 npm run firebase:analytics:status
 ```
 
-Firebase is linked to GA4 property `542265186` with Measurement ID
+Firebase is linked to GA4 property `542507123` with Measurement ID
 `G-NYTJ43WDD5`. To re-link or replace the property:
 
 ```bash

@@ -15,7 +15,7 @@ Arrow Again is linked to a GA4 **Web data stream** for the shared app/runtime.
 Current IDs:
 
 ```text
-GA4 property id: 542265186
+GA4 property id: 542507123
 Measurement ID:  G-NYTJ43WDD5
 ```
 
@@ -62,7 +62,7 @@ Android package:  com.arrowagain.game
 iOS app:          Arrow Again iOS
 iOS app id:       1:365113945933:ios:3eb5bed3f8dbed1dd11104
 iOS bundle:       com.arrowagain.game
-GA4 property id:  542265186
+GA4 property id:  542507123
 Measurement ID:   G-NYTJ43WDD5
 ```
 

@@ -1,6 +1,6 @@
 # Native Build Report
 
-日期：2026-06-05
+日期：2026-07-22
 
 ## Android
 
@@ -18,7 +18,11 @@
 - `scripts/run-android-gradle.mjs` 默认使用一次性 Gradle user home 和 `--no-daemon`，避免旧的 `/private/tmp/arrow-gradle-cache` 损坏后阻塞发布构建。
 - `npm run google:aab` 已接入 `npm run verify:android:release`，Android 上架门禁不会被 Meta placeholder 阻断。
 - `npm run google:aab` 已成功产出本地 Android App Bundle。
-- `android/app/build.gradle` 已支持正式 upload key 环境变量；当前未提供 keystore 时产物是 release bundle 但不是 Google Play 可上传的正式签名包。
+- `android/app/build.gradle` 已支持正式 upload key 环境变量；当前使用 `android/release-signing.env` 和 `android/upload-key.jks` 产出 Google Play 可上传的正式签名包。
+- 2026-06-30 安卓真机 PKB110 验证通过：竖屏锁定生效，`♥ 被挡扣 1` 引导可见，点击被挡箭头后生命从 `3/3` 变为 `2/3`，原真机存档已恢复。
+- 2026-06-30 已重新上传 Google Play alpha track：`1.0.3 (5)` / versionCode `5`，包含品牌标题单语言显示、反馈入口移入设置、默认语言跟随系统。
+- 2026-07-22 已将 `compileSdkVersion` / `targetSdkVersion` 升至 API 36，并将 Android Gradle Plugin 升至 8.10.1。
+- 2026-07-22 已上传 Google Play production track：`1.0.4 (6)`，API validate / commit / readback 均成功。
 
 当前产物：
 
@@ -26,9 +30,21 @@
 android/app/build/outputs/bundle/release/app-release.aab
 ```
 
-提交 Google Play 前仍需：
+当前 AAB：
 
-1. 提供正式 upload key 环境变量：
+```text
+Version name: 1.0.4
+Version code: 6
+Target SDK: 36
+SHA-256: 76fd94a7a1b02453e76e76d3ce5ff9275967697e94cf63750bc2e450695f5c5c
+Signing status: signed with the local Android upload key from android/release-signing.env.
+Google Play track: production
+Google Play release status: completed
+```
+
+重新打包 Google Play 前需：
+
+1. 确认正式 upload key 环境变量已由 `android/release-signing.env` 或 shell 提供：
 
 ```bash
 export ANDROID_RELEASE_STORE_FILE=/absolute/path/to/upload-key.jks
@@ -37,14 +53,14 @@ export ANDROID_RELEASE_KEY_ALIAS=...
 export ANDROID_RELEASE_KEY_PASSWORD=...
 ```
 
-2. 确认 Google Play Console 中的 application id、versionCode、versionName 与 `platform-manifest.json` 一致。
+2. 递增 `android/app/build.gradle` 和 `platform-manifest.json` 中的 Android versionCode/versionName。
 3. 重新运行：
 
 ```bash
 npm run google:aab
 ```
 
-4. 用 `jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/app-release.aab` 确认 signed AAB。
+4. 用 `jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab` 确认 signed AAB。
 
 预期提审产物：
 

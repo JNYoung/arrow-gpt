@@ -146,7 +146,6 @@ async function run() {
     await assertVisible(page.getByTestId('home-screen'), 'Home screen should render');
     await assertVisible(page.getByTestId('start-button'), 'Start button should render');
     await assertVisible(page.getByTestId('settings-button'), 'Settings button should render');
-    await assertVisible(page.getByTestId('home-feedback-button'), 'Home feedback entry should render');
     if ((await page.getByTestId('home-progress').count()) > 0) {
       throw new Error('Store-ready home screen should not expose progress statistic cards');
     }
@@ -163,6 +162,7 @@ async function run() {
 
     await page.getByTestId('settings-button').click();
     await assertVisible(page.getByTestId('settings-panel'), 'Settings panel should render from home');
+    await assertVisible(page.getByTestId('settings-feedback-button'), 'Settings feedback entry should render');
     const musicToggle = page.getByTestId('music-toggle');
     const effectsToggle = page.getByTestId('effects-toggle');
     if ((await musicToggle.getAttribute('aria-pressed')) !== 'true') {

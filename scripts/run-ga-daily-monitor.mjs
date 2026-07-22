@@ -157,10 +157,11 @@ async function run() {
   addCheck('ga_data_api_auth', 'GA Data API auth', 'pass', `Using ${tokenResult.source}.`);
 
   try {
-    const [yesterdayEvents, lookbackEvents, yesterdaySummary] = await Promise.all([
+    const [yesterdayEvents, lookbackEvents, yesterdaySummary, lookbackSummary] = await Promise.all([
       runEventReport(tokenResult.token, propertyId, reportDate, reportDate),
       runEventReport(tokenResult.token, propertyId, lookbackStart, reportDate),
-      runSummaryReport(tokenResult.token, propertyId, reportDate, reportDate)
+      runSummaryReport(tokenResult.token, propertyId, reportDate, reportDate),
+      runSummaryReport(tokenResult.token, propertyId, lookbackStart, reportDate)
     ]);
 
     report.liveData.yesterday = {
@@ -168,6 +169,7 @@ async function run() {
       events: parseEventRows(yesterdayEvents)
     };
     report.liveData.lookback = {
+      summary: parseSummary(lookbackSummary),
       events: parseEventRows(lookbackEvents)
     };
 
@@ -273,9 +275,10 @@ function finishAnalysis() {
   const warningChecks = report.checks.filter((check) => check.status === 'warn');
   const lookbackCounts = countEvents(report.liveData.lookback?.events ?? []);
   const yesterdayCounts = countEvents(report.liveData.yesterday?.events ?? []);
-  const totalLookbackEvents = sumValues(lookbackCounts);
+  const totalLookbackEvents = report.liveData.lookback?.summary?.eventCount ?? sumValues(lookbackCounts);
   const totalYesterdayEvents = report.liveData.yesterday?.summary?.eventCount ?? sumValues(yesterdayCounts);
-  const lookbackActiveUsers = maxActiveUsers(report.liveData.lookback?.events ?? []);
+  const lookbackActiveUsers =
+    report.liveData.lookback?.summary?.activeUsers ?? maxActiveUsers(report.liveData.lookback?.events ?? []);
   const yesterdayActiveUsers = report.liveData.yesterday?.summary?.activeUsers ?? maxActiveUsers(report.liveData.yesterday?.events ?? []);
 
   report.analysis.caveats.push('Closed-test sample sizes are directional only; treat optimization signals as hypotheses until traffic grows.');
@@ -376,7 +379,13 @@ function addLiveRecommendations(lookbackCounts, yesterdayCounts, totalLookbackEv
 async function runSummaryReport(token, propertyId, startDate, endDate) {
   return requestAnalyticsData(token, propertyId, 'runReport', {
     dateRanges: [{ startDate, endDate }],
-    metrics: [{ name: 'eventCount' }, { name: 'activeUsers' }]
+    metrics: [
+      { name: 'eventCount' },
+      { name: 'activeUsers' },
+      { name: 'newUsers' },
+      { name: 'sessions' },
+      { name: 'engagedSessions' }
+    ]
   });
 }
 
@@ -662,7 +671,10 @@ function parseSummary(response) {
   const row = response.rows?.[0];
   return {
     eventCount: Number(row?.metricValues?.[0]?.value ?? 0),
-    activeUsers: Number(row?.metricValues?.[1]?.value ?? 0)
+    activeUsers: Number(row?.metricValues?.[1]?.value ?? 0),
+    newUsers: Number(row?.metricValues?.[2]?.value ?? 0),
+    sessions: Number(row?.metricValues?.[3]?.value ?? 0),
+    engagedSessions: Number(row?.metricValues?.[4]?.value ?? 0)
   };
 }
 
@@ -801,8 +813,9 @@ function printReport(payload) {
     console.log('');
     console.log('GA data');
     console.log(
-      `- Yesterday: ${payload.liveData.yesterday.summary.eventCount} events, ${payload.liveData.yesterday.summary.activeUsers} active users`
+      `- Yesterday: ${formatSummary(payload.liveData.yesterday.summary)}`
     );
+    console.log(`- Last ${payload.windows.lookbackDays} days: ${formatSummary(payload.liveData.lookback.summary)}`);
     console.log(`- Top lookback events: ${formatTopEvents(payload.liveData.lookback.events, 10)}`);
     if (payload.liveData.realtime?.events) {
       console.log(`- Realtime top events: ${formatTopEvents(payload.liveData.realtime.events, 5)}`);
@@ -827,6 +840,16 @@ function printReport(payload) {
       console.log(`- ${caveat}`);
     }
   }
+}
+
+function formatSummary(summary) {
+  return [
+    `${summary.eventCount} events`,
+    `${summary.activeUsers} active users`,
+    `${summary.newUsers} new users`,
+    `${summary.sessions} sessions`,
+    `${summary.engagedSessions} engaged sessions`
+  ].join(', ');
 }
 
 function formatTopEvents(rows, limit) {

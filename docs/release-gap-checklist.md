@@ -1,6 +1,6 @@
 # Arrow Again 上线缺口清单
 
-日期：2026-06-05
+日期：2026-07-22
 
 ## 结论先行
 
@@ -28,14 +28,15 @@
 - Android Gradle 已支持通过环境变量读取正式 upload key，避免把 keystore 或密码提交进仓库。
 - Vercel 项目 `bittap-tech/arrow-again` 已完成生产部署，`https://arrow-again.vercel.app/app-ads.txt` 可访问。
 - 游戏内 Settings 已补 Privacy Policy、Terms、Data Deletion、Support 入口，降低 Google Play 审核路径风险。
-- 当前本机 `curl https://arrow-again.top/app-ads.txt` 仍不可访问；AdMob 验证前还需要完成 Aliyun DNS 配置。
+- Aliyun DNS 已新增 `@` 和 `www` 的 A 记录，都指向 `76.76.21.21`；权威 DNS、公共 DNS 和 Vercel 配置校验已通过。
+- Vercel 证书已签发并开启自动续期；合规页和 `app-ads.txt` 均通过 HTTPS 返回 200。
+- Google Play en-US / zh-CN 生产 ASO 已通过 Android Publisher API 提交并回读。
+- Google Play 生产访问已获批；`1.0.4 (6)` / target API 36 已于 2026-07-22 发布到 production 并经 API 回读确认。
+- 生产访问申请基于真实测试情况：Google Group / 互测社区自愿招募、未使用付费测试，核心反馈为难度、界面和美国市场视觉适配；未引用受其他应用污染的 GA4 人数。
 
-距离真正上线，仍差 4 类工作：
+Google Play Android 已完成生产发布，仍需 1 类发布后合规收尾：
 
-1. Android 签名、Google Play 后台和 app-ads.txt 验证。
-2. Android 真机 smoke test 与 AdMob rewarded 真机验证。
-3. Google Play 商店与审核物料补齐。
-4. Meta / iOS 后续平台配置与 smoke test。
+1. 完成 AdMob `app-ads.txt` 后台验证和 Data safety / 隐私政策最终人工复核。
 
 ## 按优先级拆分
 
@@ -117,11 +118,11 @@ manifest 至少要包含：
 当前 repo 已明确缺这些：
 
 - 隐私政策最终法律文本确认（页面已不再是 Draft，但仍建议提交前由开发者/法务确认）
-- Android 正式 upload key / signing env
-- 最终包名 / 版本号
+- Android 正式 upload key / signing env（已完成）
+- 最终包名 / 版本号（`com.arrowagain.game` / `1.0.4 (6)`）
 - `app-ads.txt` 公开域名根目录上线后的 AdMob 验证与隐私/同意消息配置
 - 商店截图
-- 商店最终文案审核
+- 商店最终文案审核（en-US / zh-CN 已提交）
 - Google Play Data safety
 - Apple 侧签名与隐私元数据
 
@@ -215,20 +216,19 @@ manifest 至少要包含：
 
 ## 建议的执行顺序
 
-1. 配置 `arrow-again.top` Aliyun DNS，确认 `https://arrow-again.top/app-ads.txt` 可访问，再到 AdMob 完成 app-ads.txt 验证和隐私/同意消息配置。
-2. Android 真机 smoke test，覆盖首屏、第 1 关、hint、revive、Hard 弹窗、分享、返回前台。
-3. Google Play 商店文案 / 截图 / Data safety / 隐私政策最终确认。
-4. 上传 signed AAB 到 closed testing 或 production draft。
-5. Meta app id / rewarded placement id 放到 Android 首发后推进。
+1. 在 AdMob 完成 `app-ads.txt` 验证和隐私/同意消息配置。
+2. 监控 production `1.0.4 (6)` 的 Play vitals 与政策状态。
+3. 完成 Data safety / 隐私政策最终人工复核。
+4. Meta app id / rewarded placement id 放到 Android 首发后推进。
 
 ## 需要你本人推进或提供
 
-- Google Play 后台权限、Data safety 选择、商店截图和主视觉取舍
-- `arrow-again.top` DNS / Vercel 自定义域名解析
+- Google Play production 已完成；后续只需关注审核通知、Play vitals 与政策告警
+- Data safety 选择与隐私政策最终人工确认
 - AdMob app-ads.txt 验证、隐私/同意消息配置确认
 - 最终包名、展示名、版本策略
 - Apple / Meta 开发者后台权限（Android 首发后）
 
 ## 一句话判断
 
-如果只按“Android 首发可上架”算，当前最缺的是正式 upload key、Google Play 后台物料 / Data safety、AdMob app-ads.txt 验证和 Android 真机 smoke test；Meta 已降为后续平台。
+如果只按“Android 首发可上架”算，Google Play production 已完成；剩余工作是 AdMob `app-ads.txt` 后台验证和 Data safety / 隐私最终人工复核，Meta 已降为后续平台。

@@ -9,8 +9,22 @@ function getLocalDateKey(now = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
-function normalizeLanguage(value: unknown): AppLanguage {
-  return value === 'en' ? 'en' : 'zh';
+function getSystemLanguage(): AppLanguage {
+  const languageCandidates =
+    typeof navigator === 'undefined'
+      ? []
+      : [...(Array.isArray(navigator.languages) ? navigator.languages : []), navigator.language];
+  const primaryLanguage = languageCandidates.find((language) => typeof language === 'string' && language.trim());
+
+  return primaryLanguage?.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+}
+
+function normalizeLanguage(value: unknown, fallback: AppLanguage): AppLanguage {
+  if (value === 'en' || value === 'zh') {
+    return value;
+  }
+
+  return fallback;
 }
 
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
@@ -21,7 +35,7 @@ function createDefaultSave(now = new Date()): SaveData {
   return {
     unlockedLevel: 1,
     starsByLevel: {},
-    language: 'zh',
+    language: getSystemLanguage(),
     musicEnabled: true,
     effectsEnabled: true,
     firstPlayedAt: now.toISOString(),
@@ -46,7 +60,7 @@ export function loadSave(): SaveData {
     return {
       unlockedLevel: Math.max(1, parsed.unlockedLevel ?? defaults.unlockedLevel),
       starsByLevel: parsed.starsByLevel ?? {},
-      language: normalizeLanguage(parsed.language ?? defaults.language),
+      language: normalizeLanguage(parsed.language, defaults.language),
       musicEnabled: normalizeBoolean(parsed.musicEnabled, legacySoundEnabled),
       effectsEnabled: normalizeBoolean(parsed.effectsEnabled, legacySoundEnabled),
       firstPlayedAt: parsed.firstPlayedAt ?? defaults.firstPlayedAt,
