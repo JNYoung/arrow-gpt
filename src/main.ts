@@ -7,6 +7,7 @@ import {
   type CampaignAttribution
 } from './analytics';
 import { GameAudio } from './audio';
+import { configureAndroidDailyReminder } from './daily-reminder';
 import { LEVELS } from './game/levels';
 import { DIRECTION_ANGLE, getAvailablePieces, isPathClear } from './game/rules';
 import type { AppLanguage, ArrowPiece, BoardMetrics, LevelData, SaveData } from './game/types';
@@ -300,6 +301,7 @@ class ArrowAgainApp {
       total_stars: this.getTotalStars()
     });
     this.render();
+    void configureAndroidDailyReminder(this.save.language, (event, payload) => this.track(event, payload));
   }
 
   private recordSessionStart(): void {

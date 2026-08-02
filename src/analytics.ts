@@ -49,7 +49,7 @@ declare global {
   }
 
   interface Window {
-    dataLayer?: unknown[][];
+    dataLayer?: unknown[];
     gtag?: Gtag;
   }
 }
@@ -105,8 +105,8 @@ function initializeGoogleAnalytics(measurementId: string): void {
   window.dataLayer = window.dataLayer ?? [];
   window.gtag =
     window.gtag ??
-    function gtag(...args: unknown[]) {
-      window.dataLayer?.push(args);
+    function gtag() {
+      window.dataLayer?.push(arguments);
     };
 
   requestGoogleAnalyticsScript(measurementId);
