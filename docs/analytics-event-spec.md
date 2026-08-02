@@ -89,6 +89,17 @@ Future revenue event:
 | `settings_effects_toggle` | Effects setting changes | `enabled` | Custom |
 | `hard_level_prompt` | Hard/boss warning is shown | `source`, `target_level`, `target_difficulty` | Custom |
 
+## Daily reminder events
+
+These events are emitted only by the Android native app. Notification copy and scheduling use the device's current language and local time zone.
+
+| Event | Trigger | Required extra parameters | GA4 status |
+| --- | --- | --- | --- |
+| `daily_reminder_permission` | Android notification permission is checked or requested | `permission`, `source` | Custom |
+| `daily_reminder_scheduled` | The 20:00 local reminder is created, updated, or already pending | `notification_id`, `schedule_hour`, `schedule_minute`, `schedule_second`, `time_basis`, `time_zone`, `status` | Custom |
+| `daily_reminder_open` | The player opens the app from the reminder | `action_id`, `notification_id`, `schedule_hour`, `time_basis` | Custom |
+| `daily_reminder_error` | Permission or scheduling setup fails | `stage`, `error_name` | Custom |
+
 ## GA4 implementation notes
 
 - Event names are sanitized to GA4-compatible names before sending.

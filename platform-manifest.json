@@ -65,8 +65,8 @@
     "googlePlayAndroid": {
       "enabled": true,
       "applicationId": "com.arrowagain.game",
-      "versionCode": 6,
-      "versionName": "1.0.4",
+      "versionCode": 8,
+      "versionName": "1.0.6",
       "bundleCommand": "npm run google:aab",
       "nativeBridge": "window.NativeGameHost",
       "reporting": {
